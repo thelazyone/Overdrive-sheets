@@ -1,0 +1,178 @@
+{
+    "title": "Biggus Shippus",
+    "subtitle": "Federation's Workhorse",
+    "command": 3,
+    "control": 2,
+    "shields": {
+        "front": [3, 1, 1],
+        "rear": [2, 1]
+    },
+    "reactor": {
+        "name": "Reactor",
+        "rules": "Energy Production: 3",
+        "circles": 3,
+        "electronics": false,
+        "hull": false,
+        "life_support": true
+    },
+    "mess": {
+        "name": "Mess",
+        "rules": "Crew: 4",
+        "med_bay": 2,
+        "electronics": false,
+        "hull": false,
+        "life_support": true
+    },
+    "sections": {
+        "left": [
+            {
+                "name": "Flak Guns",
+                "rules": "Anti-Light Weapon",
+                "areas": [
+                    {
+                        "name": "Barrage",
+                        "description": "",
+                        "shoot": {
+                            "damage": 2,
+                            "range": 2
+                        },
+                        "cost": {
+                            "energy": 1,
+                            "crew": 1
+                        }
+                    }
+                ],
+                "electronics": false,
+                "hull": true,
+                "life_support": false
+            },
+            {
+                "name": "Target Guidance",
+                "rules": "Support System",
+                "areas": [
+                    {
+                        "name": "Tracking",
+                        "description": "All Light Ships get 1 extra dice of damage",
+                        "cost": {
+                            "energy": 1,
+                            "crew": 0
+                        }
+                    }
+                ],
+                "electronics": true,
+                "hull": false,
+                "life_support": false
+            }
+        ],
+        "core": [
+            {
+                "name": "Driver Bridge",
+                "rules": "Navigation System",
+                "areas": [
+                    {
+                        "name": "Advanced Piloting",
+                        "description": "The ship moves by one extra DU",
+                        "cost": {
+                            "energy": 0,
+                            "crew": 1
+                        }
+                    },
+                    {
+                        "name": "Aim",
+                        "description": "Required to shoot with some weapons",
+                        "cost": {
+                            "energy": 0,
+                            "crew": 1
+                        }
+                    }
+                ],
+                "electronics": true,
+                "hull": false,
+                "life_support": true
+            },
+            {
+                "name": "High Caliber Gun",
+                "rules": "Anti-Capital Weapon, Main",
+                "areas": [
+                    {
+                        "name": "Shoot",
+                        "description": "",
+                        "shoot": {
+                            "damage": 4,
+                            "range": 6
+                        },
+                        "cost": {
+                            "energy": 2,
+                            "crew": 1
+                        }
+                    }
+                ],
+                "electronics": true,
+                "hull": true,
+                "life_support": false
+            },
+            {
+                "name": "Fast Engine",
+                "rules": "Enhanced Movement System",
+                "areas": [
+                    {
+                        "name": "Full Thrust",
+                        "description": "4 DU, Steer 2 DU",
+                        "cost": {
+                            "energy": 2,
+                            "crew": 0
+                        }
+                    },
+                    {
+                        "name": "Pivot",
+                        "description": "1 DU, Steer 2 DU (max 90° angle)",
+                        "cost": {
+                            "energy": 2,
+                            "crew": 1
+                        }
+                    }
+                ],
+                "electronics": true,
+                "hull": true,
+                "life_support": false
+            }
+        ],
+        "right": [
+            {
+                "name": "Light Guns",
+                "rules": "Weapon",
+                "areas": [
+                    {
+                        "name": "Shoot",
+                        "description": "",
+                        "shoot": {
+                            "damage": 2,
+                            "range": 3
+                        },
+                        "cost": {
+                            "energy": 0,
+                            "crew": 1
+                        }
+                    },
+                    {
+                        "name": "Prolonged Fire",
+                        "description": "",
+                        "shoot": {
+                            "damage": 3,
+                            "range": 3
+                        },
+                        "cost": {
+                            "energy": 1,
+                            "crew": 1
+                        }
+                    }
+                ],
+                "amount": 6,
+                "electronics": false,
+                "hull": true,
+                "comms": false,
+                "life_support": false
+            }
+        ]
+    }
+} 
