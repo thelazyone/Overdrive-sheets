@@ -240,26 +240,34 @@ def create_area_content(draw, area, content_x, area_title_font, description_font
         elements.append(("text", (content_x, content_height), area_name, area_title_font))
         content_height += area_h + vertical_spacing * 2  # Double the spacing after title
     
+    # Calculate the maximum height for this area
+    max_height = 0
+    
     # Draw weapon symbol if it exists
+    weapon_width = 0
     if "shoot" in area:
         # Create temporary image for weapon symbol
         weapon_img = Image.new('RGBA', (150, 60), (255, 255, 255, 0))
         weapon_draw = ImageDraw.Draw(weapon_img)
-        draw_weapon_symbol(weapon_draw, 0, 0, 150,
+        weapon_height = draw_weapon_symbol(weapon_draw, 0, 0, 150,
                           area["shoot"]["damage"],
                           area["shoot"]["range"],
                           area_title_font)
+        weapon_width = weapon_img.width
         elements.append(("image", (content_x, content_height), weapon_img))
-        content_height += 60 + vertical_spacing
+        max_height = max(max_height, weapon_height)
     
-    # Draw description regardless of whether there's a weapon
+    # Draw description to the right of the weapon if it exists, otherwise at content_x
     if area["description"]:
         desc_text = area["description"]
         desc_w, desc_h = get_text_size(draw, desc_text, description_font)
-        # If there's no weapon, start description at content_x, otherwise offset it
-        desc_x = content_x + (140 if "shoot" in area else 0)
+        # If there's a weapon, start description to its right, otherwise at content_x
+        desc_x = content_x + (weapon_width + 20 if "shoot" in area else 0)  # 20px gap between weapon and description
         elements.append(("text", (desc_x, content_height), desc_text, description_font))
-        content_height += desc_h + vertical_spacing
+        max_height = max(max_height, desc_h)
+    
+    # Update content height based on the maximum height of elements
+    content_height = max_height
     
     return content_height, elements
 
@@ -463,6 +471,10 @@ def create_tile(system, tile_width_px, tile_height_px, dpi):
             current_y += total_height + vertical_spacing
         
         current_y += area_margin  # Add final margin after last area
+    elif system["name"].lower() not in ["mess", "reactor"]:  # Only apply minimum height to non-special systems
+        # If no areas exist, add minimum height
+        min_system_height = 100  # Minimum height for systems without areas
+        current_y += min_system_height
     
     # Add system icons in bottom right if they exist
     icons = []
