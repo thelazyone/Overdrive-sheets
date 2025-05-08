@@ -1,0 +1,188 @@
+{
+    "title": "Jealousy of Age",
+    "subtitle": "Contemplation Class Escort Vessel",
+    "command": 2,
+    "control": 1,
+    "shields": {
+        "front": [2, 2, 1],
+        "rear": [2, 2]
+    },
+    "reactor": {
+        "name": "Reactor",
+        "rules": "Energy Production: 3",
+        "circles": 3,
+        "electronics": true,
+        "hull": false,
+        "life_support": false
+    },
+    "mess": {
+        "name": "Mess",
+        "rules": "Crew: 3",
+        "med_bay": 1,
+        "electronics": false,
+        "hull": false,
+        "life_support": true
+    },
+    "sections": {
+        "left": [
+            {
+                "name": "Autocannons",
+                "rules": "Weapon",
+                "areas": [
+                    {
+                        "name": "Fast Burst",
+                        "description": "",
+                        "shoot": {
+                            "damage": 2,
+                            "range": 3
+                        },
+                        "cost": {
+                            "energy": 1,
+                            "crew": 0
+                        }
+                    },
+                    {
+                        "name": "Long Burst",
+                        "description": "",
+                        "shoot": {
+                            "damage": 4,
+                            "range": 3
+                        },
+                        "cost": {
+                            "energy": 1,
+                            "crew": 1
+                        }
+                    }
+                ],
+                "electronics": false,
+                "hull": true,
+                "life_support": false
+            },
+            {
+                "name": "Target Tracking",
+                "rules": "Support System",
+                "areas": [
+                    {
+                        "name": "Tracking",
+                        "description": "LS within Control get +1 to hit",
+                        "cost": {
+                            "energy": 1,
+                            "crew": 0
+                        }
+                    }
+                ],
+                "electronics": true,
+                "hull": false,
+                "life_support": false
+            }
+        ],
+        "core": [
+            {
+                "name": "Command Bridge",
+                "rules": "",
+                "areas": [
+                    {
+                        "name": "Broadcast",
+                        "description": "Control 2 for this Round",
+                        "cost": {
+                            "energy": 0,
+                            "crew": 1
+                        }
+                    },
+                    {
+                        "name": "Bridge Guns",
+                        "description": "",
+                        "shoot": {
+                            "damage": 2,
+                            "range": 2
+                        },
+                        "cost": {
+                            "energy": 0,
+                            "crew": 1
+                        }
+                    }
+                ],
+                "electronics": true,
+                "hull": false,
+                "life_support": true
+            },
+            {
+                "name": "Flak Battery",
+                "rules": "Anti-Light Weapon",
+                "areas": [
+                    {
+                        "name": "AA Burst",
+                        "description": "",
+                        "shoot": {
+                            "damage": 2,
+                            "range": 2
+                        },
+                        "cost": {
+                            "energy": 1,
+                            "crew": 1
+                        }
+                    }
+                ],
+                "electronics": false,
+                "hull": true,
+                "life_support": true
+            },
+            {
+                "name": "Engine",
+                "rules": "Propulsion System",
+                "areas": [
+                    {
+                        "name": "Cruise",
+                        "description": "2 DU, Steer 2 DU",
+                        "cost": {
+                            "energy": 1,
+                            "crew": 0
+                        }
+                    },
+                    {
+                        "name": "Pivot",
+                        "description": "0 DU, Steer 2 DU (max 90° angle)",
+                        "cost": {
+                            "energy": 1,
+                            "crew": 0
+                        }
+                    }
+                ],
+                "electronics": true,
+                "hull": true,
+                "life_support": false
+            }
+        ],
+        "right": [
+            {
+                "name": "Torpedo Bay",
+                "rules": "Weapon System; starts with 2 Torpedoes Loaded",
+                "areas": [
+                    {
+                        "name": "Load torpedo",
+                        "description": "Max 2 torpedoes loaded",
+                        "cost": {
+                            "energy": 0,
+                            "crew": 2
+                        }
+                    },
+                    {
+                        "name": "Fire torpedo",
+                        "description": "90° arc right side; anti-Capital",
+                        "shoot": {
+                            "damage": 3,
+                            "range": 0
+                        },
+                        "cost": {
+                            "energy": 0,
+                            "crew": 2
+                        }
+                    }
+                ],
+                "electronics": true,
+                "hull": true,
+                "life_support": true
+            }
+        ]
+    }
+} 

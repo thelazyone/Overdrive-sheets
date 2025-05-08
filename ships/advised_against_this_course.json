@@ -1,24 +1,24 @@
 {
-    "title": "Biggus Shippus",
-    "subtitle": "Federation's Workhorse",
-    "command": 3,
+    "title": "Advised Against This Course",
+    "subtitle": "Vigilance Class Support Vessel",
+    "command": 2,
     "control": 2,
     "shields": {
-        "front": [3, 1, 1],
-        "rear": [2, 1]
+        "front": [1, 1, 0, 0],
+        "rear": [1, 1, 0, 0]
     },
     "reactor": {
         "name": "Reactor",
-        "rules": "Energy Production: 3",
-        "circles": 3,
-        "electronics": false,
+        "rules": "Energy Production: 2",
+        "circles": 4,
+        "electronics": true,
         "hull": false,
-        "life_support": true
+        "life_support": false
     },
     "mess": {
         "name": "Mess",
         "rules": "Crew: 4",
-        "med_bay": 2,
+        "med_bay": 1,
         "electronics": false,
         "hull": false,
         "life_support": true
@@ -26,52 +26,57 @@
     "sections": {
         "left": [
             {
-                "name": "Flak Guns",
-                "rules": "Anti-Light Weapon",
+                "name": "Rocket Arrays",
+                "rules": "Weapon",
                 "areas": [
                     {
-                        "name": "Barrage",
-                        "description": "",
+                        "name": "Rockets (x2)",
+                        "description": "2 attacks",
                         "shoot": {
                             "damage": 2,
-                            "range": 2
+                            "range": 3
                         },
                         "cost": {
-                            "energy": 1,
+                            "energy": 2,
+                            "crew": 0
+                        }
+                    },
+                    {
+                        "name": "Rockets (x4)",
+                        "description": "4 attacks",
+                        "shoot": {
+                            "damage": 2,
+                            "range": 3
+                        },
+                        "cost": {
+                            "energy": 2,
                             "crew": 1
                         }
                     }
                 ],
                 "electronics": false,
                 "hull": true,
-                "life_support": false
+                "life_support": true
             },
             {
-                "name": "Target Guidance",
-                "rules": "Support System",
+                "name": "Armor Plates",
+                "rules": "Support System; cannot be repaired",
                 "areas": [
-                    {
-                        "name": "Tracking",
-                        "description": "All Light Ships get 1 extra dice of damage",
-                        "cost": {
-                            "energy": 1,
-                            "crew": 0
-                        }
-                    }
+                    
                 ],
-                "electronics": true,
-                "hull": false,
+                "electronics": false,
+                "hull": true,
                 "life_support": false
             }
         ],
         "core": [
             {
-                "name": "Driver Bridge",
-                "rules": "Navigation System",
+                "name": "Bridge",
+                "rules": "",
                 "areas": [
                     {
-                        "name": "Advanced Piloting",
-                        "description": "The ship moves by one extra DU",
+                        "name": "Broadcast",
+                        "description": "Control 3 for this Round",
                         "cost": {
                             "energy": 0,
                             "crew": 1
@@ -79,7 +84,7 @@
                     },
                     {
                         "name": "Aim",
-                        "description": "Required to shoot with some weapons",
+                        "description": "Required for the Gun Battery and Rocket Arrays",
                         "cost": {
                             "energy": 0,
                             "crew": 1
@@ -91,14 +96,14 @@
                 "life_support": true
             },
             {
-                "name": "High Caliber Gun",
-                "rules": "Anti-Capital Weapon, Main",
+                "name": "Gun Battery",
+                "rules": "Main Weapon, anti-Capital",
                 "areas": [
                     {
-                        "name": "Shoot",
-                        "description": "",
+                        "name": "Salvo",
+                        "description": "Front only",
                         "shoot": {
-                            "damage": 4,
+                            "damage": 3,
                             "range": 6
                         },
                         "cost": {
@@ -109,15 +114,15 @@
                 ],
                 "electronics": true,
                 "hull": true,
-                "life_support": false
+                "life_support": true
             },
             {
-                "name": "Fast Engine",
-                "rules": "Enhanced Movement System",
+                "name": "Engine",
+                "rules": "Propulsion System",
                 "areas": [
                     {
-                        "name": "Full Thrust",
-                        "description": "4 DU, Steer 2 DU",
+                        "name": "Cruise",
+                        "description": "2 DU, Steer 2 DU",
                         "cost": {
                             "energy": 2,
                             "crew": 0
@@ -125,9 +130,9 @@
                     },
                     {
                         "name": "Pivot",
-                        "description": "1 DU, Steer 2 DU (max 90° angle)",
+                        "description": "0 DU, Steer 2 DU (max 90° angle)",
                         "cost": {
-                            "energy": 2,
+                            "energy": 1,
                             "crew": 1
                         }
                     }
@@ -139,38 +144,46 @@
         ],
         "right": [
             {
-                "name": "Light Guns",
+                "name": "Rocket Arrays",
                 "rules": "Weapon",
                 "areas": [
                     {
-                        "name": "Shoot",
-                        "description": "",
+                        "name": "Rockets (x2)",
+                        "description": "2 attacks",
                         "shoot": {
                             "damage": 2,
                             "range": 3
                         },
                         "cost": {
-                            "energy": 0,
-                            "crew": 1
+                            "energy": 2,
+                            "crew": 0
                         }
                     },
                     {
-                        "name": "Prolonged Fire",
-                        "description": "",
+                        "name": "Rockets (x4)",
+                        "description": "4 attacks",
                         "shoot": {
-                            "damage": 3,
+                            "damage": 2,
                             "range": 3
                         },
                         "cost": {
-                            "energy": 1,
+                            "energy": 2,
                             "crew": 1
                         }
                     }
                 ],
-                "amount": 6,
                 "electronics": false,
                 "hull": true,
-                "comms": false,
+                "life_support": true
+            },
+            {
+                "name": "Armor Plates",
+                "rules": "Support System; cannot be repaired",
+                "areas": [
+                    
+                ],
+                "electronics": false,
+                "hull": true,
                 "life_support": false
             }
         ]

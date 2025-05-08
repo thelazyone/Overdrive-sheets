@@ -274,13 +274,34 @@ def create_ship_sheet(ship_data, output_path):
     print(f"Saved ship sheet to: {output_path}")
 
 def main():
-    # Load ship data
-    with open("ship.json", "r") as f:
-        ship_data = json.load(f)
+    # Create ships directory if it doesn't exist
+    ships_dir = "ships"
+    if not os.path.exists(ships_dir):
+        os.makedirs(ships_dir)
     
-    # Create the ship sheet with ship name in filename
-    ship_name = ship_data["title"].lower().replace(" ", "_")
-    create_ship_sheet(ship_data, f"{ship_name}_sheet.jpg")
+    # Find all JSON files in the ships directory
+    json_files = [f for f in os.listdir(ships_dir) if f.endswith('.json')]
+    
+    if not json_files:
+        print("No JSON files found in the ships directory")
+        return
+    
+    # Process each JSON file
+    for json_file in json_files:
+        json_path = os.path.join(ships_dir, json_file)
+        try:
+            # Load ship data
+            with open(json_path, "r") as f:
+                ship_data = json.load(f)
+            
+            # Create the ship sheet with ship name in filename
+            ship_name = ship_data["title"].lower().replace(" ", "_")
+            output_path = os.path.join(ships_dir, f"{ship_name}_sheet.jpg")
+            create_ship_sheet(ship_data, output_path)
+            print(f"Processed {json_file}")
+            
+        except Exception as e:
+            print(f"Error processing {json_file}: {str(e)}")
 
 if __name__ == "__main__":
     main() 

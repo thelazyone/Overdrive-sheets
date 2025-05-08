@@ -1,0 +1,258 @@
+{
+    "title": "Doctrine of Disproportionate Response",
+    "subtitle": "Presumption Class Battlecruiser",
+    "command": 2,
+    "control": 3,
+    "shields": {
+        "front": [1, 1, 1, 0, 0],
+        "rear": [1, 1, 0, 0]
+    },
+    "reactor": {
+        "name": "Reactor",
+        "rules": "Energy Production: 4",
+        "circles": 4,
+        "electronics": true,
+        "hull": false,
+        "life_support": false
+    },
+    "mess": {
+        "name": "Mess",
+        "rules": "Crew: 6",
+        "med_bay": 2,
+        "electronics": false,
+        "hull": false,
+        "life_support": true
+    },
+    "sections": {
+        "left": [
+            {
+                "name": "Flak Battery",
+                "rules": "Anti-Light Weapon",
+                "areas": [
+                    {
+                        "name": "AA Burst",
+                        "description": "",
+                        "shoot": {
+                            "damage": 2,
+                            "range": 2
+                        },
+                        "cost": {
+                            "energy": 1,
+                            "crew": 1
+                        }
+                    }
+                ],
+                "electronics": false,
+                "hull": true,
+                "life_support": true
+            },
+            {
+                "name": "Torpedo Bay",
+                "rules": "Weapon System; starts with 2 Torpedoes Loaded",
+                "areas": [
+                    {
+                        "name": "Load torpedo",
+                        "description": "Max 2 torpedoes loaded",
+                        "cost": {
+                            "energy": 0,
+                            "crew": 2
+                        }
+                    },
+                    {
+                        "name": "Fire torpedo",
+                        "description": "90° arc right side; anti-Capital",
+                        "shoot": {
+                            "damage": 3,
+                            "range": 0
+                        },
+                        "cost": {
+                            "energy": 0,
+                            "crew": 2
+                        }
+                    }
+                ],
+                "electronics": true,
+                "hull": true,
+                "life_support": true
+            },
+            {
+                "name": "Armor Plates",
+                "rules": "Support System; cannot be repaired",
+                "areas": [
+                    
+                ],
+                "electronics": false,
+                "hull": true,
+                "life_support": false
+            }
+        ],
+        "core": [
+            {
+                "name": "Artillery Bridge",
+                "rules": "",
+                "areas": [
+                    {
+                        "name": "Bridge Guns",
+                        "description": "",
+                        "shoot": {
+                            "damage": 3,
+                            "range": 3
+                        },
+                        "cost": {
+                            "energy": 1,
+                            "crew": 1
+                        }
+                    },
+                    {
+                        "name": "Aim",
+                        "description": "Required for the Main Battery",
+                        "cost": {
+                            "energy": 1,
+                            "crew": 1
+                        }
+                    },
+                    {
+                        "name": "Aim",
+                        "description": "Required for the Secondary Battery",
+                        "cost": {
+                            "energy": 0,
+                            "crew": 1
+                        }
+                    }
+                ],
+                "electronics": true,
+                "hull": false,
+                "life_support": true
+            },
+            {
+                "name": "Main Battery",
+                "rules": "Main Weapon, anti-Capital",
+                "areas": [
+                    {
+                        "name": "Salvo",
+                        "description": "Front only",
+                        "shoot": {
+                            "damage": 6,
+                            "range": 6
+                        },
+                        "cost": {
+                            "energy": 2,
+                            "crew": 2
+                        }
+                    }
+                ],
+                "electronics": true,
+                "hull": true,
+                "life_support": true
+            },
+            {
+                "name": "Secondary Battery",
+                "rules": "Weapon, anti-Capital",
+                "areas": [
+                    {
+                        "name": "Salvo",
+                        "description": "Front only",
+                        "shoot": {
+                            "damage": 3,
+                            "range": 6
+                        },
+                        "cost": {
+                            "energy": 2,
+                            "crew": 1
+                        }
+                    }
+                ],
+                "electronics": true,
+                "hull": true,
+                "life_support": true
+            },
+            {
+                "name": "Engine",
+                "rules": "Propulsion System",
+                "areas": [
+                    {
+                        "name": "Cruise",
+                        "description": "2 DU, Steer 2 DU",
+                        "cost": {
+                            "energy": 2,
+                            "crew": 0
+                        }
+                    },
+                    {
+                        "name": "Pivot",
+                        "description": "0 DU, Steer 2 DU (max 90° angle)",
+                        "cost": {
+                            "energy": 1,
+                            "crew": 1
+                        }
+                    }
+                ],
+                "electronics": true,
+                "hull": true,
+                "life_support": false
+            }
+        ],
+        "right": [
+            {
+                "name": "Flak Battery",
+                "rules": "Anti-Light Weapon",
+                "areas": [
+                    {
+                        "name": "AA Burst",
+                        "description": "",
+                        "shoot": {
+                            "damage": 2,
+                            "range": 2
+                        },
+                        "cost": {
+                            "energy": 1,
+                            "crew": 1
+                        }
+                    }
+                ],
+                "electronics": false,
+                "hull": true,
+                "life_support": true
+            },
+            {
+                "name": "Torpedo Bay",
+                "rules": "Weapon System; starts with 2 Torpedoes Loaded",
+                "areas": [
+                    {
+                        "name": "Load torpedo",
+                        "description": "Max 2 torpedoes loaded",
+                        "cost": {
+                            "energy": 0,
+                            "crew": 2
+                        }
+                    },
+                    {
+                        "name": "Fire torpedo",
+                        "description": "90° arc right side; anti-Capital",
+                        "shoot": {
+                            "damage": 3,
+                            "range": 0
+                        },
+                        "cost": {
+                            "energy": 0,
+                            "crew": 2
+                        }
+                    }
+                ],
+                "electronics": true,
+                "hull": true,
+                "life_support": true
+            },
+            {
+                "name": "Armor Plates",
+                "rules": "Support System; cannot be repaired",
+                "areas": [
+                    
+                ],
+                "electronics": false,
+                "hull": true,
+                "life_support": false
+            }
+        ]
+    }
+} 

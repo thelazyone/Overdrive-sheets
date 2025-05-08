@@ -1,0 +1,202 @@
+{
+    "title": "Sound of Shattered Glass",
+    "subtitle": "Opulence Class Freighter",
+    "command": 2,
+    "control": 2,
+    "shields": {
+        "front": [2, 1, 1, 0],
+        "rear": [2, 1, 1]
+    },
+    "reactor": {
+        "name": "Reactor",
+        "rules": "Energy Production: 3",
+        "circles": 5,
+        "electronics": true,
+        "hull": false,
+        "life_support": false
+    },
+    "mess": {
+        "name": "Mess",
+        "rules": "Crew: 5",
+        "med_bay": 1,
+        "electronics": false,
+        "hull": false,
+        "life_support": true
+    },
+    "sections": {
+        "left": [
+            {
+                "name": "Flak Battery",
+                "rules": "Anti-Light Weapon",
+                "areas": [
+                    {
+                        "name": "AA Burst",
+                        "description": "",
+                        "shoot": {
+                            "damage": 2,
+                            "range": 2
+                        },
+                        "cost": {
+                            "energy": 1,
+                            "crew": 1
+                        }
+                    }
+                ],
+                "electronics": false,
+                "hull": true,
+                "life_support": true
+            },
+            {
+                "name": "Shield Projector",
+                "rules": "Support System",
+                "areas": [
+                    {
+                        "name": "Raise Shield",
+                        "description": "LS within Control get +1 shield until end of round",
+                        "cost": {
+                            "energy": 2,
+                            "crew": 0
+                        }
+                    }
+                ],
+                "electronics": true,
+                "hull": false,
+                "life_support": false
+            }
+        ],
+        "core": [
+            {
+                "name": "Command Bridge",
+                "rules": "",
+                "areas": [
+                    {
+                        "name": "Broadcast",
+                        "description": "Control 3 for this Round",
+                        "cost": {
+                            "energy": 0,
+                            "crew": 1
+                        }
+                    },
+                    {
+                        "name": "Aim",
+                        "description": "Required for the Asteroid Busters",
+                        "cost": {
+                            "energy": 0,
+                            "crew": 1
+                        }
+                    }
+                ],
+                "electronics": true,
+                "hull": false,
+                "life_support": true
+            },
+            {
+                "name": "Asteroid Buster",
+                "rules": "Main Weapon",
+                "areas": [
+                    {
+                        "name": "Shoot",
+                        "description": "Front only",
+                        "shoot": {
+                            "damage": 3,
+                            "range": 4
+                        },
+                        "cost": {
+                            "energy": 1,
+                            "crew": 1
+                        }
+                    }
+                ],
+                "electronics": false,
+                "hull": true,
+                "life_support": false
+            },
+            {
+                "name": "Asteroid Buster",
+                "rules": "Main Weapon",
+                "areas": [
+                    {
+                        "name": "Shoot",
+                        "description": "Front only",
+                        "shoot": {
+                            "damage": 3,
+                            "range": 4
+                        },
+                        "cost": {
+                            "energy": 1,
+                            "crew": 1
+                        }
+                    }
+                ],
+                "electronics": false,
+                "hull": true,
+                "life_support": false
+            },
+            {
+                "name": "Engine",
+                "rules": "Propulsion System",
+                "areas": [
+                    {
+                        "name": "Cruise",
+                        "description": "2 DU, Steer 2 DU",
+                        "cost": {
+                            "energy": 1,
+                            "crew": 0
+                        }
+                    },
+                    {
+                        "name": "Pivot",
+                        "description": "0 DU, Steer 2 DU (max 90° angle)",
+                        "cost": {
+                            "energy": 1,
+                            "crew": 1
+                        }
+                    }
+                ],
+                "electronics": true,
+                "hull": true,
+                "life_support": false
+            }
+        ],
+        "right": [
+            {
+                "name": "Flak Battery",
+                "rules": "Anti-Light Weapon",
+                "areas": [
+                    {
+                        "name": "AA Burst",
+                        "description": "",
+                        "shoot": {
+                            "damage": 2,
+                            "range": 2
+                        },
+                        "cost": {
+                            "energy": 1,
+                            "crew": 1
+                        }
+                    }
+                ],
+                "electronics": false,
+                "hull": true,
+                "life_support": true
+            },
+            {
+                "name": "Drone Bay",
+                "rules": "Support System",
+                "areas": [
+                    {
+                        "name": "Service Drone",
+                        "description": "+1 objective interaction",
+                        "cost": {
+                            "energy": 2,
+                            "crew": 0
+                        }
+                    }
+                ],
+                "electronics": true,
+                "hull": false,
+                "life_support": false
+            }
+        ]
+    }
+} 
