@@ -259,7 +259,7 @@ def create_area_content(draw, area, content_x, area_title_font, description_font
     
     # Draw description to the right of the weapon if it exists, otherwise at content_x
     if area["description"]:
-        desc_text = area["description"]
+        desc_text = area["description"].replace("°", u'\N{DEGREE SIGN}')
         desc_w, desc_h = get_text_size(draw, desc_text, description_font)
         # If there's a weapon, start description to its right, otherwise at content_x
         desc_x = content_x + (weapon_width + 20 if "shoot" in area else 0)  # 20px gap between weapon and description
@@ -347,7 +347,8 @@ def create_tile(system, tile_width_px, tile_height_px, dpi):
     
     # Draw the rules (subtitle)
     if "rules" in system and system["rules"]:
-        rules_text = system["rules"]
+        # Replace any degree symbol with the proper Unicode degree sign
+        rules_text = system["rules"].replace("°", u'\N{DEGREE SIGN}')
         rules_w, rules_h = get_text_size(draw, rules_text, subtitle_font)
         rules_x = (tile_width_px - rules_w) // 2
         draw.text((rules_x, current_y), rules_text, font=subtitle_font, fill="black")

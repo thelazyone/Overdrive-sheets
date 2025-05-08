@@ -156,11 +156,11 @@
         "right": [
             {
                 "name": "Torpedo Bay",
-                "rules": "Weapon System; starts with 2 Torpedoes Loaded",
+                "rules": "Weapon System; anti-Capital",
                 "areas": [
                     {
                         "name": "Load torpedo",
-                        "description": "Max 2 torpedoes loaded",
+                        "description": "Max 2 loaded. Starts fully loaded.",
                         "cost": {
                             "energy": 0,
                             "crew": 2
@@ -168,7 +168,7 @@
                     },
                     {
                         "name": "Fire torpedo",
-                        "description": "90° arc right side; anti-Capital",
+                        "description": "90° arc right side",
                         "shoot": {
                             "damage": 3,
                             "range": 0
