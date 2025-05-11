@@ -122,7 +122,7 @@
                 "areas": [
                     {
                         "name": "Cruise",
-                        "description": "45° 2-3 DU",
+                        "description": "",
                         "engine": {
                             "speed": "2-3",
                             "steer": "45°"
@@ -134,7 +134,7 @@
                     },
                     {
                         "name": "Pivot",
-                        "description": "90° 0-1 DU",
+                        "description": "",
                         "engine": {
                             "speed": "0-1",
                             "steer": "90°"

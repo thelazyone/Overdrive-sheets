@@ -90,12 +90,10 @@ def draw_weapon_symbol(draw, x, y, size, damage, range_val, font):
     range_y = (target_height - range_h) // 2 - 4
     final_draw.text((range_x, range_y), str(range_val), font=font, fill="black")
     
-    # Paste the final image onto the main image
-    draw._image.paste(final_img, (x, y), final_img)
-    return target_height
+    return final_img
 
-def draw_engine_symbol(draw, x, y, size, speed, font):
-    """Draw an engine symbol with speed value."""
+def draw_engine_symbol(draw, x, y, size, speed, font, steer_text=None):
+    """Draw an engine symbol with speed value and steer text."""
     # Load and resize the symbol image
     symbol_img = Image.open("resources/arrow_empty_symbol.png")
     
@@ -105,8 +103,15 @@ def draw_engine_symbol(draw, x, y, size, speed, font):
     target_width = int(target_height * aspect_ratio)
     symbol_img = symbol_img.resize((target_width, target_height), Image.Resampling.LANCZOS)
     
+    # Calculate additional width needed for steer text if present
+    extra_width = 0
+    if steer_text:
+        steer_text = steer_text.replace("Â°", "°")
+        steer_w, steer_h = get_text_size(draw, steer_text, font)
+        extra_width = steer_w + 20  # Add 20px padding
+    
     # Create a new image with alpha channel for anti-aliasing
-    final_img = Image.new('RGBA', symbol_img.size, (255, 255, 255, 0))
+    final_img = Image.new('RGBA', (target_width + extra_width, target_height), (255, 255, 255, 0))
     final_draw = ImageDraw.Draw(final_img)
     
     # Paste the symbol
@@ -115,12 +120,17 @@ def draw_engine_symbol(draw, x, y, size, speed, font):
     # Draw the speed value in large Eurostile font
     speed_w, speed_h = get_text_size(final_draw, str(speed), font)
     speed_x = 52 - (speed_w) // 2
-    speed_y = (symbol_img.height - speed_h) // 2 - 5
+    speed_y = (target_height - speed_h) // 2 - 4
     final_draw.text((speed_x, speed_y), str(speed), font=font, fill="black")
     
-    # Paste the final image onto the main image
-    draw._image.paste(final_img, (x, y), final_img)
-    return target_height
+    # Draw steer text if present
+    if steer_text:
+        steer_w, steer_h = get_text_size(final_draw, steer_text, font)
+        steer_x = target_width + 10  # 10px padding after the symbol
+        steer_y = (target_height - steer_h) // 2
+        final_draw.text((steer_x, steer_y), steer_text, font=font, fill="black")
+    
+    return final_img
 
 def wrap_text(text, font, max_width, draw):
     """Wrap text to fit within max_width."""
@@ -236,24 +246,21 @@ def generate_action(draw, area, content_x, area_title_font, description_font, ve
     # Draw weapon symbol if it exists
     weapon_width = 0
     if "shoot" in area:
-        weapon_img = Image.new('RGBA', (150, 60), (255, 255, 255, 0))
-        weapon_draw = ImageDraw.Draw(weapon_img)
-        weapon_height = draw_weapon_symbol(weapon_draw, 0, 0, 150,
+        weapon_img = draw_weapon_symbol(draw, content_x, 0, 150,
                           area["shoot"]["damage"],
                           area["shoot"]["range"],
                           area_title_font)
         weapon_width = weapon_img.width
-        elements.append(("image", (content_x, content_height), weapon_img))
-        content_height = max(content_height, weapon_height)
+        elements.append(("image", (content_x, 0), weapon_img))
+        content_height = max(content_height, weapon_img.height)
     elif "engine" in area:
-        engine_img = Image.new('RGBA', (150, 60), (255, 255, 255, 0))
-        engine_draw = ImageDraw.Draw(engine_img)
-        engine_height = draw_engine_symbol(engine_draw, 0, 0, 150,
+        engine_img = draw_engine_symbol(draw, content_x, 0, 150,
                           area["engine"]["speed"],
-                          area_title_font)
+                          area_title_font,
+                          area["engine"]["steer"])
         weapon_width = engine_img.width
-        elements.append(("image", (content_x, content_height), engine_img))
-        content_height = max(content_height, engine_height)
+        elements.append(("image", (content_x, 0), engine_img))
+        content_height = max(content_height, engine_img.height)
     
     # Draw description
     if area["description"]:
