@@ -232,6 +232,9 @@ def create_ship_sheet(ship_data, output_path):
     # Process core column
     core_height = 0
     for system in core_systems:
+        # Skip if this is a Mess system (it's handled separately)
+        if system["name"].lower() == "mess":
+            continue
         # Generate the system image if not already generated
         if system["name"] not in system_images:
             system_path = create_system_image(system)

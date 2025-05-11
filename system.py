@@ -148,7 +148,7 @@ def load_fonts(dpi, tile_width_px):
     return title_font, subtitle_font, area_title_font, description_font, combat_number_font
 
 def load_resource_symbols():
-    """Load and resize the energy and crew symbols."""
+    """Load all resource symbols used in systems."""
     energy_img = Image.open("resources/energy_symbol.png")
     energy_large_img = Image.open("resources/energy_symbol_large.png")
     crew_img = Image.open("resources/crew_symbol.png")
@@ -157,89 +157,47 @@ def load_resource_symbols():
     electric_img = Image.open("resources/electric_icon.png")
     life_support_img = Image.open("resources/life_support_icon.png")
     
-    # Resize both to 60px height while maintaining aspect ratio
-    energy_aspect = energy_img.width / energy_img.height
-    crew_aspect = crew_img.width / crew_img.height
-    energy_img = energy_img.resize((int(60 * energy_aspect), 60), Image.Resampling.LANCZOS)
-    crew_img = crew_img.resize((int(60 * crew_aspect), 60), Image.Resampling.LANCZOS)
-    
-    # Resize large energy symbol to 120px height while maintaining aspect ratio
-    large_energy_aspect = energy_large_img.width / energy_large_img.height
-    energy_large_img = energy_large_img.resize((int(120 * large_energy_aspect), 120), Image.Resampling.LANCZOS)
-    
-    # Resize med bay symbol to 150px height while maintaining aspect ratio
-    med_bay_aspect = med_bay_img.width / med_bay_img.height
-    med_bay_img = med_bay_img.resize((int(120 * med_bay_aspect), 120), Image.Resampling.LANCZOS)
-    
-    # Resize system icons to 40px height while maintaining aspect ratio
-    icon_size = 40
-    hull_aspect = hull_img.width / hull_img.height
-    electric_aspect = electric_img.width / electric_img.height
-    life_support_aspect = life_support_img.width / life_support_img.height
-    
-    hull_img = hull_img.resize((int(icon_size * hull_aspect), icon_size), Image.Resampling.LANCZOS)
-    electric_img = electric_img.resize((int(icon_size * electric_aspect), icon_size), Image.Resampling.LANCZOS)
-    life_support_img = life_support_img.resize((int(icon_size * life_support_aspect), icon_size), Image.Resampling.LANCZOS)
+    # Resize all symbols to 60x60
+    icon_size = 60
+    large_icon_size = 120
+    energy_img = energy_img.resize((icon_size, icon_size), Image.Resampling.LANCZOS)
+    energy_large_img = energy_large_img.resize((large_icon_size, large_icon_size), Image.Resampling.LANCZOS)
+    crew_img = crew_img.resize((icon_size, icon_size), Image.Resampling.LANCZOS)
+    med_bay_img = med_bay_img.resize((large_icon_size, large_icon_size), Image.Resampling.LANCZOS)
+    hull_img = hull_img.resize((icon_size, icon_size), Image.Resampling.LANCZOS)
+    electric_img = electric_img.resize((icon_size, icon_size), Image.Resampling.LANCZOS)
+    life_support_img = life_support_img.resize((icon_size, icon_size), Image.Resampling.LANCZOS)
     
     return energy_img, energy_large_img, crew_img, med_bay_img, hull_img, electric_img, life_support_img
 
-def draw_resource_symbols(draw, x, y, energy_count, crew_count, energy_img, crew_img):
-    """Draw energy and crew symbols in a grid layout."""
-    symbols = []
-    for _ in range(energy_count):
-        symbols.append(("energy", energy_img))
-    for _ in range(crew_count):
-        symbols.append(("crew", crew_img))
-    
-    if not symbols:
-        return 0
-    
-    # Calculate grid layout
-    if len(symbols) == 1:
-        grid_cols = 1
-        grid_rows = 1
-    elif len(symbols) == 2:
-        grid_cols = 2
-        grid_rows = 1
-    elif len(symbols) == 3:
-        grid_cols = 2
-        grid_rows = 2
-    else:  # 4 symbols
-        grid_cols = 2
-        grid_rows = 2
-    
-    # Draw symbols in grid
-    symbol_size = 60
-    gap = 10
-    total_width = grid_cols * symbol_size + (grid_cols - 1) * gap
-    total_height = grid_rows * symbol_size + (grid_rows - 1) * gap
-    
-    start_x = x
-    start_y = y
-    
-    for idx, (symbol_type, symbol_img) in enumerate(symbols):
-        if idx >= 4:  # Safety check
-            break
-        row = idx // grid_cols
-        col = idx % grid_cols
-        pos_x = start_x + col * (symbol_size + gap)
-        pos_y = start_y + row * (symbol_size + gap)
-        draw._image.paste(symbol_img, (pos_x, pos_y), symbol_img)
-    
-    return total_height
+def generate_title(draw, system, title_font, effective_width, vertical_margin):
+    """Generate the title for a system."""
+    title_text = system["name"].upper()
+    title_w, title_h = get_text_size(draw, title_text, title_font)
+    title_x = (effective_width - title_w) // 2
+    title_y = vertical_margin
+    draw.text((title_x, title_y), title_text, font=title_font, fill="black")
+    return title_h
 
-def create_area_content(draw, area, content_x, area_title_font, description_font, vertical_spacing):
-    """Create the right column content (weapon, description) and return its height."""
+def generate_rules(draw, system, subtitle_font, effective_width, current_y, vertical_spacing):
+    """Generate the rules text for a system."""
+    if "rules" in system and system["rules"]:
+        rules_text = system["rules"].replace("Â°", "°")
+        rules_w, rules_h = get_text_size(draw, rules_text, subtitle_font)
+        rules_x = (effective_width - rules_w) // 2
+        rules_y = current_y
+        draw.text((rules_x, rules_y), rules_text, font=subtitle_font, fill="black")
+        return rules_h + vertical_spacing
+    return 0
+
+def generate_action(draw, area, content_x, area_title_font, description_font, vertical_spacing):
+    """Generate a single action (area) with its content."""
     content_height = 0
     elements = []
-    
-    # Calculate the maximum height for this area
-    max_height = 0
     
     # Draw weapon symbol if it exists
     weapon_width = 0
     if "shoot" in area:
-        # Create temporary image for weapon symbol
         weapon_img = Image.new('RGBA', (150, 60), (255, 255, 255, 0))
         weapon_draw = ImageDraw.Draw(weapon_img)
         weapon_height = draw_weapon_symbol(weapon_draw, 0, 0, 150,
@@ -248,35 +206,27 @@ def create_area_content(draw, area, content_x, area_title_font, description_font
                           area_title_font)
         weapon_width = weapon_img.width
         elements.append(("image", (content_x, content_height), weapon_img))
-        max_height = max(max_height, weapon_height)
+        content_height = max(content_height, weapon_height)
     
-    # Draw description to the right of the weapon if it exists, otherwise at content_x
+    # Draw description
     if area["description"]:
         desc_text = area["description"].replace("Â°", "°")
         desc_w, desc_h = get_text_size(draw, desc_text, description_font)
-        # If there's a weapon, start description to its right, otherwise at content_x
-        desc_x = content_x + (weapon_width + 20 if "shoot" in area else 0)  # 20px gap between weapon and description
+        desc_x = content_x + (weapon_width + 20 if "shoot" in area else 0)
         
-        # Calculate text baseline position
         if "shoot" in area:
-            # When there's a weapon, align text with the weapon
             desc_y = 0
         else:
-            # When there's no weapon, center the text vertically
-            # Get the font's baseline offset (approximately 1/4 of the font size)
             baseline_offset = description_font.size // 4
             desc_y = (60 - desc_h) // 2 - baseline_offset
         
         elements.append(("text", (desc_x, desc_y), desc_text, description_font))
-        max_height = max(max_height, desc_h if "shoot" in area else 60)  # Use weapon height as minimum when no weapon
-    
-    # Update content height based on the maximum height of elements
-    content_height = max_height
+        content_height = max(content_height, desc_h if "shoot" in area else 60)
     
     return content_height, elements
 
-def create_cost_symbols(draw, energy_count, crew_count, energy_img, crew_img):
-    """Create the cost symbols and return their height."""
+def generate_cost_symbols(draw, energy_count, crew_count, energy_img, crew_img):
+    """Generate cost symbols for an action."""
     symbols = []
     for _ in range(energy_count):
         symbols.append(("energy", energy_img))
@@ -284,7 +234,7 @@ def create_cost_symbols(draw, energy_count, crew_count, energy_img, crew_img):
         symbols.append(("crew", crew_img))
     
     if not symbols:
-        return 0, []
+        return 0, None
     
     # Calculate grid layout
     if len(symbols) == 1:
@@ -321,160 +271,201 @@ def create_cost_symbols(draw, energy_count, crew_count, energy_img, crew_img):
     
     return total_height, symbols_img
 
-def create_tile(system, tile_width_px, tile_height_px, dpi):
-    """Create a single system tile with the new 2:1 ratio format."""
-    # Create a white canvas for the tile with fixed width but temporary height
-    # We'll crop it later to the actual content height
+def generate_mess_content(draw, system, title_font, subtitle_font, area_title_font, description_font, med_bay_img, tile_width_px, current_y, vertical_spacing):
+    """Generate content for the Mess system."""
+    mess_height = 200
+    current_y += mess_height
+
+    if "med_bay" in system and system["med_bay"] > 0:
+        med_bay_ratio = 0.3
+        med_bay_width = int(tile_width_px * med_bay_ratio)
+        main_section_width = tile_width_px - med_bay_width
+        
+        # Draw vertical divider
+        divider_padding = 20
+        divider_x = main_section_width
+        draw.line([(divider_x, current_y - mess_height + divider_padding), 
+                  (divider_x, current_y - divider_padding)], 
+                 fill="black", width=2)
+        
+        # Draw med bay symbols
+        med_bay_count = system["med_bay"]
+        symbol_width = med_bay_img.width
+        gap = 10
+        
+        start_x = divider_x + (med_bay_width - symbol_width) // 2 - 50
+        start_y = current_y - mess_height + (mess_height - (med_bay_count * (symbol_width + gap) - gap)) // 2
+        
+        for i in range(med_bay_count):
+            pos_y = start_y + (i * (symbol_width + gap))
+            draw._image.paste(med_bay_img, (start_x, pos_y), med_bay_img)
+        
+        # Draw "MED BAY" text vertically
+        med_bay_font_size = int(area_title_font.size * 0.75)
+        med_bay_font = ImageFont.truetype(EUROSTILE_BOLD, med_bay_font_size)
+        med_bay_text = "MED BAY"
+        med_bay_w, med_bay_h = get_text_size(draw, med_bay_text, med_bay_font)
+        
+        # Create text image with extra padding
+        padding = 10
+        # Create a taller image to accommodate the rotated text
+        text_img = Image.new('RGBA', (med_bay_w + padding*2, med_bay_h + padding*2), (255, 255, 255, 0))
+        text_draw = ImageDraw.Draw(text_img)
+        text_draw.text((padding, padding), med_bay_text, font=med_bay_font, fill="black")
+        
+        # Rotate the text
+        text_img = text_img.rotate(-90, expand=True)
+        
+        # Position the text at the right edge of the med bay section
+        med_bay_x = divider_x + med_bay_width - text_img.width   # 10px padding from right edge
+        med_bay_y = current_y - mess_height - text_img.height // 2 + 24
+        draw._image.paste(text_img, (med_bay_x, med_bay_y), text_img)
+    
+    return current_y
+
+def generate_reactor_content(draw, system, energy_large_img, current_y, vertical_spacing):
+    """Generate content for the Reactor system."""
+    empty_space_height = 150
+    if "circles" in system:
+        energy_count = system["circles"]
+        symbol_width = energy_large_img.width
+        gap = 20
+        total_width = (energy_count * symbol_width) + ((energy_count - 1) * gap)
+        
+        start_x = (draw._image.width - total_width) // 2
+        symbol_y = current_y + (empty_space_height - energy_large_img.height) // 2
+        
+        for i in range(energy_count):
+            pos_x = start_x + (i * (symbol_width + gap))
+            draw._image.paste(energy_large_img, (pos_x, symbol_y), energy_large_img)
+    
+    return current_y + empty_space_height + vertical_spacing
+
+def generate_system_icons(draw, system, hull_img, electric_img, life_support_img, current_y):
+    """Generate system icons in the bottom right."""
+    icons = []
+    if system.get("hull", False):
+        icons.append(hull_img)
+    if system.get("electronics", False):
+        icons.append(electric_img)
+    if system.get("life_support", False):
+        icons.append(life_support_img)
+    
+    if icons:
+        # Resize icons to a consistent size
+        icon_size = 60  # Target size for icons
+        resized_icons = []
+        for icon in icons:
+            # Create a new image with alpha channel for the resized icon
+            resized_icon = Image.new('RGBA', (icon_size, icon_size), (255, 255, 255, 0))
+            # Calculate position to center the icon
+            x = (icon_size - icon.width) // 2
+            y = (icon_size - icon.height) // 2
+            # Paste the original icon onto the new image
+            resized_icon.paste(icon, (x, y), icon)
+            resized_icons.append(resized_icon)
+        
+        icon_spacing = 10
+        total_width = sum(img.width for img in resized_icons) + (len(resized_icons) - 1) * icon_spacing
+        
+        bg_padding = 10
+        bg_width = total_width + (2 * bg_padding)
+        bg_height = resized_icons[0].height + (2 * bg_padding)
+        
+        bg_x = draw._image.width - bg_width
+        bg_y = current_y - bg_height
+        
+        slope_width = int(bg_height * 0.577)
+        
+        points = [
+            (bg_x, bg_y),
+            (bg_x + bg_width, bg_y),
+            (bg_x + bg_width, bg_y + bg_height),
+            (bg_x - slope_width, bg_y + bg_height),
+            (bg_x, bg_y)
+        ]
+        
+        draw.polygon(points, fill="black")
+        
+        current_x = bg_x + bg_padding
+        for icon in resized_icons:
+            draw._image.paste(icon, (current_x, bg_y + bg_padding), icon)
+            current_x += icon.width + icon_spacing
+    
+    return current_y
+
+def create_system(system, tile_width_px, tile_height_px, dpi):
+    """Create a generic system tile."""
+    # Create canvas
     img = Image.new("RGB", (tile_width_px, tile_height_px), "white")
     draw = ImageDraw.Draw(img)
     
-    # Load fonts
+    # Load resources
     title_font, subtitle_font, area_title_font, description_font, combat_number_font = load_fonts(dpi, tile_width_px)
-    
-    # Load resource symbols
     energy_img, energy_large_img, crew_img, med_bay_img, hull_img, electric_img, life_support_img = load_resource_symbols()
     
     # Calculate margins and spacing
-    vertical_margin = int(tile_height_px * 0.02)  # 2% margin
-    horizontal_margin = int(tile_width_px * 0.02)  # 2% margin
-    content_width = tile_width_px - (2 * horizontal_margin)
-    vertical_spacing = int(tile_height_px * 0.01)  # 1% spacing between elements
+    vertical_margin = int(tile_height_px * 0.02)
+    horizontal_margin = int(tile_width_px * 0.02)
+    vertical_spacing = int(tile_height_px * 0.01)
     
-    # Calculate title position (will be written at the end)
-    title_text = system["name"].upper()
-    title_w, title_h = get_text_size(draw, title_text, title_font)
-    title_x = (tile_width_px - title_w) // 2
-    title_y = vertical_margin
+    # Calculate effective width for title and rules
+    effective_width = tile_width_px
+    if system["name"].lower() == "mess" and "med_bay" in system and system["med_bay"] > 0:
+        effective_width = int(tile_width_px * 0.7)  # 70% width for main section
     
-    current_y = title_y + title_h + vertical_spacing
+    # Generate title
+    current_y = generate_title(draw, system, title_font, effective_width, vertical_margin)
+    current_y += vertical_spacing
     
-    # Draw the rules (subtitle)
-    if "rules" in system and system["rules"]:
-        # Replace any degree symbol with the proper Unicode degree sign
-        rules_text = system["rules"].replace("Â°", "°")
-        rules_w, rules_h = get_text_size(draw, rules_text, subtitle_font)
-        rules_x = (tile_width_px - rules_w) // 2
-        rules_y = current_y
-        current_y += rules_h + vertical_spacing
-        
-        # Add extra space and energy symbols for special systems
-        if system["name"].lower() == "mess":
-            current_y += 150  # Add empty space
-
-            if "med_bay" in system and system["med_bay"] > 0:
-                med_bay_width = int(tile_width_px * 0.3)  # 30% of width for med bay section
-                main_section_width = tile_width_px - med_bay_width
-                title_x = title_x - med_bay_width/2
-                rules_x = rules_x - med_bay_width/2
-                
-                # Draw vertical divider with padding
-                divider_padding = 20  # Padding from top and bottom
-                divider_x = main_section_width
-                draw.line([(divider_x, current_y - 150 + divider_padding), 
-                          (divider_x, current_y - divider_padding)], 
-                         fill="black", width=2)
-                
-                # Draw med bay symbols vertically
-                med_bay_count = system["med_bay"]
-                symbol_width = med_bay_img.width
-                gap = 20  # Gap between symbols
-                
-                # Calculate starting position for vertical layout
-                start_x = divider_x + (med_bay_width - symbol_width) // 2
-                start_y = current_y - 150 + (150 - (med_bay_count * (symbol_width + gap) - gap)) // 2
-                
-                # Draw each med bay symbol vertically
-                for i in range(med_bay_count):
-                    pos_y = start_y + (i * (symbol_width + gap))
-                    img.paste(med_bay_img, (start_x, pos_y), med_bay_img)
-                
-                # Draw "MED BAY" text vertically (smaller font)
-                med_bay_font_size = int(area_title_font.size * 0.8)  # 80% of original size
-                med_bay_font = ImageFont.truetype(EUROSTILE_BOLD, med_bay_font_size)
-                med_bay_text = "MED BAY"
-                med_bay_w, med_bay_h = get_text_size(draw, med_bay_text, med_bay_font)
-                
-                # Rotate the text 90 degrees clockwise
-                med_bay_img = Image.new('RGBA', (med_bay_h, med_bay_w), (255, 255, 255, 0))
-                med_bay_draw = ImageDraw.Draw(med_bay_img)
-                med_bay_draw.text((0, 0), med_bay_text, font=med_bay_font, fill="black")
-                med_bay_img = med_bay_img.rotate(90, expand=True)
-                
-                # Position the rotated text on the right edge
-                med_bay_x = divider_x + (med_bay_width - med_bay_img.width) // 2
-                med_bay_y = current_y - 150 + (150 - med_bay_img.height) // 2
-                img.paste(med_bay_img, (med_bay_x, med_bay_y), med_bay_img)
-            
-        elif system["name"].lower() == "reactor":
-            # Calculate the center position for the large energy symbols
-            empty_space_height = 150
-            if "circles" in system:
-                energy_count = system["circles"]
-                # Calculate total width of all energy symbols with spacing
-                symbol_width = energy_large_img.width
-                gap = 20  # Gap between symbols
-                total_width = (energy_count * symbol_width) + ((energy_count - 1) * gap)
-                
-                # Calculate starting x position to center all symbols
-                start_x = (tile_width_px - total_width) // 2
-                symbol_y = current_y + (empty_space_height - energy_large_img.height) // 2
-                
-                # Draw each energy symbol
-                for i in range(energy_count):
-                    pos_x = start_x + (i * (symbol_width + gap))
-                    img.paste(energy_large_img, (pos_x, symbol_y), energy_large_img)
-            
-            current_y += empty_space_height + vertical_spacing
+    # Generate rules
+    current_y += generate_rules(draw, system, subtitle_font, effective_width, current_y, vertical_spacing)
     
-    # Draw the areas
+    # Handle special systems
+    if system["name"].lower() == "mess":
+        current_y = generate_mess_content(draw, system, title_font, subtitle_font, area_title_font, description_font, med_bay_img, tile_width_px, current_y, vertical_spacing)
+    elif system["name"].lower() == "reactor":
+        current_y = generate_reactor_content(draw, system, energy_large_img, current_y, vertical_spacing)
+    
+    # Generate areas
     if "areas" in system and system["areas"]:
-        area_margin = int(tile_height_px * 0.02)  # 2% margin for areas
-        current_y += area_margin  # Add initial margin before first area
+        area_margin = int(tile_height_px * 0.02)
+        current_y += area_margin
         
         for idx, area in enumerate(system["areas"]):
-            if idx > 0:  # Draw divider between areas
+            if idx > 0:
                 divider_y = current_y + vertical_spacing
-                # Calculate center position for the divider
-                divider_start_x = (tile_width_px - (tile_width_px * 0.5)) // 2  # 50% width, centered
+                divider_start_x = (tile_width_px - (tile_width_px * 0.5)) // 2
                 divider_end_x = divider_start_x + (tile_width_px * 0.5)
                 draw.line([(divider_start_x, divider_y), 
                           (divider_end_x, divider_y)], 
                          fill="black", width=2)
                 current_y = divider_y + vertical_spacing
             
-            # Calculate column positions
-            cost_column_width = 150  # Width for cost symbols
-            content_column_width = tile_width_px - 2 * horizontal_margin - cost_column_width - 20  # 20px gap
+            cost_column_width = 150
+            content_column_width = tile_width_px - 2 * horizontal_margin - cost_column_width - 20
             content_x = horizontal_margin + cost_column_width + 20
             
-            # Create cost symbols
-            cost_height, cost_img = create_cost_symbols(draw,
-                                                      area["cost"].get("energy", 0),
-                                                      area["cost"].get("crew", 0),
-                                                      energy_img,
-                                                      crew_img)
+            cost_height, cost_img = generate_cost_symbols(draw,
+                                                        area["cost"].get("energy", 0),
+                                                        area["cost"].get("crew", 0),
+                                                        energy_img,
+                                                        crew_img)
             
-            # Create content
-            content_height, content_elements = create_area_content(draw, area, content_x,
-                                                                 area_title_font, description_font,
-                                                                 vertical_spacing)
+            content_height, content_elements = generate_action(draw, area, content_x,
+                                                             area_title_font, description_font,
+                                                             vertical_spacing)
             
-            # Calculate vertical alignment with minimum height
-            min_area_height = 100  # Increased minimum height for better spacing
+            min_area_height = 100
             total_height = max(min_area_height, max(cost_height, content_height))
             
-            # Add padding to single areas
             if len(system["areas"]) == 1:
-                total_height = max(total_height, 120)  # Ensure single areas have more height
+                total_height = max(total_height, 120)
             
-            # Center align the cost symbols vertically
             cost_y = current_y + (total_height - cost_height) // 2
-            
-            # Draw cost symbols
             if cost_img:
                 img.paste(cost_img, (horizontal_margin, cost_y), cost_img)
             
-            # Draw content elements with proper vertical centering
             content_y = current_y + (total_height - content_height) // 2
             for element in content_elements:
                 element_type = element[0]
@@ -488,84 +479,32 @@ def create_tile(system, tile_width_px, tile_height_px, dpi):
             
             current_y += total_height + vertical_spacing
         
-        current_y += area_margin  # Add final margin after last area
-    elif system["name"].lower() not in ["mess", "reactor"]:  # Only apply minimum height to non-special systems
-        # If no areas exist, add minimum height
-        min_system_height = 100  # Minimum height for systems without areas
+        current_y += area_margin
+    elif system["name"].lower() not in ["mess", "reactor"]:
+        min_system_height = 100
         current_y += min_system_height
     
-    # Add system icons in bottom right if they exist
-    icons = []
-    if system.get("hull", False):
-        icons.append(hull_img)
-    if system.get("electronics", False):
-        icons.append(electric_img)
-    if system.get("life_support", False):
-        icons.append(life_support_img)
+    # Generate system icons
+    current_y = generate_system_icons(draw, system, hull_img, electric_img, life_support_img, current_y)
     
-    if icons:
-        # Calculate total width of all icons with spacing
-        icon_spacing = 10
-        total_width = sum(img.width for img in icons) + (len(icons) - 1) * icon_spacing
-        
-        # Create black background
-        bg_padding = 10
-        bg_width = total_width + (2 * bg_padding)
-        bg_height = icons[0].height + (2 * bg_padding)
-        
-        # Position at the very edge
-        bg_x = tile_width_px - bg_width
-        bg_y = current_y - bg_height
-        
-        # Calculate slope for 30 degrees
-        # tan(30°) ≈ 0.577
-        slope_width = int(bg_height * 0.577)  # This will be the horizontal distance of the slope
-        
-        # Create sloped rectangle (wider at bottom)
-        points = [
-            (bg_x, bg_y),  # Top left
-            (bg_x + bg_width, bg_y),  # Top right
-            (bg_x + bg_width, bg_y + bg_height),  # Bottom right
-            (bg_x - slope_width, bg_y + bg_height),  # Bottom left (sloped)
-            (bg_x, bg_y)  # Back to top left
-        ]
-        
-        # Draw black background with slope
-        draw.polygon(points, fill="black")
-        
-        # Draw icons
-        current_x = bg_x + bg_padding
-        for icon in icons:
-            img.paste(icon, (current_x, bg_y + bg_padding), icon)
-            current_x += icon.width + icon_spacing
-    
-    # Draw black border
+    # Draw border
     draw.rectangle([(0,0), (tile_width_px, current_y)], outline="black", width=8)
     
-    # Draw the title at the end
-    draw.text((title_x, title_y), title_text, font=title_font, fill="black")
-    draw.text((rules_x, rules_y), rules_text, font=subtitle_font, fill="black")
-    
-    # Crop the image to the actual content height
-    final_height = current_y
-    img = img.crop((0, 0, tile_width_px, final_height))
+    # Crop to actual content height
+    img = img.crop((0, 0, tile_width_px, current_y))
     
     return img
 
 def create_system_image(system, output_folder="systems"):
     """Create a single system image and return its path."""
-    # Create output directory if it doesn't exist
     if not os.path.exists(output_folder):
         os.makedirs(output_folder)
     
-    # Calculate pixel dimensions based on DPI
     tile_width_px = int(round(TILE_WIDTH_CM * DPI / 2.54))
     tile_height_px = int(round(TILE_HEIGHT_CM * DPI / 2.54))
     
-    # Generate the system image
-    tile_img = create_tile(system, tile_width_px, tile_height_px, DPI)
+    tile_img = create_system(system, tile_width_px, tile_height_px, DPI)
     
-    # Generate filename based on system type
     if system["name"].lower() == "core":
         base_name = f"core_{system['circles']}_{system['rules'].split(': ')[1]}"
     elif system["name"].lower() == "mess":
@@ -576,8 +515,7 @@ def create_system_image(system, output_folder="systems"):
     filename = f"{base_name}.jpg"
     filepath = os.path.join(output_folder, filename)
     
-    # Save the image
-    tile_img.save(filepath, quality=95)  # Using high quality for JPG
+    tile_img.save(filepath, quality=95)
     print(f"Generated system image: {filepath}")
     
     return filepath
