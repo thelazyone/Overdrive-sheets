@@ -68,12 +68,9 @@ def create_ship_sheet(ship_data, output_path):
     # Calculate box widths (one third of page width each)
     box_width = width_px // 3 - box_margin
     
-    # Generate and paste Reactor and Mess images
-    reactor_path = create_system_image(ship_data["reactor"])
-    mess_path = create_system_image(ship_data["mess"])
-    
-    reactor_img = Image.open(reactor_path)
-    mess_img = Image.open(mess_path)
+    # Generate Reactor and Mess images
+    reactor_img = create_system_image(ship_data["reactor"])
+    mess_img = create_system_image(ship_data["mess"])
     
     # Scale images to fit in box
     scale_factor = (box_width - 40) / max(reactor_img.width, mess_img.width)  # 40px padding
@@ -220,8 +217,7 @@ def create_ship_sheet(ship_data, output_path):
         for system in ship_data["sections"][section]:
             # Generate the system image if not already generated
             if system["name"] not in system_images:
-                system_path = create_system_image(system)
-                system_img = Image.open(system_path)
+                system_img = create_system_image(system)
                 # Scale the image to match our desired width
                 scale_factor = system_width / system_img.width
                 new_height = int(system_img.height * scale_factor)
@@ -238,8 +234,7 @@ def create_ship_sheet(ship_data, output_path):
             continue
         # Generate the system image if not already generated
         if system["name"] not in system_images:
-            system_path = create_system_image(system)
-            system_img = Image.open(system_path)
+            system_img = create_system_image(system)
             # Scale the image to match our desired width
             scale_factor = system_width / system_img.width
             new_height = int(system_img.height * scale_factor)
@@ -300,9 +295,8 @@ def main():
             
             # Create the ship sheet with ship name in filename
             ship_name = ship_data["title"].lower().replace(" ", "_")
-            output_path = os.path.join(ships_dir, f"{ship_name}_sheet.jpg")
+            output_path = os.path.join(ships_dir, f"{ship_name}.jpg")
             create_ship_sheet(ship_data, output_path)
-            print(f"Processed {json_file}")
             
         except Exception as e:
             print(f"Error processing {json_file}: {str(e)}")

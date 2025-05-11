@@ -498,29 +498,13 @@ def create_system(system, tile_width_px, tile_height_px, dpi):
     return img
 
 def create_system_image(system, output_folder="systems"):
-    """Create a single system image and return its path."""
-    if not os.path.exists(output_folder):
-        os.makedirs(output_folder)
-    
+    """Create a single system image and return the image object."""
     tile_width_px = int(round(TILE_WIDTH_CM * DPI / 2.54))
     tile_height_px = int(round(TILE_HEIGHT_CM * DPI / 2.54))
     
     tile_img = create_system(system, tile_width_px, tile_height_px, DPI)
     
-    if system["name"].lower() == "core":
-        base_name = f"core_{system['circles']}_{system['rules'].split(': ')[1]}"
-    elif system["name"].lower() == "mess":
-        base_name = f"mess_{system['rules'].split(': ')[1]}"
-    else:
-        base_name = system["name"].lower().replace(" ", "_")
-    
-    filename = f"{base_name}.jpg"
-    filepath = os.path.join(output_folder, filename)
-    
-    tile_img.save(filepath, quality=95)
-    print(f"Generated system image: {filepath}")
-    
-    return filepath
+    return tile_img
 
 if __name__ == "__main__":
     # For testing: generate all systems
@@ -533,12 +517,33 @@ if __name__ == "__main__":
     
     # Process regular systems
     for system in systems_data.get("systems", []):
-        create_system_image(system)
+        img = create_system_image(system)
+        if not os.path.exists("systems"):
+            os.makedirs("systems")
+        base_name = system["name"].lower().replace(" ", "_")
+        filename = f"{base_name}.jpg"
+        filepath = os.path.join("systems", filename)
+        img.save(filepath, quality=95)
+        print(f"Generated system image: {filepath}")
     
     # Process cores
     for core in cores_data.get("cores", []):
-        create_system_image(core)
+        img = create_system_image(core)
+        if not os.path.exists("systems"):
+            os.makedirs("systems")
+        base_name = f"core_{core['circles']}_{core['rules'].split(': ')[1]}"
+        filename = f"{base_name}.jpg"
+        filepath = os.path.join("systems", filename)
+        img.save(filepath, quality=95)
+        print(f"Generated system image: {filepath}")
     
     # Process mess halls
     for mess in mess_data.get("mess_halls", []):
-        create_system_image(mess) 
+        img = create_system_image(mess)
+        if not os.path.exists("systems"):
+            os.makedirs("systems")
+        base_name = f"mess_{mess['rules'].split(': ')[1]}"
+        filename = f"{base_name}.jpg"
+        filepath = os.path.join("systems", filename)
+        img.save(filepath, quality=95)
+        print(f"Generated system image: {filepath}") 
