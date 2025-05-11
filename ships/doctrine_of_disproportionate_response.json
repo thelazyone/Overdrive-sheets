@@ -44,7 +44,7 @@
                 ],
                 "electronics": false,
                 "hull": true,
-                "life_support": true
+                "life_support": false
             },
             {
                 "name": "Torpedo Bay",
@@ -71,7 +71,7 @@
                         }
                     }
                 ],
-                "electronics": true,
+                "electronics": false,
                 "hull": true,
                 "life_support": true
             },
@@ -143,7 +143,7 @@
                 ],
                 "electronics": true,
                 "hull": true,
-                "life_support": true
+                "life_support": false
             },
             {
                 "name": "Secondary Battery",
@@ -164,7 +164,7 @@
                 ],
                 "electronics": true,
                 "hull": true,
-                "life_support": true
+                "life_support": false
             },
             {
                 "name": "Engine",
@@ -172,7 +172,7 @@
                 "areas": [
                     {
                         "name": "Cruise",
-                        "description": "2 DU, Steer 2 DU",
+                        "description": "45° 2-3 DU",
                         "cost": {
                             "energy": 2,
                             "crew": 0
@@ -180,7 +180,7 @@
                     },
                     {
                         "name": "Pivot",
-                        "description": "0 DU, Steer 2 DU (max 90° angle)",
+                        "description": "90° 0-1 DU",
                         "cost": {
                             "energy": 1,
                             "crew": 1
@@ -188,7 +188,7 @@
                     }
                 ],
                 "electronics": true,
-                "hull": true,
+                "hull": false,
                 "life_support": false
             }
         ],

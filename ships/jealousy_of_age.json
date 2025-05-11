@@ -133,7 +133,7 @@
                 "areas": [
                     {
                         "name": "Cruise",
-                        "description": "2 DU, Steer 2 DU",
+                        "description": "45° 2-3 DU",
                         "cost": {
                             "energy": 1,
                             "crew": 0
@@ -141,7 +141,7 @@
                     },
                     {
                         "name": "Pivot",
-                        "description": "0 DU, Steer 2 DU (max 90° angle)",
+                        "description": "90° 0-1 DU",
                         "cost": {
                             "energy": 1,
                             "crew": 0
@@ -149,7 +149,7 @@
                     }
                 ],
                 "electronics": true,
-                "hull": true,
+                "hull": false,
                 "life_support": false
             }
         ],
@@ -180,7 +180,7 @@
                     }
                 ],
                 "electronics": true,
-                "hull": true,
+                "hull": false,
                 "life_support": true
             }
         ]
