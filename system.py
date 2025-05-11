@@ -277,14 +277,14 @@ def generate_mess_content(draw, system, title_font, subtitle_font, area_title_fo
     current_y += mess_height
 
     if "med_bay" in system and system["med_bay"] > 0:
-        med_bay_ratio = 0.3
+        med_bay_ratio = 0.275
         med_bay_width = int(tile_width_px * med_bay_ratio)
         main_section_width = tile_width_px - med_bay_width
         
         # Draw vertical divider
         divider_padding = 20
         divider_x = main_section_width
-        draw.line([(divider_x, current_y - mess_height + divider_padding), 
+        draw.line([(divider_x, divider_padding), 
                   (divider_x, current_y - divider_padding)], 
                  fill="black", width=2)
         
@@ -294,7 +294,8 @@ def generate_mess_content(draw, system, title_font, subtitle_font, area_title_fo
         gap = 10
         
         start_x = divider_x + (med_bay_width - symbol_width) // 2 - 50
-        start_y = current_y - mess_height + (mess_height - (med_bay_count * (symbol_width + gap) - gap)) // 2
+        total_simbols_width = med_bay_count * (symbol_width) + gap * min(med_bay_count - 1, 0)
+        start_y = current_y // 2 - total_simbols_width // 2
         
         for i in range(med_bay_count):
             pos_y = start_y + (i * (symbol_width + gap))

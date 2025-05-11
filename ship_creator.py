@@ -28,6 +28,7 @@ def create_ship_sheet(ship_data, output_path):
     title_font = ImageFont.truetype("fonts/Eurostile Extended Bold.ttf", 48)
     subtitle_font = ImageFont.truetype("fonts/TitilliumWeb-SemiBold.ttf", 36)
     stats_font = ImageFont.truetype("fonts/Eurostile Extended Bold.ttf", 36)
+    shields_font = ImageFont.truetype("fonts/Eurostile Extended Bold.ttf", 28)
     
     # Draw the ship title
     title_text = ship_data["title"].upper()
@@ -129,9 +130,9 @@ def create_ship_sheet(ship_data, output_path):
     # Draw front shields
     front_y = start_y - 10
     front_label = "FRONT SHIELDS"
-    front_label_w, _ = get_text_size(draw, front_label, stats_font)
+    front_label_w, _ = get_text_size(draw, front_label, shields_font)
     front_label_x = right_box_x + (box_width - front_label_w) // 2
-    draw.text((front_label_x, front_y), front_label, font=stats_font, fill="black")
+    draw.text((front_label_x, front_y), front_label, font=shields_font, fill="black")
     front_y += label_height
     
     # Calculate total width of front shields
@@ -151,9 +152,9 @@ def create_ship_sheet(ship_data, output_path):
     # Draw rear shields
     rear_y = start_y + shield_group_height + 10
     rear_label = "REAR SHIELDS"
-    rear_label_w, _ = get_text_size(draw, rear_label, stats_font)
+    rear_label_w, _ = get_text_size(draw, rear_label, shields_font)
     rear_label_x = right_box_x + (box_width - rear_label_w) // 2
-    draw.text((rear_label_x, rear_y), rear_label, font=stats_font, fill="black")
+    draw.text((rear_label_x, rear_y), rear_label, font=shields_font, fill="black")
     rear_y += label_height
     
     # Calculate total width of rear shields
