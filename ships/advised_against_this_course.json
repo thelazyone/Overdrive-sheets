@@ -34,7 +34,7 @@
                         "description": "2 attacks",
                         "shoot": {
                             "damage": 2,
-                            "range": 3
+                            "range": "1-3"
                         },
                         "cost": {
                             "energy": 2,
@@ -46,7 +46,7 @@
                         "description": "4 attacks",
                         "shoot": {
                             "damage": 2,
-                            "range": 3
+                            "range": "1-3"
                         },
                         "cost": {
                             "energy": 2,
@@ -104,7 +104,7 @@
                         "description": "Front only",
                         "shoot": {
                             "damage": 3,
-                            "range": 6
+                            "range": "3-6"    
                         },
                         "cost": {
                             "energy": 2,
@@ -123,6 +123,10 @@
                     {
                         "name": "Cruise",
                         "description": "45° 2-3 DU",
+                        "engine": {
+                            "speed": "2-3",
+                            "steer": "45°"
+                        },
                         "cost": {
                             "energy": 2,
                             "crew": 0
@@ -131,6 +135,10 @@
                     {
                         "name": "Pivot",
                         "description": "90° 0-1 DU",
+                        "engine": {
+                            "speed": "0-1",
+                            "steer": "90°"
+                        },
                         "cost": {
                             "energy": 1,
                             "crew": 1
@@ -152,7 +160,7 @@
                         "description": "2 attacks",
                         "shoot": {
                             "damage": 2,
-                            "range": 3
+                            "range": "1-3"
                         },
                         "cost": {
                             "energy": 2,
@@ -164,7 +172,7 @@
                         "description": "4 attacks",
                         "shoot": {
                             "damage": 2,
-                            "range": 3
+                            "range": "1-3"
                         },
                         "cost": {
                             "energy": 2,

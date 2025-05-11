@@ -53,7 +53,52 @@ def create_weapon_symbol_svg(x, y, width, height):
 def draw_weapon_symbol(draw, x, y, size, damage, range_val, font):
     """Draw a weapon symbol with damage and range values."""
     # Load and resize the symbol image
-    symbol_img = Image.open("resources/arrow_symbol.png")
+    if not isinstance(range_val, str) and range_val == "0-0":
+        #error here
+        print(f"Error: Range value is not a string and is not '0-0' for {damage} damage")
+
+    is_long_arrow = False
+    if isinstance(range_val, str) and len(range_val) > 2:  # If range is a string and longer than 2 chars
+        is_long_arrow = True
+        symbol_img = Image.open("resources/arrow_long_symbol.png")
+    else:
+        symbol_img = Image.open("resources/arrow_symbol.png")
+
+    # Resize to 60px height while maintaining aspect ratio
+    aspect_ratio = symbol_img.width / symbol_img.height
+    target_height = 60
+    target_width = int(target_height * aspect_ratio)
+    symbol_img = symbol_img.resize((target_width, target_height), Image.Resampling.LANCZOS)
+
+    # Create a new image with alpha channel for anti-aliasing
+    final_img = Image.new('RGBA', symbol_img.size, (255, 255, 255, 0))
+    final_draw = ImageDraw.Draw(final_img)
+    
+    # Paste the symbol
+    final_img.paste(symbol_img, (0, 0), symbol_img)
+    
+    # Draw the numbers in large Eurostile font
+    # Left number (damage)
+    damage_w, damage_h = get_text_size(final_draw, str(damage), font)
+    damage_x = 28 - (damage_w) // 2
+    damage_y = (target_height - damage_h) // 2 - 4
+    final_draw.text((damage_x, damage_y), str(damage), font=font, fill="black")
+    
+    # Right number (range)
+    range_w, range_h = get_text_size(final_draw, str(range_val), font)
+    range_x = 103 - (range_w) // 2 if is_long_arrow else 79 - (range_w) // 2
+    range_y = (target_height - range_h) // 2 - 4
+    final_draw.text((range_x, range_y), str(range_val), font=font, fill="black")
+    
+    # Paste the final image onto the main image
+    draw._image.paste(final_img, (x, y), final_img)
+    return target_height
+
+def draw_engine_symbol(draw, x, y, size, speed, font):
+    """Draw an engine symbol with speed value."""
+    # Load and resize the symbol image
+    symbol_img = Image.open("resources/arrow_empty_symbol.png")
+    
     # Resize to 60px height while maintaining aspect ratio
     aspect_ratio = symbol_img.width / symbol_img.height
     target_height = 60
@@ -67,18 +112,11 @@ def draw_weapon_symbol(draw, x, y, size, damage, range_val, font):
     # Paste the symbol
     final_img.paste(symbol_img, (0, 0), symbol_img)
     
-    # Draw the numbers in large Eurostile font
-    # Left number (damage)
-    damage_w, damage_h = get_text_size(final_draw, str(damage), font)
-    damage_x = (symbol_img.width/4 - damage_w) // 2  + 15
-    damage_y = (symbol_img.height - damage_h) // 2 - 5
-    final_draw.text((damage_x, damage_y), str(damage), font=font, fill="black")
-    
-    # Right number (range)
-    range_w, range_h = get_text_size(final_draw, str(range_val), font)
-    range_x = symbol_img.width/2 + (symbol_img.width/4 - range_w) // 2  + 5
-    range_y = (symbol_img.height - range_h) // 2 - 5
-    final_draw.text((range_x, range_y), str(range_val), font=font, fill="black")
+    # Draw the speed value in large Eurostile font
+    speed_w, speed_h = get_text_size(final_draw, str(speed), font)
+    speed_x = 52 - (speed_w) // 2
+    speed_y = (symbol_img.height - speed_h) // 2 - 5
+    final_draw.text((speed_x, speed_y), str(speed), font=font, fill="black")
     
     # Paste the final image onto the main image
     draw._image.paste(final_img, (x, y), final_img)
@@ -207,21 +245,30 @@ def generate_action(draw, area, content_x, area_title_font, description_font, ve
         weapon_width = weapon_img.width
         elements.append(("image", (content_x, content_height), weapon_img))
         content_height = max(content_height, weapon_height)
+    elif "engine" in area:
+        engine_img = Image.new('RGBA', (150, 60), (255, 255, 255, 0))
+        engine_draw = ImageDraw.Draw(engine_img)
+        engine_height = draw_engine_symbol(engine_draw, 0, 0, 150,
+                          area["engine"]["speed"],
+                          area_title_font)
+        weapon_width = engine_img.width
+        elements.append(("image", (content_x, content_height), engine_img))
+        content_height = max(content_height, engine_height)
     
     # Draw description
     if area["description"]:
         desc_text = area["description"].replace("Â°", "°")
         desc_w, desc_h = get_text_size(draw, desc_text, description_font)
-        desc_x = content_x + (weapon_width + 20 if "shoot" in area else 0)
+        desc_x = content_x + (weapon_width + 20 if "shoot" in area or "engine" in area else 0)
         
-        if "shoot" in area:
+        if "shoot" in area or "engine" in area:
             desc_y = 0
         else:
             baseline_offset = description_font.size // 4
             desc_y = (60 - desc_h) // 2 - baseline_offset
         
         elements.append(("text", (desc_x, desc_y), desc_text, description_font))
-        content_height = max(content_height, desc_h if "shoot" in area else 60)
+        content_height = max(content_height, desc_h if "shoot" in area or "engine" in area else 60)
     
     return content_height, elements
 

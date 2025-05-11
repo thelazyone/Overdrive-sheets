@@ -34,7 +34,7 @@
                         "description": "",
                         "shoot": {
                             "damage": 2,
-                            "range": 2
+                            "range": "0-2"
                         },
                         "cost": {
                             "energy": 1,
@@ -99,7 +99,7 @@
                         "description": "Front only",
                         "shoot": {
                             "damage": 3,
-                            "range": 4
+                            "range": "1-4"
                         },
                         "cost": {
                             "energy": 1,
@@ -120,7 +120,7 @@
                         "description": "Front only",
                         "shoot": {
                             "damage": 3,
-                            "range": 4
+                            "range": "1-4"
                         },
                         "cost": {
                             "energy": 1,
@@ -139,6 +139,10 @@
                     {
                         "name": "Cruise",
                         "description": "45° 2-3 DU",
+                        "engine": {
+                            "speed": "2-3",
+                            "steer": "45°"
+                        },
                         "cost": {
                             "energy": 1,
                             "crew": 0
@@ -147,6 +151,10 @@
                     {
                         "name": "Pivot",
                         "description": "90° 0-1 DU",
+                        "engine": {
+                            "speed": "0-1",
+                            "steer": "90°"
+                        },
                         "cost": {
                             "energy": 1,
                             "crew": 1
@@ -168,7 +176,7 @@
                         "description": "",
                         "shoot": {
                             "damage": 2,
-                            "range": 2
+                            "range": "0-2"
                         },
                         "cost": {
                             "energy": 1,
