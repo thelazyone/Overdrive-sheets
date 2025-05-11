@@ -236,38 +236,39 @@ def generate_cost_symbols(draw, energy_count, crew_count, energy_img, crew_img):
     if not symbols:
         return 0, None
     
-    # Calculate grid layout
-    if len(symbols) == 1:
-        grid_cols = 1
-        grid_rows = 1
-    elif len(symbols) == 2:
-        grid_cols = 2
-        grid_rows = 1
-    elif len(symbols) == 3:
-        grid_cols = 2
-        grid_rows = 2
-    else:  # 4 symbols
-        grid_cols = 2
-        grid_rows = 2
-    
     # Calculate dimensions
     symbol_size = 60
     gap = 10
-    total_width = grid_cols * symbol_size + (grid_cols - 1) * gap
-    total_height = grid_rows * symbol_size + (grid_rows - 1) * gap
+    
+    # Calculate total height needed for all symbols
+    total_height = 0
+    remaining_symbols = len(symbols)
+    while remaining_symbols > 0:
+        if remaining_symbols >= 2:
+            total_height += symbol_size + gap
+        else:
+            total_height += symbol_size
+        remaining_symbols -= 2
     
     # Create temporary image for symbols
-    symbols_img = Image.new('RGBA', (total_width, total_height), (255, 255, 255, 0))
+    symbols_img = Image.new('RGBA', (symbol_size * 2 + gap, total_height), (255, 255, 255, 0))
     symbols_draw = ImageDraw.Draw(symbols_img)
     
-    for idx, (symbol_type, symbol_img) in enumerate(symbols):
-        if idx >= 4:  # Safety check
-            break
-        row = idx // grid_cols
-        col = idx % grid_cols
-        pos_x = col * (symbol_size + gap)
-        pos_y = row * (symbol_size + gap)
-        symbols_img.paste(symbol_img, (pos_x, pos_y), symbol_img)
+    # Draw symbols in pairs
+    current_y = 0
+    remaining_symbols = len(symbols)
+    while remaining_symbols > 0:
+        if remaining_symbols >= 2:
+            # Draw a pair of symbols
+            symbols_img.paste(symbols[0][1], (0, current_y), symbols[0][1])
+            symbols_img.paste(symbols[1][1], (symbol_size + gap, current_y), symbols[1][1])
+            symbols = symbols[2:]  # Remove the pair we just drew
+            current_y += symbol_size + gap
+            remaining_symbols -= 2
+        else:
+            # Center the last single symbol
+            symbols_img.paste(symbols[0][1], ((symbol_size * 2 + gap - symbol_size) // 2, current_y), symbols[0][1])
+            remaining_symbols -= 1
     
     return total_height, symbols_img
 
