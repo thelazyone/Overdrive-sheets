@@ -229,16 +229,9 @@ def draw_resource_symbols(draw, x, y, energy_count, crew_count, energy_img, crew
     return total_height
 
 def create_area_content(draw, area, content_x, area_title_font, description_font, vertical_spacing):
-    """Create the right column content (name, weapon, description) and return its height."""
+    """Create the right column content (weapon, description) and return its height."""
     content_height = 0
     elements = []
-    
-    # Draw area name
-    if area["name"]:
-        area_name = area["name"].upper()
-        area_w, area_h = get_text_size(draw, area_name, area_title_font)
-        elements.append(("text", (content_x, content_height), area_name, area_title_font))
-        content_height += area_h + vertical_spacing * 2  # Double the spacing after title
     
     # Calculate the maximum height for this area
     max_height = 0
@@ -263,8 +256,19 @@ def create_area_content(draw, area, content_x, area_title_font, description_font
         desc_w, desc_h = get_text_size(draw, desc_text, description_font)
         # If there's a weapon, start description to its right, otherwise at content_x
         desc_x = content_x + (weapon_width + 20 if "shoot" in area else 0)  # 20px gap between weapon and description
-        elements.append(("text", (desc_x, content_height), desc_text, description_font))
-        max_height = max(max_height, desc_h)
+        
+        # Calculate text baseline position
+        if "shoot" in area:
+            # When there's a weapon, align text with the weapon
+            desc_y = 0
+        else:
+            # When there's no weapon, center the text vertically
+            # Get the font's baseline offset (approximately 1/4 of the font size)
+            baseline_offset = description_font.size // 4
+            desc_y = (60 - desc_h) // 2 - baseline_offset
+        
+        elements.append(("text", (desc_x, desc_y), desc_text, description_font))
+        max_height = max(max_height, desc_h if "shoot" in area else 60)  # Use weapon height as minimum when no weapon
     
     # Update content height based on the maximum height of elements
     content_height = max_height
@@ -336,12 +340,11 @@ def create_tile(system, tile_width_px, tile_height_px, dpi):
     content_width = tile_width_px - (2 * horizontal_margin)
     vertical_spacing = int(tile_height_px * 0.01)  # 1% spacing between elements
     
-    # Draw the system title
+    # Calculate title position (will be written at the end)
     title_text = system["name"].upper()
     title_w, title_h = get_text_size(draw, title_text, title_font)
     title_x = (tile_width_px - title_w) // 2
     title_y = vertical_margin
-    draw.text((title_x, title_y), title_text, font=title_font, fill="black")
     
     current_y = title_y + title_h + vertical_spacing
     
@@ -351,46 +354,56 @@ def create_tile(system, tile_width_px, tile_height_px, dpi):
         rules_text = system["rules"].replace("Â°", "°")
         rules_w, rules_h = get_text_size(draw, rules_text, subtitle_font)
         rules_x = (tile_width_px - rules_w) // 2
-        draw.text((rules_x, current_y), rules_text, font=subtitle_font, fill="black")
+        rules_y = current_y
         current_y += rules_h + vertical_spacing
         
         # Add extra space and energy symbols for special systems
         if system["name"].lower() == "mess":
-            current_y += 150  # Add 150px empty space
-            
-            # Add Med Bay section if med_bay value exists and is greater than 0
+            current_y += 150  # Add empty space
+
             if "med_bay" in system and system["med_bay"] > 0:
-                # Draw divider
-                divider_y = current_y + vertical_spacing
-                divider_start_x = (tile_width_px - (tile_width_px * 0.5)) // 2
-                divider_end_x = divider_start_x + (tile_width_px * 0.5)
-                draw.line([(divider_start_x, divider_y), 
-                          (divider_end_x, divider_y)], 
+                med_bay_width = int(tile_width_px * 0.3)  # 30% of width for med bay section
+                main_section_width = tile_width_px - med_bay_width
+                title_x = title_x - med_bay_width/2
+                rules_x = rules_x - med_bay_width/2
+                
+                # Draw vertical divider with padding
+                divider_padding = 20  # Padding from top and bottom
+                divider_x = main_section_width
+                draw.line([(divider_x, current_y - 150 + divider_padding), 
+                          (divider_x, current_y - divider_padding)], 
                          fill="black", width=2)
-                current_y = divider_y + 20  # Add 20px spacing after divider
                 
-                # Draw "MED BAY" title
-                med_bay_title = "MED BAY"
-                med_bay_w, med_bay_h = get_text_size(draw, med_bay_title, area_title_font)
-                med_bay_x = (tile_width_px - med_bay_w) // 2
-                draw.text((med_bay_x, current_y), med_bay_title, font=area_title_font, fill="black")
-                current_y += med_bay_h + 20  # Add 20px spacing after title
-                
-                # Draw med bay symbols
+                # Draw med bay symbols vertically
                 med_bay_count = system["med_bay"]
                 symbol_width = med_bay_img.width
                 gap = 20  # Gap between symbols
-                total_width = (med_bay_count * symbol_width) + ((med_bay_count - 1) * gap)
                 
-                # Calculate starting x position to center all symbols
-                start_x = (tile_width_px - total_width) // 2
+                # Calculate starting position for vertical layout
+                start_x = divider_x + (med_bay_width - symbol_width) // 2
+                start_y = current_y - 150 + (150 - (med_bay_count * (symbol_width + gap) - gap)) // 2
                 
-                # Draw each med bay symbol
+                # Draw each med bay symbol vertically
                 for i in range(med_bay_count):
-                    pos_x = start_x + (i * (symbol_width + gap))
-                    img.paste(med_bay_img, (pos_x, current_y), med_bay_img)
+                    pos_y = start_y + (i * (symbol_width + gap))
+                    img.paste(med_bay_img, (start_x, pos_y), med_bay_img)
                 
-                current_y += med_bay_img.height + vertical_spacing * 2
+                # Draw "MED BAY" text vertically (smaller font)
+                med_bay_font_size = int(area_title_font.size * 0.8)  # 80% of original size
+                med_bay_font = ImageFont.truetype(EUROSTILE_BOLD, med_bay_font_size)
+                med_bay_text = "MED BAY"
+                med_bay_w, med_bay_h = get_text_size(draw, med_bay_text, med_bay_font)
+                
+                # Rotate the text 90 degrees clockwise
+                med_bay_img = Image.new('RGBA', (med_bay_h, med_bay_w), (255, 255, 255, 0))
+                med_bay_draw = ImageDraw.Draw(med_bay_img)
+                med_bay_draw.text((0, 0), med_bay_text, font=med_bay_font, fill="black")
+                med_bay_img = med_bay_img.rotate(90, expand=True)
+                
+                # Position the rotated text on the right edge
+                med_bay_x = divider_x + (med_bay_width - med_bay_img.width) // 2
+                med_bay_y = current_y - 150 + (150 - med_bay_img.height) // 2
+                img.paste(med_bay_img, (med_bay_x, med_bay_y), med_bay_img)
             
         elif system["name"].lower() == "reactor":
             # Calculate the center position for the large energy symbols
@@ -415,7 +428,7 @@ def create_tile(system, tile_width_px, tile_height_px, dpi):
     
     # Draw the areas
     if "areas" in system and system["areas"]:
-        area_margin = int(tile_height_px * 0.03)  # 3% margin for areas
+        area_margin = int(tile_height_px * 0.02)  # 2% margin for areas
         current_y += area_margin  # Add initial margin before first area
         
         for idx, area in enumerate(system["areas"]):
@@ -447,8 +460,12 @@ def create_tile(system, tile_width_px, tile_height_px, dpi):
                                                                  vertical_spacing)
             
             # Calculate vertical alignment with minimum height
-            min_area_height = 120  # Minimum height for each area
+            min_area_height = 100  # Increased minimum height for better spacing
             total_height = max(min_area_height, max(cost_height, content_height))
+            
+            # Add padding to single areas
+            if len(system["areas"]) == 1:
+                total_height = max(total_height, 120)  # Ensure single areas have more height
             
             # Center align the cost symbols vertically
             cost_y = current_y + (total_height - cost_height) // 2
@@ -525,10 +542,13 @@ def create_tile(system, tile_width_px, tile_height_px, dpi):
     # Draw black border
     draw.rectangle([(0,0), (tile_width_px, current_y)], outline="black", width=8)
     
+    # Draw the title at the end
+    draw.text((title_x, title_y), title_text, font=title_font, fill="black")
+    draw.text((rules_x, rules_y), rules_text, font=subtitle_font, fill="black")
+    
     # Crop the image to the actual content height
     final_height = current_y
     img = img.crop((0, 0, tile_width_px, final_height))
-
     
     return img
 
