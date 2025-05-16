@@ -1,0 +1,245 @@
+{
+    "title": "Starliner",
+    "subtitle": "Test ship for Bishok",
+    "command": 2,
+    "control": 1,
+    "shields": {
+        "front": [2, 2, 2],
+        "rear": [2, 2]
+    },
+    "reactor": {
+        "name": "Reactor",
+        "rules": "Energy Production: 4",
+        "circles": 8,
+        "electronics": true,
+        "hull": false,
+        "life_support": false
+    },
+    "mess": {
+        "name": "Mess",
+        "rules": "Crew: 6",
+        "med_bay": 2,
+        "electronics": false,
+        "hull": false,
+        "life_support": true
+    },
+    "sections": {
+        "left": [
+            {
+                "name": "Point Defence Guns",
+                "rules": "Side Only",
+                "areas": [
+                    {
+                        "name": "",
+                        "description": "fast, anti-light",
+                        "shoot": {
+                            "damage": 4,
+                            "range": "0-1"
+                        },
+                        "cost": {
+                            "energy": 2,
+                            "crew": 1
+                        }
+                    }
+                ],
+                "electronics": false,
+                "hull": true,
+                "life_support": true
+            },
+            {
+                "name": "Control Station",
+                "rules": "",
+                "areas": [
+                    {
+                        "name": "",
+                        "description": "Control 4 for this Round",
+                        "cost": {
+                            "energy": 1,
+                            "crew": 2
+                        }
+                    }
+                ],
+                "electronics": true,
+                "hull": false,
+                "life_support": true
+            },
+            {
+                "name": "Living Quarters",
+                "rules": "Energy Production -1 if lost",
+                "areas": [
+                ],
+                "electronics": false,
+                "hull": true,
+                "life_support": true
+            }
+        ],
+        "core": [
+            {
+                "name": "Main Bridge",
+                "rules": " ",
+                "areas": [
+                    {
+                        "name": "Support Comms",
+                        "description": "+1 Control to another ship",
+                        "cost": {
+                            "energy": 2,
+                            "crew": 2
+                        }
+                    },
+                    {
+                        "name": "Bridge Guns",
+                        "description": "",
+                        "shoot": {
+                            "damage": 3,
+                            "range": "0-2"
+                        },
+                        "cost": {
+                            "energy": 1,
+                            "crew": 2
+                        }
+                    },
+                    {
+                        "name": "Objectives",
+                        "description": "Capture 1 objective",
+                        "cost": {
+                            "energy": 2,
+                            "crew": 2
+                        }
+                    }
+                ],
+                "electronics": true,
+                "hull": false,
+                "life_support": true
+            },
+            {
+                "name": "Lower Bridge",
+                "rules": " ",
+                "areas": [
+                    {
+                        "name": "",
+                        "description": "+2 Command",
+                        "cost": {
+                            "energy": 0,
+                            "crew": 2
+                        }
+                    },
+                    {
+                        "name": "Bridge Guns",
+                        "description": "",
+                        "shoot": {
+                            "damage": 2,
+                            "range": "0-2"
+                        },
+                        "cost": {
+                            "energy": 1,
+                            "crew": 1
+                        }
+                    }
+                ],
+                "electronics": true,
+                "hull": false,
+                "life_support": true
+            },
+            {
+                "name": "Barracks",
+                "rules": "Holds 4 Soldiers",
+                "areas": [
+                ],
+                "electronics": false,
+                "hull": false,
+                "life_support": true
+            },
+            {
+                "name": "Living Quarters",
+                "rules": "Energy Production -1 if lost",
+                "areas": [
+                ],
+                "electronics": false,
+                "hull": true,
+                "life_support": true
+            },
+            {
+                "name": "Engine",
+                "rules": "Propulsion System",
+                "areas": [
+                    {
+                        "name": "Cruise",
+                        "description": "",
+                        "engine": {
+                            "speed": "1-2",
+                            "steer": "0°"
+                        },
+                        "cost": {
+                            "energy": 1,
+                            "crew": 0
+                        }
+                    },
+                    {
+                        "name": "Pivot",
+                        "description": "",
+                        "engine": {
+                            "speed": "0-1",
+                            "steer": "45°"
+                        },
+                        "cost": {
+                            "energy": 1,
+                            "crew": 0
+                        }
+                    }
+                ],
+                "electronics": true,
+                "hull": false,
+                "life_support": false
+            }
+        ],
+        "right": [
+            {
+                "name": "Point Defence Guns",
+                "rules": "Side Only",
+                "areas": [
+                    {
+                        "name": "",
+                        "description": "fast, anti-light",
+                        "shoot": {
+                            "damage": 4,
+                            "range": "0-1"
+                        },
+                        "cost": {
+                            "energy": 2,
+                            "crew": 1
+                        }
+                    }
+                ],
+                "electronics": false,
+                "hull": true,
+                "life_support": true
+            },
+            {
+                "name": "Advanced Sensors",
+                "rules": "",
+                "areas": [
+                    {
+                        "name": "",
+                        "description": "Capture up to 2 objectives",
+                        "cost": {
+                            "energy": 3,
+                            "crew": 1
+                        }
+                    }
+                ],
+                "electronics": true,
+                "hull": true,
+                "life_support": false
+            },
+            {
+                "name": "Living Quarters",
+                "rules": "Energy Production -1 if lost",
+                "areas": [
+                ],
+                "electronics": false,
+                "hull": true,
+                "life_support": true
+            }
+        ]
+    }
+} 

@@ -235,7 +235,7 @@ def generate_rules(draw, system, subtitle_font, effective_width, current_y, vert
         rules_x = (effective_width - rules_w) // 2
         rules_y = current_y
         draw.text((rules_x, rules_y), rules_text, font=subtitle_font, fill="black")
-        return rules_h + vertical_spacing
+        return max(rules_h + vertical_spacing, 5 * vertical_spacing)
     return 0
 
 def generate_action(draw, area, content_x, area_title_font, description_font, vertical_spacing):
@@ -386,14 +386,29 @@ def generate_reactor_content(draw, system, energy_large_img, current_y, vertical
         energy_count = system["circles"]
         symbol_width = energy_large_img.width
         gap = 20
+        
         total_width = (energy_count * symbol_width) + ((energy_count - 1) * gap)
+
+        # If the total width is too large, reduce the symbol size by 10px and try again.
+        for attempt in range(6):
+            if total_width <= (draw._image.width - 20):  # 40px padding
+                break
+            # Reduce symbol size by 10px
+            symbol_width -= 10
+            gap -= 3
+            total_width = (energy_count * symbol_width) + ((energy_count - 1) * gap)
+            print(f"Reactor energy symbols too large, reducing size to {symbol_width}px and gap to {gap} (attempt {attempt + 1}/6)")
+
+        # Create a copy to energy_large_img and rescale it to the new symbol_width
+        energy_large_img_copy = energy_large_img.copy()
+        energy_large_img_copy = energy_large_img_copy.resize((symbol_width, symbol_width), Image.Resampling.LANCZOS)    
         
         start_x = (draw._image.width - total_width) // 2
         symbol_y = current_y + (empty_space_height - energy_large_img.height) // 2
         
         for i in range(energy_count):
             pos_x = start_x + (i * (symbol_width + gap))
-            draw._image.paste(energy_large_img, (pos_x, symbol_y), energy_large_img)
+            draw._image.paste(energy_large_img_copy, (pos_x, symbol_y), energy_large_img_copy)
     
     return current_y + empty_space_height + vertical_spacing
 
@@ -429,7 +444,7 @@ def generate_system_icons(draw, system, hull_img, electric_img, life_support_img
         bg_height = resized_icons[0].height + (2 * bg_padding)
         
         bg_x = draw._image.width - bg_width
-        bg_y = current_y - bg_height
+        bg_y = current_y - bg_height + 2
         
         slope_width = int(bg_height * 0.577)
         
@@ -452,8 +467,8 @@ def generate_system_icons(draw, system, hull_img, electric_img, life_support_img
 
 def create_system(system, tile_width_px, tile_height_px, dpi):
     """Create a generic system tile."""
-    # Create canvas
-    img = Image.new("RGB", (tile_width_px, tile_height_px), "white")
+    # Create canvas with extra height to accommodate all content
+    img = Image.new("RGB", (tile_width_px, tile_height_px * 2), "white")  # Double the height to ensure enough space
     draw = ImageDraw.Draw(img)
     
     # Load resources
@@ -543,6 +558,9 @@ def create_system(system, tile_width_px, tile_height_px, dpi):
     # Generate system icons
     current_y = generate_system_icons(draw, system, hull_img, electric_img, life_support_img, current_y)
     
+    # Add padding at the bottom
+    current_y += vertical_margin
+    
     # Draw border
     draw.rectangle([(0,0), (tile_width_px, current_y)], outline="black", width=8)
     
@@ -559,45 +577,3 @@ def create_system_image(system, output_folder="systems"):
     tile_img = create_system(system, tile_width_px, tile_height_px, DPI)
     
     return tile_img
-
-if __name__ == "__main__":
-    # For testing: generate all systems
-    with open("systems.json", "r") as f:
-        systems_data = json.load(f)
-    with open("cores.json", "r") as f:
-        cores_data = json.load(f)
-    with open("mess.json", "r") as f:
-        mess_data = json.load(f)
-    
-    # Process regular systems
-    for system in systems_data.get("systems", []):
-        img = create_system_image(system)
-        if not os.path.exists("systems"):
-            os.makedirs("systems")
-        base_name = system["name"].lower().replace(" ", "_")
-        filename = f"{base_name}.jpg"
-        filepath = os.path.join("systems", filename)
-        img.save(filepath, quality=95)
-        print(f"Generated system image: {filepath}")
-    
-    # Process cores
-    for core in cores_data.get("cores", []):
-        img = create_system_image(core)
-        if not os.path.exists("systems"):
-            os.makedirs("systems")
-        base_name = f"core_{core['circles']}_{core['rules'].split(': ')[1]}"
-        filename = f"{base_name}.jpg"
-        filepath = os.path.join("systems", filename)
-        img.save(filepath, quality=95)
-        print(f"Generated system image: {filepath}")
-    
-    # Process mess halls
-    for mess in mess_data.get("mess_halls", []):
-        img = create_system_image(mess)
-        if not os.path.exists("systems"):
-            os.makedirs("systems")
-        base_name = f"mess_{mess['rules'].split(': ')[1]}"
-        filename = f"{base_name}.jpg"
-        filepath = os.path.join("systems", filename)
-        img.save(filepath, quality=95)
-        print(f"Generated system image: {filepath}") 

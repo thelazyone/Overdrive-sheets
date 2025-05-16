@@ -2,6 +2,7 @@ import json
 from PIL import Image, ImageDraw, ImageFont
 import os
 from system import create_system_image
+import argparse
 
 # Constants for A5 format (horizontal orientation)
 A5_WIDTH_CM = 21.0  # A5 width in cm
@@ -72,8 +73,9 @@ def create_ship_sheet(ship_data, output_path):
     reactor_img = create_system_image(ship_data["reactor"])
     mess_img = create_system_image(ship_data["mess"])
     
+    
     # Scale images to fit in box
-    scale_factor = (box_width - 40) / max(reactor_img.width, mess_img.width)  # 40px padding
+    scale_factor = (box_width) / max(reactor_img.width, mess_img.width)  # 40px padding
     new_width = int(reactor_img.width * scale_factor)
     new_height = int(reactor_img.height * scale_factor)
     reactor_img = reactor_img.resize((new_width, new_height), Image.Resampling.LANCZOS)
@@ -273,21 +275,23 @@ def create_ship_sheet(ship_data, output_path):
     print(f"Saved ship sheet to: {output_path}")
 
 def main():
+    # Set up argument parser
+    parser = argparse.ArgumentParser(description='Generate ship sheets from JSON files.')
+    parser.add_argument('-s', '--ship', help='Generate a specific ship by providing its JSON file path (e.g., ships/my_ship.json)')
+    args = parser.parse_args()
+
     # Create ships directory if it doesn't exist
     ships_dir = "ships"
     if not os.path.exists(ships_dir):
         os.makedirs(ships_dir)
     
-    # Find all JSON files in the ships directory
-    json_files = [f for f in os.listdir(ships_dir) if f.endswith('.json')]
-    
-    if not json_files:
-        print("No JSON files found in the ships directory")
-        return
-    
-    # Process each JSON file
-    for json_file in json_files:
-        json_path = os.path.join(ships_dir, json_file)
+    if args.ship:
+        # Handle single ship generation
+        json_path = args.ship
+        if not os.path.exists(json_path):
+            print(f"Error: Ship file not found: {json_path}")
+            return
+        
         try:
             # Load ship data
             with open(json_path, "r") as f:
@@ -299,7 +303,30 @@ def main():
             create_ship_sheet(ship_data, output_path)
             
         except Exception as e:
-            print(f"Error processing {json_file}: {str(e)}")
+            print(f"Error processing {json_path}: {str(e)}")
+    else:
+        # Find all JSON files in the ships directory
+        json_files = [f for f in os.listdir(ships_dir) if f.endswith('.json')]
+        
+        if not json_files:
+            print("No JSON files found in the ships directory")
+            return
+        
+        # Process each JSON file
+        for json_file in json_files:
+            json_path = os.path.join(ships_dir, json_file)
+            try:
+                # Load ship data
+                with open(json_path, "r") as f:
+                    ship_data = json.load(f)
+                
+                # Create the ship sheet with ship name in filename
+                ship_name = ship_data["title"].lower().replace(" ", "_")
+                output_path = os.path.join(ships_dir, f"{ship_name}.jpg")
+                create_ship_sheet(ship_data, output_path)
+                
+            except Exception as e:
+                print(f"Error processing {json_file}: {str(e)}")
 
 if __name__ == "__main__":
     main() 
