@@ -70,6 +70,13 @@
                 "rules": "",
                 "areas": [
                     {
+                        "description": "Scan Objective",
+                        "cost": {
+                            "energy": 0,
+                            "crew": 1
+                        }
+                    },
+                    {
                         "name": "Broadcast",
                         "description": "Control 3 for this Round",
                         "cost": {
@@ -111,6 +118,23 @@
                 "electronics": false,
                 "hull": true,
                 "life_support": false
+            },
+            {
+                "name": "Barracks",
+                "rules": "Holds 4 Soldiers",
+                "areas": [
+                    {
+                        "name": "",
+                        "description": "Board up to 1 Crew",
+                        "cost": {
+                            "energy": 1,
+                            "crew": 1
+                        }
+                    }
+                ],
+                "electronics": false,
+                "hull": false,
+                "life_support": true
             },
             {
                 "name": "Asteroid Buster",

@@ -27,7 +27,8 @@
         "left": [
             {
                 "name": "Flak Battery",
-                "rules": "Anti-Light Weapon",
+                "rules": "Anti-Light",
+                "weapon": true,
                 "areas": [
                     {
                         "name": "AA Burst",
@@ -48,7 +49,8 @@
             },
             {
                 "name": "Torpedo Bay",
-                "rules": "Weapon System; anti-Capital",
+                "rules": "Anti-Capital",
+                "weapon": true,
                 "areas": [
                     {
                         "name": "Load torpedo",
@@ -77,7 +79,7 @@
             },
             {
                 "name": "Armor Plates",
-                "rules": "Support System; cannot be repaired",
+                "rules": "Cannot be repaired",
                 "areas": [
                     
                 ],
@@ -91,6 +93,13 @@
                 "name": "Artillery Bridge",
                 "rules": "",
                 "areas": [
+                    {
+                        "description": "Scan Objective",
+                        "cost": {
+                            "energy": 1,
+                            "crew": 1
+                        }
+                    },
                     {
                         "name": "Bridge Guns",
                         "description": "",
@@ -126,7 +135,8 @@
             },
             {
                 "name": "Main Battery",
-                "rules": "Main Weapon, anti-Capital",
+                "rules": "Main, anti-Capital",
+                "weapon": true,
                 "areas": [
                     {
                         "name": "Salvo",
@@ -146,8 +156,9 @@
                 "life_support": false
             },
             {
-                "name": "Secondary Battery",
-                "rules": "Weapon, anti-Capital",
+                "name": "Support Battery",
+                "rules": "Anti-Capital",
+                "weapon": true,
                 "areas": [
                     {
                         "name": "Salvo",
@@ -167,8 +178,25 @@
                 "life_support": false
             },
             {
+                "name": "Barracks",
+                "rules": "Holds 6 Soldiers",
+                "areas": [
+                    {
+                        "name": "",
+                        "description": "Board up to 4 Crew",
+                        "cost": {
+                            "energy": 0,
+                            "crew": 2
+                        }
+                    }
+                ],
+                "electronics": false,
+                "hull": false,
+                "life_support": true
+            },
+            {
                 "name": "Engine",
-                "rules": "Propulsion System",
+                "rules": "",
                 "areas": [
                     {
                         "name": "Cruise",
@@ -203,7 +231,8 @@
         "right": [
             {
                 "name": "Flak Battery",
-                "rules": "Anti-Light Weapon",
+                "rules": "Anti-Light",
+                "weapon": true,
                 "areas": [
                     {
                         "name": "AA Burst",
@@ -224,7 +253,8 @@
             },
             {
                 "name": "Torpedo Bay",
-                "rules": "Weapon System; anti-Capital",
+                "rules": "Anti-Capital",
+                "weapon": true,
                 "areas": [
                     {
                         "name": "Load torpedo",
@@ -253,7 +283,7 @@
             },
             {
                 "name": "Armor Plates",
-                "rules": "Support System; cannot be repaired",
+                "rules": "Cannot be repaired",
                 "areas": [
                     
                 ],

@@ -10,7 +10,7 @@
     "reactor": {
         "name": "Reactor",
         "rules": "Energy Production: 3",
-        "circles": 3,
+        "circles": 4,
         "electronics": true,
         "hull": false,
         "life_support": false
@@ -27,7 +27,8 @@
         "left": [
             {
                 "name": "Autocannons",
-                "rules": "Weapon",
+                "rules": "Main",
+                "weapon": true,
                 "areas": [
                     {
                         "name": "Fast Burst",
@@ -60,7 +61,6 @@
             },
             {
                 "name": "Target Tracking",
-                "rules": "Support System",
                 "areas": [
                     {
                         "name": "Tracking",
@@ -79,8 +79,14 @@
         "core": [
             {
                 "name": "Command Bridge",
-                "rules": "",
                 "areas": [
+                    {
+                        "description": "Scan Objective",
+                        "cost": {
+                            "energy": 0,
+                            "crew": 1
+                        }
+                    },
                     {
                         "name": "Broadcast",
                         "description": "Control 2 for this Round",
@@ -108,7 +114,8 @@
             },
             {
                 "name": "Flak Battery",
-                "rules": "Anti-Light Weapon",
+                "rules": "Anti-Light",
+                "weapon": true,
                 "areas": [
                     {
                         "name": "AA Burst",
@@ -128,8 +135,24 @@
                 "life_support": true
             },
             {
+                "name": "Barracks",
+                "rules": "Holds 3 Soldiers",
+                "areas": [
+                    {
+                        "name": "",
+                        "description": "Board up to 1 Crew",
+                        "cost": {
+                            "energy": 1,
+                            "crew": 1
+                        }
+                    }
+                ],
+                "electronics": false,
+                "hull": false,
+                "life_support": true
+            },
+            {
                 "name": "Engine",
-                "rules": "Propulsion System",
                 "areas": [
                     {
                         "name": "Cruise",
@@ -164,7 +187,8 @@
         "right": [
             {
                 "name": "Torpedo Bay",
-                "rules": "Weapon System; anti-Capital",
+                "rules": "Anti-Capital",
+                "weapon": true,
                 "areas": [
                     {
                         "name": "Load torpedo",

@@ -119,7 +119,7 @@ def draw_engine_symbol(draw, x, y, size, speed, font, steer_text=None):
     
     # Draw the speed value in large Eurostile font
     speed_w, speed_h = get_text_size(final_draw, str(speed), font)
-    speed_x = 52 - (speed_w) // 2
+    speed_x = 55 - (speed_w) // 2
     speed_y = (target_height - speed_h) // 2 - 4
     final_draw.text((speed_x, speed_y), str(speed), font=font, fill="black")
     
@@ -247,7 +247,7 @@ def generate_rules(draw, system, subtitle_font, effective_width, current_y, vert
         return 8 * vertical_spacing
     return 0
 
-def generate_action(draw, area, content_x, combat_number_font_size, description_font, vertical_spacing):
+def generate_action(draw, area, content_x, combat_number_font_size, description_font, vertical_spacing, max_desc_width):
     """Generate a single action (area) with its content."""
     content_height = 0
     elements = []
@@ -274,17 +274,32 @@ def generate_action(draw, area, content_x, combat_number_font_size, description_
     # Draw description
     if area["description"]:
         desc_text = area["description"].replace("Â°", "°")
-        desc_w, desc_h = get_text_size(draw, desc_text, description_font)
         desc_x = content_x + (weapon_width + 20 if "shoot" in area or "engine" in area else 0)
         
+        # Calculate available width for description
+        available_width = max_desc_width - (weapon_width + 20 if "shoot" in area or "engine" in area else 0)
+        
+        # Wrap text if necessary
+        wrapped_lines = wrap_text(desc_text, description_font, available_width - 30, draw)
+        
+        # Calculate total height of wrapped text
+        line_height = description_font.size + 4  # Add some line spacing
+        total_text_height = len(wrapped_lines) * line_height - 4  # Remove spacing after last line
+        
         if "shoot" in area or "engine" in area:
+            # Start from top when there's a weapon/engine symbol
             desc_y = 0
         else:
+            # Center vertically when there's no symbol
             baseline_offset = description_font.size // 4
-            desc_y = (60 - desc_h) // 2 - baseline_offset
+            desc_y = (60 - total_text_height) // 2 - baseline_offset
         
-        elements.append(("text", (desc_x, desc_y), desc_text, description_font))
-        content_height = max(content_height, desc_h if "shoot" in area or "engine" in area else 60)
+        # Add each line as a separate text element
+        for i, line in enumerate(wrapped_lines):
+            line_y = desc_y + (i * line_height)
+            elements.append(("text", (desc_x, line_y), line, description_font))
+        
+        content_height = max(content_height, total_text_height if "shoot" in area or "engine" in area else 60)
     
     return content_height, elements
 
@@ -584,7 +599,7 @@ def create_system(system, tile_width_px, tile_height_px, dpi):
             
             content_height, content_elements = generate_action(draw, area, content_x,
                                                              combat_number_font, description_font,
-                                                             vertical_spacing)
+                                                             vertical_spacing, content_column_width)
             
             min_area_height = 100
             total_height = max(min_area_height, max(cost_height, content_height))
