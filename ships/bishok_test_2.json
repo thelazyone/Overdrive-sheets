@@ -2,7 +2,7 @@
     "title": "Starliner",
     "subtitle": "Test ship for Bishok",
     "command": 2,
-    "control": 1,
+    "control": 3,
     "shields": {
         "front": [2, 2, 2],
         "rear": [2, 2]

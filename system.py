@@ -157,11 +157,11 @@ def wrap_text(text, font, max_width, draw):
 def load_fonts(dpi, tile_width_px):
     """Load the required fonts with appropriate sizes."""
     # Font sizes as percentages of tile width
-    title_font_size = int(tile_width_px * 0.06)      # 5% of width
-    subtitle_font_size = int(tile_width_px * 0.05)    # 4% of width
-    area_title_font_size = int(tile_width_px * 0.04)  # 3.5% of width
-    description_font_size = int(tile_width_px * 0.04)  # 3% of width
-    combat_number_font_size = int(tile_width_px * 0.05)  # 4.5% of width
+    title_font_size = 45
+    subtitle_font_size = 40
+    area_title_font_size = 32 # Used for the "MED BAY" text only. TODO rename.
+    description_font_size = 40
+    combat_number_font_size = 41
     
     try:
         title_font = ImageFont.truetype(EUROSTILE_BOLD, title_font_size)
@@ -204,6 +204,8 @@ def load_resource_symbols():
     hull_img = Image.open("resources/hull_icon.png")
     electric_img = Image.open("resources/electric_icon.png")
     life_support_img = Image.open("resources/life_support_icon.png")
+    weapon_img = Image.open("resources/weapon_icon.png")
+    star_img = Image.open("resources/star_icon.png")
     
     # Resize all symbols to 60x60
     icon_size = 60
@@ -215,8 +217,10 @@ def load_resource_symbols():
     hull_img = hull_img.resize((icon_size, icon_size), Image.Resampling.LANCZOS)
     electric_img = electric_img.resize((icon_size, icon_size), Image.Resampling.LANCZOS)
     life_support_img = life_support_img.resize((icon_size, icon_size), Image.Resampling.LANCZOS)
+    weapon_img = weapon_img.resize((icon_size, icon_size), Image.Resampling.LANCZOS)
+    star_img = star_img.resize((icon_size, icon_size), Image.Resampling.LANCZOS)
     
-    return energy_img, energy_large_img, crew_img, med_bay_img, hull_img, electric_img, life_support_img
+    return energy_img, energy_large_img, crew_img, med_bay_img, hull_img, electric_img, life_support_img, weapon_img, star_img
 
 def generate_title(draw, system, title_font, effective_width, vertical_margin):
     """Generate the title for a system."""
@@ -229,6 +233,8 @@ def generate_title(draw, system, title_font, effective_width, vertical_margin):
 
 def generate_rules(draw, system, subtitle_font, effective_width, current_y, vertical_spacing):
     """Generate the rules text for a system."""
+    has_top_left_icons = system.get("weapon", False) or system.get("main", False)
+    
     if "rules" in system and system["rules"]:
         rules_text = system["rules"].replace("Â°", "°")
         rules_w, rules_h = get_text_size(draw, rules_text, subtitle_font)
@@ -236,9 +242,12 @@ def generate_rules(draw, system, subtitle_font, effective_width, current_y, vert
         rules_y = current_y
         draw.text((rules_x, rules_y), rules_text, font=subtitle_font, fill="black")
         return max(rules_h + vertical_spacing, 5 * vertical_spacing)
+    elif has_top_left_icons:
+        # If no rules but has top-left icons, provide the same minimum spacing as if there were rules
+        return 8 * vertical_spacing
     return 0
 
-def generate_action(draw, area, content_x, area_title_font, description_font, vertical_spacing):
+def generate_action(draw, area, content_x, combat_number_font_size, description_font, vertical_spacing):
     """Generate a single action (area) with its content."""
     content_height = 0
     elements = []
@@ -249,14 +258,14 @@ def generate_action(draw, area, content_x, area_title_font, description_font, ve
         weapon_img = draw_weapon_symbol(draw, content_x, 0, 150,
                           area["shoot"]["damage"],
                           area["shoot"]["range"],
-                          area_title_font)
+                          combat_number_font_size)
         weapon_width = weapon_img.width
         elements.append(("image", (content_x, 0), weapon_img))
         content_height = max(content_height, weapon_img.height)
     elif "engine" in area:
         engine_img = draw_engine_symbol(draw, content_x, 0, 150,
                           area["engine"]["speed"],
-                          area_title_font,
+                          combat_number_font_size,
                           area["engine"]["steer"])
         weapon_width = engine_img.width
         elements.append(("image", (content_x, 0), engine_img))
@@ -465,6 +474,56 @@ def generate_system_icons(draw, system, hull_img, electric_img, life_support_img
     
     return current_y
 
+def generate_top_left_system_icons(draw, system, weapon_img, star_img, vertical_margin):
+    """Generate system icons in the top left for weapon and main flags."""
+    icons = []
+    if system.get("weapon", False):
+        icons.append(weapon_img)
+    if system.get("main", False):
+        icons.append(star_img)
+    
+    if icons:
+        # Resize icons to a consistent size
+        icon_size = 60  # Target size for icons
+        resized_icons = []
+        for icon in icons:
+            # Create a new image with alpha channel for the resized icon
+            resized_icon = Image.new('RGBA', (icon_size, icon_size), (255, 255, 255, 0))
+            # Calculate position to center the icon
+            x = (icon_size - icon.width) // 2
+            y = (icon_size - icon.height) // 2
+            # Paste the original icon onto the new image
+            resized_icon.paste(icon, (x, y), icon)
+            resized_icons.append(resized_icon)
+        
+        icon_spacing = 10
+        total_width = sum(img.width for img in resized_icons) + (len(resized_icons) - 1) * icon_spacing
+        
+        bg_padding = 10
+        bg_width = total_width + (2 * bg_padding)
+        bg_height = resized_icons[0].height + (2 * bg_padding)
+        
+        bg_x = 0
+        bg_y = vertical_margin - 2
+        
+        slope_width = int(bg_height * 0.577)
+        
+        # Create points for 180-degree rotated shape (slope on the right side)
+        points = [
+            (bg_x, bg_y),
+            (bg_x + bg_width + slope_width, bg_y),
+            (bg_x + bg_width, bg_y + bg_height),
+            (bg_x, bg_y + bg_height),
+            (bg_x, bg_y)
+        ]
+        
+        draw.polygon(points, fill="black")
+        
+        current_x = bg_x + bg_padding
+        for icon in resized_icons:
+            draw._image.paste(icon, (current_x, bg_y + bg_padding), icon)
+            current_x += icon.width + icon_spacing
+
 def create_system(system, tile_width_px, tile_height_px, dpi):
     """Create a generic system tile."""
     # Create canvas with extra height to accommodate all content
@@ -473,7 +532,7 @@ def create_system(system, tile_width_px, tile_height_px, dpi):
     
     # Load resources
     title_font, subtitle_font, area_title_font, description_font, combat_number_font = load_fonts(dpi, tile_width_px)
-    energy_img, energy_large_img, crew_img, med_bay_img, hull_img, electric_img, life_support_img = load_resource_symbols()
+    energy_img, energy_large_img, crew_img, med_bay_img, hull_img, electric_img, life_support_img, weapon_img, star_img = load_resource_symbols()
     
     # Calculate margins and spacing
     vertical_margin = int(tile_height_px * 0.02)
@@ -524,7 +583,7 @@ def create_system(system, tile_width_px, tile_height_px, dpi):
                                                         crew_img)
             
             content_height, content_elements = generate_action(draw, area, content_x,
-                                                             area_title_font, description_font,
+                                                             combat_number_font, description_font,
                                                              vertical_spacing)
             
             min_area_height = 100
@@ -557,6 +616,9 @@ def create_system(system, tile_width_px, tile_height_px, dpi):
     
     # Generate system icons
     current_y = generate_system_icons(draw, system, hull_img, electric_img, life_support_img, current_y)
+    
+    # Generate top left system icons
+    generate_top_left_system_icons(draw, system, weapon_img, star_img, vertical_margin)
     
     # Add padding at the bottom
     current_y += vertical_margin

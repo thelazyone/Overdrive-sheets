@@ -1,6 +1,6 @@
 {
     "title": "Sound of Shattered Glass",
-    "subtitle": "Opulence Class Freighter",
+    "subtitle": "Opulence Class Feeder Vessel",
     "command": 2,
     "control": 2,
     "shields": {
@@ -27,7 +27,7 @@
         "left": [
             {
                 "name": "Flak Battery",
-                "rules": "Anti-Light Weapon",
+                "rules": "Anti-Light",
                 "areas": [
                     {
                         "name": "AA Burst",
@@ -44,11 +44,11 @@
                 ],
                 "electronics": false,
                 "hull": true,
-                "life_support": true
+                "life_support": true,
+                "weapon": true
             },
             {
                 "name": "Shield Projector",
-                "rules": "Support System",
                 "areas": [
                     {
                         "name": "Raise Shield",
@@ -92,7 +92,8 @@
             },
             {
                 "name": "Asteroid Buster",
-                "rules": "Main Weapon",
+                "rules": "Main",
+                "weapon": true,
                 "areas": [
                     {
                         "name": "Shoot",
@@ -113,7 +114,7 @@
             },
             {
                 "name": "Asteroid Buster",
-                "rules": "Main Weapon",
+                "weapon": true,
                 "areas": [
                     {
                         "name": "Shoot",
@@ -134,7 +135,6 @@
             },
             {
                 "name": "Engine",
-                "rules": "Propulsion System",
                 "areas": [
                     {
                         "name": "Cruise",
@@ -169,7 +169,8 @@
         "right": [
             {
                 "name": "Flak Battery",
-                "rules": "Anti-Light Weapon",
+                "rules": "Anti-Light",
+                "weapon": true,
                 "areas": [
                     {
                         "name": "AA Burst",
@@ -190,7 +191,6 @@
             },
             {
                 "name": "Drone Bay",
-                "rules": "Support System",
                 "areas": [
                     {
                         "name": "Service Drone",

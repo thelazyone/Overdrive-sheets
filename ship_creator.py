@@ -15,6 +15,38 @@ def get_text_size(draw, text, font):
     bbox = draw.textbbox((0, 0), text, font=font)
     return bbox[2] - bbox[0], bbox[3] - bbox[1]
 
+def get_system_unique_id(system):
+    """Generate a unique identifier for a system based on name and key properties."""
+    # Start with the name
+    unique_id = system["name"]
+    
+    # Add rules if present
+    if "rules" in system and system["rules"]:
+        unique_id += f"_rules_{system['rules']}"
+    
+    # Add weapon flag if present
+    if system.get("weapon", False):
+        unique_id += "_weapon"
+    
+    # Add main flag if present  
+    if system.get("main", False):
+        unique_id += "_main"
+    
+    # Add hull/electronics/life_support flags for further differentiation
+    if system.get("hull", False):
+        unique_id += "_hull"
+    if system.get("electronics", False):
+        unique_id += "_electronics"
+    if system.get("life_support", False):
+        unique_id += "_life_support"
+    
+    # If there are areas, add a hash of their content for uniqueness
+    if "areas" in system and system["areas"]:
+        areas_str = str(sorted([str(area) for area in system["areas"]]))
+        unique_id += f"_areas_{hash(areas_str) % 10000}"  # Use modulo to keep it manageable
+    
+    return unique_id
+
 def create_ship_sheet(ship_data, output_path):
     """Create a ship sheet with the given data."""
     # Calculate pixel dimensions based on DPI
@@ -218,14 +250,15 @@ def create_ship_sheet(ship_data, output_path):
         column_height = 0
         for system in ship_data["sections"][section]:
             # Generate the system image if not already generated
-            if system["name"] not in system_images:
+            system_id = get_system_unique_id(system)
+            if system_id not in system_images:
                 system_img = create_system_image(system)
                 # Scale the image to match our desired width
                 scale_factor = system_width / system_img.width
                 new_height = int(system_img.height * scale_factor)
                 system_img = system_img.resize((system_width, new_height), Image.Resampling.LANCZOS)
-                system_images[system["name"]] = system_img
-            column_height += system_images[system["name"]].height + column_margin
+                system_images[system_id] = system_img
+            column_height += system_images[system_id].height + column_margin
         column_heights.append(column_height - column_margin)  # Remove last margin
     
     # Process core column
@@ -235,14 +268,15 @@ def create_ship_sheet(ship_data, output_path):
         if system["name"].lower() == "mess":
             continue
         # Generate the system image if not already generated
-        if system["name"] not in system_images:
+        system_id = get_system_unique_id(system)
+        if system_id not in system_images:
             system_img = create_system_image(system)
             # Scale the image to match our desired width
             scale_factor = system_width / system_img.width
             new_height = int(system_img.height * scale_factor)
             system_img = system_img.resize((system_width, new_height), Image.Resampling.LANCZOS)
-            system_images[system["name"]] = system_img
-        core_height += system_images[system["name"]].height + column_margin
+            system_images[system_id] = system_img
+        core_height += system_images[system_id].height + column_margin
     core_height -= column_margin  # Remove last margin
     column_heights.insert(1, core_height)  # Insert core height in the middle
     
@@ -255,7 +289,7 @@ def create_ship_sheet(ship_data, output_path):
         current_y = current_y_columns
         
         for system in ship_data["sections"][section]:
-            system_img = system_images[system["name"]]
+            system_img = system_images[get_system_unique_id(system)]
             img.paste(system_img, (current_x, current_y))
             current_y += system_img.height + column_margin
     
@@ -266,7 +300,7 @@ def create_ship_sheet(ship_data, output_path):
     current_y = current_y_columns
     
     for system in core_systems:
-        system_img = system_images[system["name"]]
+        system_img = system_images[get_system_unique_id(system)]
         img.paste(system_img, (current_x, current_y))
         current_y += system_img.height + column_margin
     
@@ -294,7 +328,7 @@ def main():
         
         try:
             # Load ship data
-            with open(json_path, "r") as f:
+            with open(json_path, "r", encoding='utf-8') as f:
                 ship_data = json.load(f)
             
             # Create the ship sheet with ship name in filename
@@ -317,7 +351,7 @@ def main():
             json_path = os.path.join(ships_dir, json_file)
             try:
                 # Load ship data
-                with open(json_path, "r") as f:
+                with open(json_path, "r", encoding='utf-8') as f:
                     ship_data = json.load(f)
                 
                 # Create the ship sheet with ship name in filename
