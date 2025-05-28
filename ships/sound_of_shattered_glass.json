@@ -34,7 +34,9 @@
                         "description": "",
                         "shoot": {
                             "damage": 2,
-                            "range": "0-2"
+                            "range": "0-2",
+                            "arc-start": 0,
+                            "arc-end": 5   
                         },
                         "cost": {
                             "energy": 1,
@@ -99,15 +101,42 @@
             },
             {
                 "name": "Asteroid Buster",
-                "rules": "Main",
+                "rules": "Main, Mining",
+                
                 "weapon": true,
                 "areas": [
                     {
                         "name": "Shoot",
-                        "description": "Front only",
+                        "description": "",
                         "shoot": {
                             "damage": 3,
-                            "range": "1-4"
+                            "range": "2-4",
+                            "arc-start": 2,
+                            "arc-end": 6                            
+                        },
+                        "cost": {
+                            "energy": 1,
+                            "crew": 1
+                        }
+                    }
+                ],
+                "electronics": false,
+                "hull": true,
+                "life_support": false
+            },
+            {
+                "name": "Asteroid Buster",
+                "rules": "Mining",
+                "weapon": true,
+                "areas": [
+                    {
+                        "name": "Shoot",
+                        "description": "",
+                        "shoot": {
+                            "damage": 3,
+                            "range": "2-4",
+                            "arc-start": 2,
+                            "arc-end": 6      
                         },
                         "cost": {
                             "energy": 1,
@@ -121,7 +150,7 @@
             },
             {
                 "name": "Barracks",
-                "rules": "Holds 4 Soldiers",
+                "rules": "Holds 2 Soldiers",
                 "areas": [
                     {
                         "name": "",
@@ -135,27 +164,6 @@
                 "electronics": false,
                 "hull": false,
                 "life_support": true
-            },
-            {
-                "name": "Asteroid Buster",
-                "weapon": true,
-                "areas": [
-                    {
-                        "name": "Shoot",
-                        "description": "Front only",
-                        "shoot": {
-                            "damage": 3,
-                            "range": "1-4"
-                        },
-                        "cost": {
-                            "energy": 1,
-                            "crew": 1
-                        }
-                    }
-                ],
-                "electronics": false,
-                "hull": true,
-                "life_support": false
             },
             {
                 "name": "Engine",
@@ -201,7 +209,9 @@
                         "description": "",
                         "shoot": {
                             "damage": 2,
-                            "range": "0-2"
+                            "range": "0-2",
+                            "arc-start": 3,
+                            "arc-end": 8   
                         },
                         "cost": {
                             "energy": 1,
@@ -212,6 +222,30 @@
                 "electronics": false,
                 "hull": true,
                 "life_support": true
+            },
+            {
+                "name": "Point-Defense",
+                "rules": "Anti-Light, Fast",
+                "weapon": true,
+                "areas": [
+                    {
+                        "name": "AA Burst",
+                        "description": "",
+                        "shoot": {
+                            "damage": 3,
+                            "range": "0-2",
+                            "arc-start": 0,
+                            "arc-end": 8
+                        },
+                        "cost": {
+                            "energy": 1,
+                            "crew": 0
+                        }
+                    }
+                ],
+                "electronics": false,
+                "hull": true,
+                "life_support": false
             },
             {
                 "name": "Drone Bay",

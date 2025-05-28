@@ -9,7 +9,7 @@
     },
     "reactor": {
         "name": "Reactor",
-        "rules": "Energy Production: 4",
+        "rules": "Energy Production: 3",
         "circles": 4,
         "electronics": true,
         "hull": false,
@@ -35,7 +35,9 @@
                         "description": "",
                         "shoot": {
                             "damage": 2,
-                            "range": "0-2"
+                            "range": "0-2",
+                            "arc-start": 0,
+                            "arc-end": 5  
                         },
                         "cost": {
                             "energy": 1,
@@ -46,36 +48,6 @@
                 "electronics": false,
                 "hull": true,
                 "life_support": false
-            },
-            {
-                "name": "Torpedo Bay",
-                "rules": "Anti-Capital",
-                "weapon": true,
-                "areas": [
-                    {
-                        "name": "Load torpedo",
-                        "description": "Max 2 loaded. Starts fully loaded.",
-                        "cost": {
-                            "energy": 0,
-                            "crew": 2
-                        }
-                    },
-                    {
-                        "name": "Fire torpedo",
-                        "description": "90° arc right side",
-                        "shoot": {
-                            "damage": 3,
-                            "range": "0"
-                        },
-                        "cost": {
-                            "energy": 0,
-                            "crew": 2
-                        }
-                    }
-                ],
-                "electronics": false,
-                "hull": true,
-                "life_support": true
             },
             {
                 "name": "Armor Plates",
@@ -140,10 +112,12 @@
                 "areas": [
                     {
                         "name": "Salvo",
-                        "description": "Front only",
+                        "description": "",
                         "shoot": {
                             "damage": 6,
-                            "range": "3-6"
+                            "range": "3-6",
+                            "arc-start": 1,
+                            "arc-end": 7  
                         },
                         "cost": {
                             "energy": 2,
@@ -162,10 +136,12 @@
                 "areas": [
                     {
                         "name": "Salvo",
-                        "description": "Front only",
+                        "description": "",
                         "shoot": {
                             "damage": 3,
-                            "range": "3-6"
+                            "range": "3-6",
+                            "arc-start": 0,
+                            "arc-end": 8  
                         },
                         "cost": {
                             "energy": 2,
@@ -179,7 +155,7 @@
             },
             {
                 "name": "Barracks",
-                "rules": "Holds 6 Soldiers",
+                "rules": "Holds 4 Soldiers",
                 "areas": [
                     {
                         "name": "",
@@ -239,7 +215,9 @@
                         "description": "",
                         "shoot": {
                             "damage": 2,
-                            "range": "0-2"
+                            "range": "0-2",
+                            "arc-start": 3,
+                            "arc-end": 8  
                         },
                         "cost": {
                             "energy": 1,
@@ -248,36 +226,6 @@
                     }
                 ],
                 "electronics": false,
-                "hull": true,
-                "life_support": true
-            },
-            {
-                "name": "Torpedo Bay",
-                "rules": "Anti-Capital",
-                "weapon": true,
-                "areas": [
-                    {
-                        "name": "Load torpedo",
-                        "description": "Max 2 loaded. Starts fully loaded.",
-                        "cost": {
-                            "energy": 0,
-                            "crew": 2
-                        }
-                    },
-                    {
-                        "name": "Fire torpedo",
-                        "description": "90° arc right side",
-                        "shoot": {
-                            "damage": 3,
-                            "range": "0"
-                        },
-                        "cost": {
-                            "energy": 0,
-                            "crew": 2
-                        }
-                    }
-                ],
-                "electronics": true,
                 "hull": true,
                 "life_support": true
             },

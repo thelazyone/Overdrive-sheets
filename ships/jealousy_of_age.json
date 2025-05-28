@@ -9,7 +9,7 @@
     },
     "reactor": {
         "name": "Reactor",
-        "rules": "Energy Production: 3",
+        "rules": "Energy Production: 2",
         "circles": 4,
         "electronics": true,
         "hull": false,
@@ -17,7 +17,7 @@
     },
     "mess": {
         "name": "Mess",
-        "rules": "Crew: 3",
+        "rules": "Crew: 4",
         "med_bay": 1,
         "electronics": false,
         "hull": false,
@@ -35,7 +35,9 @@
                         "description": "",
                         "shoot": {
                             "damage": 2,
-                            "range": "0-3"
+                            "range": "0-3",
+                            "arc-start": 0,
+                            "arc-end": 5    
                         },
                         "cost": {
                             "energy": 1,
@@ -47,7 +49,9 @@
                         "description": "",
                         "shoot": {
                             "damage": 4,
-                            "range": "0-3"
+                            "range": "0-3",
+                            "arc-start": 0,
+                            "arc-end": 5  
                         },
                         "cost": {
                             "energy": 1,
@@ -122,7 +126,9 @@
                         "description": "",
                         "shoot": {
                             "damage": 2,
-                            "range": "0-2"
+                            "range": "0-2",
+                            "arc-start": 0,
+                            "arc-end": 8  
                         },
                         "cost": {
                             "energy": 1,
@@ -132,23 +138,6 @@
                 ],
                 "electronics": false,
                 "hull": true,
-                "life_support": true
-            },
-            {
-                "name": "Barracks",
-                "rules": "Holds 3 Soldiers",
-                "areas": [
-                    {
-                        "name": "",
-                        "description": "Board up to 1 Crew",
-                        "cost": {
-                            "energy": 1,
-                            "crew": 1
-                        }
-                    }
-                ],
-                "electronics": false,
-                "hull": false,
                 "life_support": true
             },
             {
@@ -186,34 +175,53 @@
         ],
         "right": [
             {
-                "name": "Torpedo Bay",
-                "rules": "Anti-Capital",
+                "name": "Point-Defense",
+                "rules": "Anti-Light, Fast",
                 "weapon": true,
                 "areas": [
                     {
-                        "name": "Load torpedo",
-                        "description": "Max 2 loaded. Starts fully loaded.",
+                        "name": "AA Burst",
+                        "description": "",
+                        "shoot": {
+                            "damage": 3,
+                            "range": "0-2",
+                            "arc-start": 0,
+                            "arc-end": 0
+                        },
                         "cost": {
-                            "energy": 0,
-                            "crew": 2
+                            "energy": 1,
+                            "crew": 0
+                        }
+                    }
+                ],
+                "electronics": false,
+                "hull": true,
+                "life_support": false
+            },
+            {
+                "name": "EMP Pulse",
+                "rules": "",
+                "areas": [
+                    {
+                        "name": "AA Burst",
+                        "description": "Remove 3 Shield to all CS within Control",
+                        "cost": {
+                            "energy": 3,
+                            "crew": 0
                         }
                     },
                     {
-                        "name": "Fire torpedo",
-                        "description": "90° arc right side",
-                        "shoot": {
-                            "damage": 3,
-                            "range": "0"
-                        },
+                        "name": "AA Burst",
+                        "description": "Remove 1 Shield to all LS within Control",
                         "cost": {
-                            "energy": 0,
-                            "crew": 2
+                            "energy": 2,
+                            "crew": 0
                         }
                     }
                 ],
                 "electronics": true,
                 "hull": false,
-                "life_support": true
+                "life_support": false
             }
         ]
     }

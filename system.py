@@ -272,12 +272,17 @@ def generate_action(draw, area, content_x, combat_number_font_size, description_
         content_height = max(content_height, engine_img.height)
     
     # Draw description
+    desc_end_x = content_x
     if area["description"]:
         desc_text = area["description"].replace("Â°", "°")
         desc_x = content_x + (weapon_width + 20 if "shoot" in area or "engine" in area else 0)
         
-        # Calculate available width for description
-        available_width = max_desc_width - (weapon_width + 20 if "shoot" in area or "engine" in area else 0)
+        # Calculate available width for description (reserve space for firing arc if needed)
+        firing_arc_space = 0
+        if "shoot" in area and "arc-start" in area["shoot"] and "arc-end" in area["shoot"]:
+            firing_arc_space = 50  # 40px arc + 10px spacing
+        
+        available_width = max_desc_width - (weapon_width + 20 if "shoot" in area or "engine" in area else 0) - firing_arc_space
         
         # Wrap text if necessary
         wrapped_lines = wrap_text(desc_text, description_font, available_width - 30, draw)
@@ -299,7 +304,30 @@ def generate_action(draw, area, content_x, combat_number_font_size, description_
             line_y = desc_y + (i * line_height)
             elements.append(("text", (desc_x, line_y), line, description_font))
         
+        # Calculate the end position of the description text
+        if wrapped_lines:
+            last_line = wrapped_lines[-1]
+            last_line_width, _ = get_text_size(draw, last_line, description_font)
+            desc_end_x = desc_x + last_line_width
+        
         content_height = max(content_height, total_text_height if "shoot" in area or "engine" in area else 60)
+    else:
+        # If no description, set desc_end_x to where description would start
+        desc_end_x = content_x + (weapon_width + 20 if "shoot" in area or "engine" in area else 0)
+    
+    # Draw firing arc if weapon has arc information
+    if "shoot" in area and "arc-start" in area["shoot"] and "arc-end" in area["shoot"]:
+        arc_start = area["shoot"]["arc-start"]
+        arc_end = area["shoot"]["arc-end"]
+        
+        # Create the firing arc image
+        arc_img = draw_firing_arc(draw, arc_start, arc_end, size=80)
+        
+        # Position the arc after the description text (or where it would be)
+        arc_x = desc_end_x + 10  # 10px spacing after text
+        arc_y = (content_height - arc_img.height) // 2  # Center vertically
+        
+        elements.append(("image", (arc_x, arc_y), arc_img))
     
     return content_height, elements
 
@@ -538,6 +566,67 @@ def generate_top_left_system_icons(draw, system, weapon_img, star_img, vertical_
         for icon in resized_icons:
             draw._image.paste(icon, (current_x, bg_y + bg_padding), icon)
             current_x += icon.width + icon_spacing
+
+def draw_firing_arc(draw, arc_start, arc_end, size=40):
+    """Draw a firing arc circle showing the weapon's firing direction.
+    
+    Args:
+        draw: ImageDraw object (not used directly, for consistency)
+        arc_start: Starting position (0-8, where 0 is bottom)
+        arc_end: Ending position (0-8, where 0 is bottom)
+        size: Size of the circle in pixels
+    
+    Returns:
+        PIL Image with the firing arc visualization
+    """
+    # Use 4x resolution for antialiasing
+    scale_factor = 4
+    high_res_size = size * scale_factor
+    
+    # Create a high-resolution image for the firing arc
+    arc_img_hr = Image.new('RGBA', (high_res_size, high_res_size), (255, 255, 255, 0))
+    arc_draw_hr = ImageDraw.Draw(arc_img_hr)
+    
+    # Draw the outer circle at high resolution
+    circle_margin = 2 * scale_factor
+    line_width = 6 * scale_factor
+    arc_draw_hr.ellipse([circle_margin, circle_margin, high_res_size - circle_margin, high_res_size - circle_margin], 
+                     outline="black", width=line_width)
+    
+    # Handle full circle case (0-8 or equivalent)
+    if (arc_start == 0 and arc_end == 8) or (arc_end - arc_start == 8) or (arc_start == arc_end):
+        # Fill the entire circle
+        fill_margin = circle_margin + line_width // 2
+        arc_draw_hr.ellipse([fill_margin, fill_margin, high_res_size - fill_margin, high_res_size - fill_margin], 
+                         fill="black")
+    else:
+        # Calculate angles for the arc
+        # 0 is bottom (270°), then clockwise: 1=315°, 2=0°, 3=45°, 4=90°, 5=135°, 6=180°, 7=225°, 8=270°
+        def position_to_angle(pos):
+            # Convert position (0-8) to degrees
+            # Position 0 = 270° (bottom), then clockwise
+            angle = (90 + pos * 45) % 360
+            return angle
+        
+        start_angle = position_to_angle(arc_start)
+        end_angle = position_to_angle(arc_end)
+        
+        # Handle wrapping around 360°
+        if end_angle < start_angle:
+            end_angle += 360
+        
+        # Draw the arc sectors at high resolution
+        center_x, center_y = high_res_size // 2, high_res_size // 2
+        radius = (high_res_size - circle_margin * 2) // 2 - line_width // 2
+        
+        # Draw filled arc
+        arc_draw_hr.pieslice([center_x - radius, center_y - radius, center_x + radius, center_y + radius],
+                          start=start_angle, end=end_angle, fill="black")
+    
+    # Scale down with high-quality resampling for antialiasing
+    arc_img = arc_img_hr.resize((size, size), Image.Resampling.LANCZOS)
+    
+    return arc_img
 
 def create_system(system, tile_width_px, tile_height_px, dpi):
     """Create a generic system tile."""
