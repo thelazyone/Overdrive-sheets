@@ -1,0 +1,8 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+I am working with powershell, so in order to concatenate commands you must use ; instead of &&.
+
+Also, it is generally easier to stay in the man working directory and call commands by adding the relative path before them rather than moving ot that folder every time and then moving back.
