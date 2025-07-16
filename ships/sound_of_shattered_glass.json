@@ -1,7 +1,7 @@
 {
     "title": "Sound of Shattered Glass",
     "subtitle": "Opulence Class Feeder Vessel",
-    "command": 2,
+    "overdrive": [3, 2,0],
     "control": 2,
     "shields": {
         "front": [2, 1, 1, 0],
@@ -33,7 +33,7 @@
                         "name": "AA Burst",
                         "description": "",
                         "shoot": {
-                            "damage": 2,
+                            "damage": 5,
                             "range": "0-2",
                             "arc-start": 0,
                             "arc-end": 5   
@@ -208,7 +208,7 @@
                         "name": "AA Burst",
                         "description": "",
                         "shoot": {
-                            "damage": 2,
+                            "damage": 5,
                             "range": "0-2",
                             "arc-start": 3,
                             "arc-end": 8   
@@ -252,7 +252,7 @@
                 "areas": [
                     {
                         "name": "Service Drone",
-                        "description": "+1 objective interaction",
+                        "description": "Increase Scan targets by 1",
                         "cost": {
                             "energy": 2,
                             "crew": 0

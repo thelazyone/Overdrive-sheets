@@ -1,7 +1,7 @@
 {
     "title": "Advised Against This Course",
     "subtitle": "Vigilance Class Support Vessel",
-    "command": 2,
+    "overdrive": [2,2],
     "control": 2,
     "shields": {
         "front": [1, 1, 0, 0],
@@ -116,7 +116,7 @@
                         "name": "Salvo",
                         "description": "",
                         "shoot": {
-                            "damage": 3,
+                            "damage": 5,
                             "range": "3-6",
                             "arc-start": 2,
                             "arc-end": 6  

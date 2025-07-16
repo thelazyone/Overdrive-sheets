@@ -118,21 +118,56 @@ def create_ship_sheet(ship_data, output_path, resource_path_resolver=None):
     subtitle_y = title_y + title_h + 20
     draw.text((subtitle_x, subtitle_y), subtitle_text, font=subtitle_font, fill="black")
     
-    # Draw Command-Control values at the edges
-    command_text = f"COMMAND {ship_data.get('command', 0)}"
+    # Draw Overdrive tokens and Control values at the edges
     control_text = f"CONTROL {ship_data.get('control', 0)}"
-    command_w, command_h = get_text_size(draw, command_text, stats_font)
     control_w, control_h = get_text_size(draw, control_text, stats_font)
     
-    # Position command and control at the edges
+    # Position control at the right edge
     box_margin = 20  # Margin from bottom of page
-    command_x = box_margin  # Left edge
     control_x = width_px - control_w - box_margin  # Right edge
-    command_y = title_y  # Align with title
     control_y = title_y  # Align with title
     
-    draw.text((command_x, command_y), command_text, font=stats_font, fill="black")
     draw.text((control_x, control_y), control_text, font=stats_font, fill="black")
+    
+    # Draw Overdrive tokens at the left edge
+    overdrive_tokens = ship_data.get('overdrive', [])
+    if overdrive_tokens:
+        square_size = 100  # Size of each overdrive square
+        square_margin = 8  # Space between squares
+        label_spacing = 10  # Space between label and squares
+        
+        # Calculate total width needed for all squares
+        total_squares_width = len(overdrive_tokens) * square_size + (len(overdrive_tokens) - 1) * square_margin
+        
+        # Start position for overdrive elements
+        overdrive_x = box_margin
+        
+        # Draw overdrive label
+        overdrive_label = "OVERDRIVE"
+        overdrive_label_w, overdrive_label_h = get_text_size(draw, overdrive_label, label_font)
+        overdrive_label_x = overdrive_x
+        overdrive_label_y = title_y  # Align with title
+        draw.text((overdrive_label_x, overdrive_label_y), overdrive_label, font=label_font, fill="black")
+        
+        # Position squares below the label
+        overdrive_y = overdrive_label_y + overdrive_label_h + label_spacing
+        
+        # Draw each overdrive square with its number
+        current_x = overdrive_x
+        for token_value in overdrive_tokens:
+            # Draw square border
+            draw.rectangle([(current_x, overdrive_y), 
+                           (current_x + square_size, overdrive_y + square_size)], 
+                          outline="black", width=3, fill="white")
+            
+            # Draw number in center of square
+            token_text = str(token_value)
+            token_w, token_h = get_text_size(draw, token_text, stats_font)
+            text_x = current_x + (square_size - token_w) // 2
+            text_y = overdrive_y + (square_size - token_h) // 2
+            draw.text((text_x, text_y), token_text, font=stats_font, fill="black")
+            
+            current_x += square_size + square_margin
     
     # Create bottom boxes
     box_height = 300  # Increased height for boxes
