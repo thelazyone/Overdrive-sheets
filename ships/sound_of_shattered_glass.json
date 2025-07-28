@@ -167,31 +167,21 @@
             },
             {
                 "name": "Engine",
+                "rules": "",
                 "areas": [
                     {
-                        "name": "Cruise",
-                        "description": "",
-                        "engine": {
-                            "speed": "2-3",
-                            "steer": "45°"
-                        },
-                        "cost": {
-                            "energy": 1,
-                            "crew": 0
-                        }
-                    },
-                    {
-                        "name": "Pivot",
-                        "description": "",
-                        "engine": {
-                            "speed": "0-1",
-                            "steer": "90°"
-                        },
+                        "name": "",
+                        "description": "Change Speed",
                         "cost": {
                             "energy": 1,
                             "crew": 1
                         }
                     }
+                ],
+                "speed_slots": [
+                    {"speed": "0-1", "rotation": "90°"},
+                    {"speed": "1-2", "rotation": "45°"},
+                    {"speed": "2-3", "rotation": "0°"}
                 ],
                 "electronics": true,
                 "hull": false,

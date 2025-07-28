@@ -103,15 +103,15 @@ def draw_engine_symbol(draw, x, y, size, speed, font, steer_text=None):
     target_width = int(target_height * aspect_ratio)
     symbol_img = symbol_img.resize((target_width, target_height), Image.Resampling.LANCZOS)
     
-    # Calculate additional width needed for steer text if present
-    extra_width = 0
+    # Calculate additional height needed for steer text if present
+    extra_height = 0
     if steer_text:
         steer_text = steer_text.replace("Â°", "°")
         steer_w, steer_h = get_text_size(draw, steer_text, font)
-        extra_width = steer_w + 20  # Add 20px padding
+        extra_height = steer_h + 10  # Add 10px padding between texts
     
     # Create a new image with alpha channel for anti-aliasing
-    final_img = Image.new('RGBA', (target_width + extra_width, target_height), (255, 255, 255, 0))
+    final_img = Image.new('RGBA', (target_width, target_height + extra_height), (255, 255, 255, 0))
     final_draw = ImageDraw.Draw(final_img)
     
     # Paste the symbol
@@ -123,11 +123,11 @@ def draw_engine_symbol(draw, x, y, size, speed, font, steer_text=None):
     speed_y = (target_height - speed_h) // 2 - 4
     final_draw.text((speed_x, speed_y), str(speed), font=font, fill="black")
     
-    # Draw steer text if present
+    # Draw steer text below the arrow symbol if present
     if steer_text:
         steer_w, steer_h = get_text_size(final_draw, steer_text, font)
-        steer_x = target_width + 10  # 10px padding after the symbol
-        steer_y = (target_height - steer_h) // 2
+        steer_x = (target_width - steer_w) // 2  # Center horizontally
+        steer_y = target_height + 5  # 5px padding below the arrow
         final_draw.text((steer_x, steer_y), steer_text, font=font, fill="black")
     
     return final_img
@@ -464,6 +464,52 @@ def generate_reactor_content(draw, system, energy_large_img, current_y, vertical
     
     return current_y + empty_space_height + vertical_spacing
 
+def generate_engine_content(draw, system, tile_width_px, current_y, vertical_spacing, area_title_font, combat_number_font):
+    """Generate content for the Engine system with speed slots."""
+    # Get speed slots from the system data
+    speed_slots = system.get("speed_slots", [
+        {"speed": "0-1", "rotation": "90°"},
+        {"speed": "1-2", "rotation": "45°"}, 
+        {"speed": "2-3", "rotation": "0°"}
+    ])
+    
+    # Load shield slot image (we'll use empty shield slots for engine slots)
+    engine_slot_img = Image.open("resources/engine_slot.png")
+    
+    # Resize to bigger size for engine slots
+    slot_size = 200 
+    shield_slot_img = engine_slot_img.resize((slot_size, slot_size), Image.Resampling.LANCZOS)
+    
+    # Calculate layout
+    slot_spacing = 40 
+    total_slots_width = (len(speed_slots) * slot_size) + ((len(speed_slots) - 1) * slot_spacing)
+    
+    # Center the slots horizontally
+    start_x = (tile_width_px - total_slots_width) // 2
+    slot_y = current_y + 15
+    
+    # Draw each speed slot
+    for i, slot in enumerate(speed_slots):
+        slot_x = start_x + (i * (slot_size + slot_spacing))
+        
+        # Draw the empty slot
+        draw._image.paste(shield_slot_img, (slot_x, slot_y), shield_slot_img)
+        
+        # Draw engine symbol with speed and rotation inside the slot
+        speed_text = slot["speed"]
+        rotation_text = slot["rotation"]
+        engine_img = draw_engine_symbol(draw, 0, 0, 150, speed_text, combat_number_font, rotation_text)
+        
+        # Center the engine symbol in the slot
+        symbol_x = slot_x + (slot_size - engine_img.width) // 2
+        symbol_y = slot_y + (slot_size - engine_img.height) // 2
+        draw._image.paste(engine_img, (symbol_x, symbol_y), engine_img)
+    
+    # Calculate total height used (slot size plus some padding)
+    total_height = slot_size
+    
+    return current_y + total_height + vertical_spacing
+
 def generate_system_icons(draw, system, hull_img, electric_img, life_support_img, current_y):
     """Generate system icons in the bottom right."""
     icons = []
@@ -660,6 +706,11 @@ def create_system(system, tile_width_px, tile_height_px, dpi):
         current_y = generate_mess_content(draw, system, title_font, subtitle_font, area_title_font, description_font, med_bay_img, tile_width_px, current_y, vertical_spacing)
     elif system["name"].lower() == "reactor":
         current_y = generate_reactor_content(draw, system, energy_large_img, current_y, vertical_spacing)
+    elif system["name"].lower() == "engine":
+        # Add extra spacing for engines to push slots down from title
+        current_y += int(tile_height_px * 0.03)  # Additional spacing for engines
+        # Generate engine speed slots after normal area processing
+        current_y = generate_engine_content(draw, system, tile_width_px, current_y, vertical_spacing, area_title_font, combat_number_font)
     
     # Generate areas
     if "areas" in system and system["areas"]:
@@ -714,7 +765,7 @@ def create_system(system, tile_width_px, tile_height_px, dpi):
             current_y += total_height + vertical_spacing
         
         current_y += area_margin
-    elif system["name"].lower() not in ["mess", "reactor"]:
+    elif system["name"].lower() not in ["mess", "reactor", "engine"]:
         min_system_height = 100
         current_y += min_system_height
     
