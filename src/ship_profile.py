@@ -1,7 +1,9 @@
 import json
 from PIL import Image, ImageDraw, ImageFont
 import os
-from system import create_system_image
+from .system import create_system_image
+from .shields import render_shields
+from .overdrive import render_overdrive_tokens
 
 # Constants for A5 format (horizontal orientation)
 A5_WIDTH_CM = 21.0  # A5 width in cm
@@ -129,45 +131,8 @@ def create_ship_sheet(ship_data, output_path, resource_path_resolver=None):
     
     draw.text((control_x, control_y), control_text, font=stats_font, fill="black")
     
-    # Draw Overdrive tokens at the left edge
-    overdrive_tokens = ship_data.get('overdrive', [])
-    if overdrive_tokens:
-        square_size = 100  # Size of each overdrive square
-        square_margin = 8  # Space between squares
-        label_spacing = 10  # Space between label and squares
-        
-        # Calculate total width needed for all squares
-        total_squares_width = len(overdrive_tokens) * square_size + (len(overdrive_tokens) - 1) * square_margin
-        
-        # Start position for overdrive elements
-        overdrive_x = box_margin
-        
-        # Draw overdrive label
-        overdrive_label = "OVERDRIVE"
-        overdrive_label_w, overdrive_label_h = get_text_size(draw, overdrive_label, label_font)
-        overdrive_label_x = overdrive_x
-        overdrive_label_y = title_y  # Align with title
-        draw.text((overdrive_label_x, overdrive_label_y), overdrive_label, font=label_font, fill="black")
-        
-        # Position squares below the label
-        overdrive_y = overdrive_label_y + overdrive_label_h + label_spacing
-        
-        # Draw each overdrive square with its number
-        current_x = overdrive_x
-        for token_value in overdrive_tokens:
-            # Draw square border
-            draw.rectangle([(current_x, overdrive_y), 
-                           (current_x + square_size, overdrive_y + square_size)], 
-                          outline="black", width=3, fill="white")
-            
-            # Draw number in center of square
-            token_text = str(token_value)
-            token_w, token_h = get_text_size(draw, token_text, stats_font)
-            text_x = current_x + (square_size - token_w) // 2
-            text_y = overdrive_y + (square_size - token_h) // 2
-            draw.text((text_x, text_y), token_text, font=stats_font, fill="black")
-            
-            current_x += square_size + square_margin
+    # Draw Overdrive tokens using the overdrive module
+    render_overdrive_tokens(draw, ship_data, title_y, stats_font, label_font, box_margin)
     
     # Create bottom boxes
     box_height = 300  # Increased height for boxes
@@ -206,76 +171,8 @@ def create_ship_sheet(ship_data, output_path, resource_path_resolver=None):
     # Right box (Shields)
     right_box_x = width_px - box_width - box_margin
     
-    # Draw right box border
-    draw.rectangle([(right_box_x, box_y), 
-                   (right_box_x + box_width, box_y + box_height)], 
-                  outline="black", width=8)
-    
-    # Load shield icons
-    shield_slot_img = Image.open(resolve_resource("resources/shield_slot.png"))
-    shield_energy_img = Image.open(resolve_resource("resources/shield_slot_energy.png"))
-    
-    # Resize shield icons to 80px
-    icon_size = 80
-    shield_slot_img = shield_slot_img.resize((icon_size, icon_size), Image.Resampling.LANCZOS)
-    shield_energy_img = shield_energy_img.resize((icon_size, icon_size), Image.Resampling.LANCZOS)
-    
-    # Create shield displays
-    shield_data = ship_data.get("shields", {"front": [0, 0, 0], "rear": [0, 0]})
-    front_shields = shield_data.get("front", [0, 0, 0])
-    rear_shields = shield_data.get("rear", [0, 0])
-    
-    # Calculate total height needed for each shield group (label + icons)
-    label_height = 40  # Height for label
-    shield_group_height = label_height + icon_size
-    
-    # Calculate vertical spacing to center both groups in box
-    total_height = shield_group_height * 2  # Two groups
-    start_y = box_y + (box_height - total_height) // 2
-    
-    # Draw front shields
-    front_y = start_y - 10
-    front_label = "FRONT SHIELDS"
-    front_label_w, _ = get_text_size(draw, front_label, shields_font)
-    front_label_x = right_box_x + (box_width - front_label_w) // 2
-    draw.text((front_label_x, front_y), front_label, font=shields_font, fill="black")
-    front_y += label_height
-    
-    # Calculate total width of front shields
-    front_shields_width = (len(front_shields) + sum(front_shields)) * (icon_size + 4) - 4  # -4 to remove last gap
-    current_x = right_box_x + (box_width - front_shields_width) // 2
-    
-    for shield_value in front_shields:
-        # Draw empty shield slots
-        for _ in range(shield_value):
-            img.paste(shield_slot_img, (current_x, front_y), shield_slot_img)
-            current_x += icon_size + 4
-        
-        # Draw one energy slot
-        img.paste(shield_energy_img, (current_x, front_y), shield_energy_img)
-        current_x += icon_size + 4
-    
-    # Draw rear shields
-    rear_y = start_y + shield_group_height + 10
-    rear_label = "REAR SHIELDS"
-    rear_label_w, _ = get_text_size(draw, rear_label, shields_font)
-    rear_label_x = right_box_x + (box_width - rear_label_w) // 2
-    draw.text((rear_label_x, rear_y), rear_label, font=shields_font, fill="black")
-    rear_y += label_height
-    
-    # Calculate total width of rear shields
-    rear_shields_width = (len(rear_shields) + sum(rear_shields)) * (icon_size + 4) - 4  # -4 to remove last gap
-    current_x = right_box_x + (box_width - rear_shields_width) // 2
-    
-    for shield_value in rear_shields:
-        # Draw empty shield slots
-        for _ in range(shield_value):
-            img.paste(shield_slot_img, (current_x, rear_y), shield_slot_img)
-            current_x += icon_size + 4
-        
-        # Draw one energy slot
-        img.paste(shield_energy_img, (current_x, rear_y), shield_energy_img)
-        current_x += icon_size + 4
+    # Render shields using the shields module
+    render_shields(draw, ship_data, right_box_x, box_y, box_width, box_height, shields_font, resource_path_resolver)
     
     # Start systems below subtitle
     current_y = subtitle_y + subtitle_h + 50  # 50px margin from subtitle

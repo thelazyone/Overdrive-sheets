@@ -1,7 +1,7 @@
 import json
 import os
 import argparse
-from ship_profile import create_ship_sheet
+from src.ship_profile import create_ship_sheet
 
 def main():
     # Set up argument parser

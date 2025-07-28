@@ -6,6 +6,11 @@ from svglib.svglib import svg2rlg
 from reportlab.graphics import renderPM
 import io
 import tempfile
+from .attack_symbols import draw_weapon_symbol, draw_engine_symbol
+from .firing_arcs import draw_firing_arc
+from .engine import generate_engine_content
+from .reactor import generate_reactor_content
+from .mess import generate_mess_content
 
 # Constants for the new tile format
 TILE_WIDTH_CM = 8  # 8cm width
@@ -50,87 +55,7 @@ def create_weapon_symbol_svg(x, y, width, height):
     
     return svg
 
-def draw_weapon_symbol(draw, x, y, size, damage, range_val, font):
-    """Draw a weapon symbol with damage and range values."""
-    # Load and resize the symbol image
-    if not isinstance(range_val, str) and range_val == "0-0":
-        #error here
-        print(f"Error: Range value is not a string and is not '0-0' for {damage} damage")
-
-    is_long_arrow = False
-    if isinstance(range_val, str) and len(range_val) > 2:  # If range is a string and longer than 2 chars
-        is_long_arrow = True
-        symbol_img = Image.open("resources/arrow_long_symbol.png")
-    else:
-        symbol_img = Image.open("resources/arrow_symbol.png")
-
-    # Resize to 60px height while maintaining aspect ratio
-    aspect_ratio = symbol_img.width / symbol_img.height
-    target_height = 60
-    target_width = int(target_height * aspect_ratio)
-    symbol_img = symbol_img.resize((target_width, target_height), Image.Resampling.LANCZOS)
-
-    # Create a new image with alpha channel for anti-aliasing
-    final_img = Image.new('RGBA', symbol_img.size, (255, 255, 255, 0))
-    final_draw = ImageDraw.Draw(final_img)
-    
-    # Paste the symbol
-    final_img.paste(symbol_img, (0, 0), symbol_img)
-    
-    # Draw the numbers in large Eurostile font
-    # Left number (damage)
-    damage_w, damage_h = get_text_size(final_draw, str(damage), font)
-    damage_x = 28 - (damage_w) // 2
-    damage_y = (target_height - damage_h) // 2 - 4
-    final_draw.text((damage_x, damage_y), str(damage), font=font, fill="black")
-    
-    # Right number (range)
-    range_w, range_h = get_text_size(final_draw, str(range_val), font)
-    range_x = 103 - (range_w) // 2 if is_long_arrow else 79 - (range_w) // 2
-    range_y = (target_height - range_h) // 2 - 4
-    final_draw.text((range_x, range_y), str(range_val), font=font, fill="black")
-    
-    return final_img
-
-def draw_engine_symbol(draw, x, y, size, speed, font, steer_text=None):
-    """Draw an engine symbol with speed value and steer text."""
-    # Load and resize the symbol image
-    symbol_img = Image.open("resources/arrow_empty_symbol.png")
-    
-    # Resize to 60px height while maintaining aspect ratio
-    aspect_ratio = symbol_img.width / symbol_img.height
-    target_height = 60
-    target_width = int(target_height * aspect_ratio)
-    symbol_img = symbol_img.resize((target_width, target_height), Image.Resampling.LANCZOS)
-    
-    # Calculate additional height needed for steer text if present
-    extra_height = 0
-    if steer_text:
-        steer_text = steer_text.replace("Â°", "°")
-        steer_w, steer_h = get_text_size(draw, steer_text, font)
-        extra_height = steer_h + 10  # Add 10px padding between texts
-    
-    # Create a new image with alpha channel for anti-aliasing
-    final_img = Image.new('RGBA', (target_width, target_height + extra_height), (255, 255, 255, 0))
-    final_draw = ImageDraw.Draw(final_img)
-    
-    # Paste the symbol
-    final_img.paste(symbol_img, (0, 0), symbol_img)
-    
-    # Draw the speed value in large Eurostile font
-    speed_w, speed_h = get_text_size(final_draw, str(speed), font)
-    speed_x = 55 - (speed_w) // 2
-    speed_y = (target_height - speed_h) // 2 - 4
-    final_draw.text((speed_x, speed_y), str(speed), font=font, fill="black")
-    
-    # Draw steer text below the arrow symbol if present
-    if steer_text:
-        steer_w, steer_h = get_text_size(final_draw, steer_text, font)
-        steer_x = (target_width - steer_w) // 2  # Center horizontally
-        steer_y = target_height + 5  # 5px padding below the arrow
-        final_draw.text((steer_x, steer_y), steer_text, font=font, fill="black")
-    
-    return final_img
+# Weapon and engine symbols moved to attack_symbols.py
 
 def wrap_text(text, font, max_width, draw):
     """Wrap text to fit within max_width."""
@@ -378,137 +303,7 @@ def generate_cost_symbols(draw, energy_count, crew_count, energy_img, crew_img):
     
     return total_height, symbols_img
 
-def generate_mess_content(draw, system, title_font, subtitle_font, area_title_font, description_font, med_bay_img, tile_width_px, current_y, vertical_spacing):
-    """Generate content for the Mess system."""
-    mess_height = 200
-    current_y += mess_height
-
-    if "med_bay" in system and system["med_bay"] > 0:
-        med_bay_ratio = 0.275
-        med_bay_width = int(tile_width_px * med_bay_ratio)
-        main_section_width = tile_width_px - med_bay_width
-        
-        # Draw vertical divider
-        divider_padding = 20
-        divider_x = main_section_width
-        draw.line([(divider_x, divider_padding), 
-                  (divider_x, current_y - divider_padding)], 
-                 fill="black", width=2)
-        
-        # Draw med bay symbols
-        med_bay_count = system["med_bay"]
-        symbol_width = med_bay_img.width
-        gap = 10
-        
-        start_x = divider_x + (med_bay_width - symbol_width) // 2 - 50
-        total_simbols_width = med_bay_count * (symbol_width) + gap * min(med_bay_count - 1, 0)
-        start_y = current_y // 2 - total_simbols_width // 2
-        
-        for i in range(med_bay_count):
-            pos_y = start_y + (i * (symbol_width + gap))
-            draw._image.paste(med_bay_img, (start_x, pos_y), med_bay_img)
-        
-        # Draw "MED BAY" text vertically
-        med_bay_font_size = int(area_title_font.size * 0.75)
-        med_bay_font = ImageFont.truetype(EUROSTILE_BOLD, med_bay_font_size)
-        med_bay_text = "MED BAY"
-        med_bay_w, med_bay_h = get_text_size(draw, med_bay_text, med_bay_font)
-        
-        # Create text image with extra padding
-        padding = 10
-        # Create a taller image to accommodate the rotated text
-        text_img = Image.new('RGBA', (med_bay_w + padding*2, med_bay_h + padding*2), (255, 255, 255, 0))
-        text_draw = ImageDraw.Draw(text_img)
-        text_draw.text((padding, padding), med_bay_text, font=med_bay_font, fill="black")
-        
-        # Rotate the text
-        text_img = text_img.rotate(-90, expand=True)
-        
-        # Position the text at the right edge of the med bay section
-        med_bay_x = divider_x + med_bay_width - text_img.width   # 10px padding from right edge
-        med_bay_y = current_y - mess_height - text_img.height // 2 + 24
-        draw._image.paste(text_img, (med_bay_x, med_bay_y), text_img)
-    
-    return current_y
-
-def generate_reactor_content(draw, system, energy_large_img, current_y, vertical_spacing):
-    """Generate content for the Reactor system."""
-    empty_space_height = 150
-    if "circles" in system:
-        energy_count = system["circles"]
-        symbol_width = energy_large_img.width
-        gap = 20
-        
-        total_width = (energy_count * symbol_width) + ((energy_count - 1) * gap)
-
-        # If the total width is too large, reduce the symbol size by 10px and try again.
-        for attempt in range(6):
-            if total_width <= (draw._image.width - 20):  # 40px padding
-                break
-            # Reduce symbol size by 10px
-            symbol_width -= 10
-            gap -= 3
-            total_width = (energy_count * symbol_width) + ((energy_count - 1) * gap)
-            print(f"Reactor energy symbols too large, reducing size to {symbol_width}px and gap to {gap} (attempt {attempt + 1}/6)")
-
-        # Create a copy to energy_large_img and rescale it to the new symbol_width
-        energy_large_img_copy = energy_large_img.copy()
-        energy_large_img_copy = energy_large_img_copy.resize((symbol_width, symbol_width), Image.Resampling.LANCZOS)    
-        
-        start_x = (draw._image.width - total_width) // 2
-        symbol_y = current_y + (empty_space_height - energy_large_img.height) // 2
-        
-        for i in range(energy_count):
-            pos_x = start_x + (i * (symbol_width + gap))
-            draw._image.paste(energy_large_img_copy, (pos_x, symbol_y), energy_large_img_copy)
-    
-    return current_y + empty_space_height + vertical_spacing
-
-def generate_engine_content(draw, system, tile_width_px, current_y, vertical_spacing, area_title_font, combat_number_font):
-    """Generate content for the Engine system with speed slots."""
-    # Get speed slots from the system data
-    speed_slots = system.get("speed_slots", [
-        {"speed": "0-1", "rotation": "90°"},
-        {"speed": "1-2", "rotation": "45°"}, 
-        {"speed": "2-3", "rotation": "0°"}
-    ])
-    
-    # Load shield slot image (we'll use empty shield slots for engine slots)
-    engine_slot_img = Image.open("resources/engine_slot.png")
-    
-    # Resize to bigger size for engine slots
-    slot_size = 200 
-    shield_slot_img = engine_slot_img.resize((slot_size, slot_size), Image.Resampling.LANCZOS)
-    
-    # Calculate layout
-    slot_spacing = 40 
-    total_slots_width = (len(speed_slots) * slot_size) + ((len(speed_slots) - 1) * slot_spacing)
-    
-    # Center the slots horizontally
-    start_x = (tile_width_px - total_slots_width) // 2
-    slot_y = current_y + 15
-    
-    # Draw each speed slot
-    for i, slot in enumerate(speed_slots):
-        slot_x = start_x + (i * (slot_size + slot_spacing))
-        
-        # Draw the empty slot
-        draw._image.paste(shield_slot_img, (slot_x, slot_y), shield_slot_img)
-        
-        # Draw engine symbol with speed and rotation inside the slot
-        speed_text = slot["speed"]
-        rotation_text = slot["rotation"]
-        engine_img = draw_engine_symbol(draw, 0, 0, 150, speed_text, combat_number_font, rotation_text)
-        
-        # Center the engine symbol in the slot
-        symbol_x = slot_x + (slot_size - engine_img.width) // 2
-        symbol_y = slot_y + (slot_size - engine_img.height) // 2
-        draw._image.paste(engine_img, (symbol_x, symbol_y), engine_img)
-    
-    # Calculate total height used (slot size plus some padding)
-    total_height = slot_size
-    
-    return current_y + total_height + vertical_spacing
+# Mess, reactor, and engine content generation moved to their respective modules
 
 def generate_system_icons(draw, system, hull_img, electric_img, life_support_img, current_y):
     """Generate system icons in the bottom right."""
@@ -613,66 +408,7 @@ def generate_top_left_system_icons(draw, system, weapon_img, star_img, vertical_
             draw._image.paste(icon, (current_x, bg_y + bg_padding), icon)
             current_x += icon.width + icon_spacing
 
-def draw_firing_arc(draw, arc_start, arc_end, size=40):
-    """Draw a firing arc circle showing the weapon's firing direction.
-    
-    Args:
-        draw: ImageDraw object (not used directly, for consistency)
-        arc_start: Starting position (0-8, where 0 is bottom)
-        arc_end: Ending position (0-8, where 0 is bottom)
-        size: Size of the circle in pixels
-    
-    Returns:
-        PIL Image with the firing arc visualization
-    """
-    # Use 4x resolution for antialiasing
-    scale_factor = 4
-    high_res_size = size * scale_factor
-    
-    # Create a high-resolution image for the firing arc
-    arc_img_hr = Image.new('RGBA', (high_res_size, high_res_size), (255, 255, 255, 0))
-    arc_draw_hr = ImageDraw.Draw(arc_img_hr)
-    
-    # Draw the outer circle at high resolution
-    circle_margin = 2 * scale_factor
-    line_width = 6 * scale_factor
-    arc_draw_hr.ellipse([circle_margin, circle_margin, high_res_size - circle_margin, high_res_size - circle_margin], 
-                     outline="black", width=line_width)
-    
-    # Handle full circle case (0-8 or equivalent)
-    if (arc_start == 0 and arc_end == 8) or (arc_end - arc_start == 8) or (arc_start == arc_end):
-        # Fill the entire circle
-        fill_margin = circle_margin + line_width // 2
-        arc_draw_hr.ellipse([fill_margin, fill_margin, high_res_size - fill_margin, high_res_size - fill_margin], 
-                         fill="black")
-    else:
-        # Calculate angles for the arc
-        # 0 is bottom (270°), then clockwise: 1=315°, 2=0°, 3=45°, 4=90°, 5=135°, 6=180°, 7=225°, 8=270°
-        def position_to_angle(pos):
-            # Convert position (0-8) to degrees
-            # Position 0 = 270° (bottom), then clockwise
-            angle = (90 + pos * 45) % 360
-            return angle
-        
-        start_angle = position_to_angle(arc_start)
-        end_angle = position_to_angle(arc_end)
-        
-        # Handle wrapping around 360°
-        if end_angle < start_angle:
-            end_angle += 360
-        
-        # Draw the arc sectors at high resolution
-        center_x, center_y = high_res_size // 2, high_res_size // 2
-        radius = (high_res_size - circle_margin * 2) // 2 - line_width // 2
-        
-        # Draw filled arc
-        arc_draw_hr.pieslice([center_x - radius, center_y - radius, center_x + radius, center_y + radius],
-                          start=start_angle, end=end_angle, fill="black")
-    
-    # Scale down with high-quality resampling for antialiasing
-    arc_img = arc_img_hr.resize((size, size), Image.Resampling.LANCZOS)
-    
-    return arc_img
+# Firing arc drawing moved to firing_arcs.py
 
 def create_system(system, tile_width_px, tile_height_px, dpi):
     """Create a generic system tile."""
