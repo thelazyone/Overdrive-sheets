@@ -58,26 +58,36 @@ def create_weapon_symbol_svg(x, y, width, height):
 # Weapon and engine symbols moved to attack_symbols.py
 
 def wrap_text(text, font, max_width, draw):
-    """Wrap text to fit within max_width."""
-    words = text.split()
-    lines = []
-    current_line = []
+    """Wrap text to fit within max_width. Supports explicit line breaks using \\n."""
+    # First, handle explicit line breaks by splitting on \n
+    manual_lines = text.split('\\n')  # Use \\n as line break marker in JSON
     
-    for word in words:
-        test_line = ' '.join(current_line + [word])
-        width, _ = get_text_size(draw, test_line, font)
+    all_lines = []
+    for manual_line in manual_lines:
+        # Handle empty lines (for spacing)
+        if not manual_line.strip():
+            all_lines.append('')
+            continue
+            
+        # Apply word wrapping to each manual line
+        words = manual_line.split()
+        current_line = []
         
-        if width <= max_width:
-            current_line.append(word)
-        else:
-            if current_line:
-                lines.append(' '.join(current_line))
-            current_line = [word]
+        for word in words:
+            test_line = ' '.join(current_line + [word])
+            width, _ = get_text_size(draw, test_line, font)
+            
+            if width <= max_width:
+                current_line.append(word)
+            else:
+                if current_line:
+                    all_lines.append(' '.join(current_line))
+                current_line = [word]
+        
+        if current_line:
+            all_lines.append(' '.join(current_line))
     
-    if current_line:
-        lines.append(' '.join(current_line))
-    
-    return lines
+    return all_lines
 
 def load_fonts(dpi, tile_width_px):
     """Load the required fonts with appropriate sizes."""
@@ -162,11 +172,23 @@ def generate_rules(draw, system, subtitle_font, effective_width, current_y, vert
     
     if "rules" in system and system["rules"]:
         rules_text = system["rules"].replace("Â°", "°")
-        rules_w, rules_h = get_text_size(draw, rules_text, subtitle_font)
-        rules_x = (effective_width - rules_w) // 2
-        rules_y = current_y
-        draw.text((rules_x, rules_y), rules_text, font=subtitle_font, fill="black")
-        return max(rules_h + vertical_spacing, 5 * vertical_spacing)
+        
+        # Handle multi-line rules text
+        rules_lines = wrap_text(rules_text, subtitle_font, effective_width - 20, draw)
+        
+        # Calculate total height for all lines
+        line_height = subtitle_font.size + 4
+        total_text_height = len(rules_lines) * line_height - 4  # Remove spacing after last line
+        
+        # Draw each line centered
+        for i, line in enumerate(rules_lines):
+            if line:  # Skip empty lines for spacing
+                line_w, _ = get_text_size(draw, line, subtitle_font)
+                line_x = (effective_width - line_w) // 2
+                line_y = current_y + (i * line_height)
+                draw.text((line_x, line_y), line, font=subtitle_font, fill="black")
+        
+        return max(total_text_height + vertical_spacing, 5 * vertical_spacing)
     elif has_top_left_icons:
         # If no rules but has top-left icons, provide the same minimum spacing as if there were rules
         return 8 * vertical_spacing

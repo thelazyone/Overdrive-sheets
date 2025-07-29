@@ -164,6 +164,14 @@ def create_ship_sheet(ship_data, output_path, resource_path_resolver=None):
     mess_x = box_margin
     mess_y = reactor_y - mess_img.height - 20  # 20px gap between mess and reactor
     
+    # Add "CORE" label above the mess and reactor systems
+    core_label = "CORE"
+    core_label_w, core_label_h = get_text_size(draw, core_label, label_font)
+    # Center the label over the mess/reactor area
+    core_label_x = mess_x + (max(mess_img.width, reactor_img.width) - core_label_w) // 2
+    core_label_y = mess_y - core_label_h - 20  # 20px above the mess
+    draw.text((core_label_x, core_label_y), core_label, font=label_font, fill="black")
+    
     # Paste images
     img.paste(mess_img, (mess_x, mess_y))
     img.paste(reactor_img, (reactor_x, reactor_y))
