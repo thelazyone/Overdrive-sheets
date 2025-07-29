@@ -9,8 +9,8 @@
     },
     "reactor": {
         "name": "Reactor",
-        "rules": "Energy Production: 3",
-        "circles": 4,
+        "rules": "Energy Production: 4",
+        "circles": 5,
         "electronics": true,
         "hull": false,
         "life_support": false
@@ -47,7 +47,7 @@
                 ],
                 "electronics": false,
                 "hull": true,
-                "life_support": false
+                "life_support": true
             },
             {
                 "name": "Armor Plates",
@@ -94,7 +94,7 @@
                     },
                     {
                         "name": "Aim",
-                        "description": "Required for the Secondary Battery",
+                        "description": "Required for the Support Battery",
                         "cost": {
                             "energy": 0,
                             "crew": 1
@@ -107,7 +107,7 @@
             },
             {
                 "name": "Main Battery",
-                "rules": "Main, anti-Capital",
+                "rules": "Anti-Capital",
                 "weapon": true,
                 "areas": [
                     {
@@ -155,11 +155,11 @@
             },
             {
                 "name": "Barracks",
-                "rules": "Holds 4 Soldiers",
+                "rules": "Holds 3 Soldiers",
                 "areas": [
                     {
                         "name": "",
-                        "description": "Board up to 4 Crew",
+                        "description": "Board up to 2 Crew",
                         "cost": {
                             "energy": 0,
                             "crew": 2
@@ -186,7 +186,7 @@
                 "speed_slots": [
                     {"speed": "0-1", "rotation": "90°"},
                     {"speed": "1-2", "rotation": "45°"},
-                    {"speed": "2-3", "rotation": "0°"}
+                    {"speed": "2-3", "rotation": "45°"}
                 ],
                 "electronics": true,
                 "hull": false,

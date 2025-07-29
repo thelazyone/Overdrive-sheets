@@ -27,14 +27,16 @@
         "left": [
             {
                 "name": "Point Defence Guns",
-                "rules": "Side Only",
+                "rules": "Anti-Light",
                 "areas": [
                     {
                         "name": "",
-                        "description": "fast, anti-light",
+                        "description": "fast",
                         "shoot": {
                             "damage": 4,
-                            "range": "0-1"
+                            "range": "0-1",
+                            "arc-start": 0,
+                            "arc-end": 5
                         },
                         "cost": {
                             "energy": 2,
@@ -91,7 +93,9 @@
                         "description": "",
                         "shoot": {
                             "damage": 3,
-                            "range": "0-2"
+                            "range": "0-2",
+                            "arc-start": 1,
+                            "arc-end": 7
                         },
                         "cost": {
                             "energy": 1,
@@ -128,7 +132,9 @@
                         "description": "",
                         "shoot": {
                             "damage": 2,
-                            "range": "0-2"
+                            "range": "0-2",
+                            "arc-start": 1,
+                            "arc-end": 7
                         },
                         "cost": {
                             "energy": 1,
@@ -167,14 +173,13 @@
                         "description": "Change Speed",
                         "cost": {
                             "energy": 1,
-                            "crew": 1
+                            "crew": 2
                         }
                     }
                 ],
                 "speed_slots": [
-                    {"speed": "0-1", "rotation": "90°"},
-                    {"speed": "1-2", "rotation": "45°"},
-                    {"speed": "2-3", "rotation": "0°"}
+                    {"speed": "0", "rotation": "90°"},
+                    {"speed": "0-1", "rotation": "45°"}
                 ],
                 "electronics": true,
                 "hull": false,
@@ -184,14 +189,16 @@
         "right": [
             {
                 "name": "Point Defence Guns",
-                "rules": "Side Only",
+                "rules": "Anti-Light",
                 "areas": [
                     {
                         "name": "",
-                        "description": "fast, anti-light",
+                        "description": "fast",
                         "shoot": {
                             "damage": 4,
-                            "range": "0-1"
+                            "range": "0-1",
+                            "arc-start": 3,
+                            "arc-end": 8
                         },
                         "cost": {
                             "energy": 2,

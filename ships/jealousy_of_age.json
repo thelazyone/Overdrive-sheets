@@ -10,7 +10,7 @@
     "reactor": {
         "name": "Reactor",
         "rules": "Energy Production: 2",
-        "circles": 4,
+        "circles": 6,
         "electronics": true,
         "hull": false,
         "life_support": false
@@ -27,7 +27,7 @@
         "left": [
             {
                 "name": "Autocannons",
-                "rules": "Main",
+                "rules": "",
                 "weapon": true,
                 "areas": [
                     {
@@ -141,6 +141,24 @@
                 "life_support": true
             },
             {
+                "name": "Auxiliary Battery",
+                "rules": "",
+                "weapon": false,
+                "areas": [
+                    {
+                        "name": "",
+                        "description": "Increase Energy Production by 1 \\nduring the Maintenance Phase.",
+                        "cost": {
+                            "energy": 0,
+                            "crew": 1
+                        }
+                    }
+                ],
+                "electronics": false,
+                "hull": true,
+                "life_support": true
+            },
+            {
                 "name": "Engine",
                 "rules": "",
                 "areas": [
@@ -202,7 +220,7 @@
                     },
                     {
                         "name": "AA Burst",
-                        "description": "Remove 1 Shield to all LS within Control",
+                        "description": "Remove 1 Shield to all LS \\nwithin Control",
                         "cost": {
                             "energy": 2,
                             "crew": 0

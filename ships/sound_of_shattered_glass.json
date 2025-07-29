@@ -10,7 +10,7 @@
     "reactor": {
         "name": "Reactor",
         "rules": "Energy Production: 3",
-        "circles": 5,
+        "circles":7,
         "electronics": true,
         "hull": false,
         "life_support": false
@@ -54,7 +54,7 @@
                 "areas": [
                     {
                         "name": "Raise Shield",
-                        "description": "LS within Control get +1 shield until end of round",
+                        "description": "A Squadron within Control gets \\n+1 shield until end of round",
                         "cost": {
                             "energy": 2,
                             "crew": 0
@@ -101,7 +101,7 @@
             },
             {
                 "name": "Asteroid Buster",
-                "rules": "Main, Mining",
+                "rules": "Mining",
                 
                 "weapon": true,
                 "areas": [
@@ -180,7 +180,7 @@
                 ],
                 "speed_slots": [
                     {"speed": "0-1", "rotation": "90°"},
-                    {"speed": "1-2", "rotation": "45°"},
+                    {"speed": "1-2", "rotation": "0°"},
                     {"speed": "2-3", "rotation": "0°"}
                 ],
                 "electronics": true,
