@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Overdrive Ship Builder</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Overdrive Ship Builder</h1>
+            <div class="header-controls">
+                <button id="loadShip" class="btn btn-secondary">Load Ship</button>
+                <button id="saveShip" class="btn btn-secondary">Save Ship</button>
+                <button id="generateShip" class="btn btn-primary">Generate Ship Sheet</button>
+            </div>
+        </header>
+        
+        <div class="main-content">
+            <div class="left-panel">
+                <div class="ship-info">
+                    <h2>Ship Information</h2>
+                    <div class="form-group">
+                        <label for="shipTitle">Ship Name:</label>
+                        <input type="text" id="shipTitle" placeholder="Enter ship name" value="My Ship">
+                    </div>
+                    <div class="form-group">
+                        <label for="shipSubtitle">Subtitle:</label>
+                        <input type="text" id="shipSubtitle" placeholder="Enter subtitle" value="Custom Ship">
+                    </div>
+                    <div class="form-group">
+                        <label for="shipControl">Control:</label>
+                        <input type="number" id="shipControl" min="1" max="5" value="3">
+                    </div>
+                </div>
+
+                <div class="core-systems">
+                    <h2>Core Systems</h2>
+                    
+                    <div class="form-group">
+                        <label for="reactorSelect">Reactor:</label>
+                        <select id="reactorSelect">
+                            <option value="">Select Reactor</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="messSelect">Mess Hall:</label>
+                        <select id="messSelect">
+                            <option value="">Select Mess Hall</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="engineSelect">Engine:</label>
+                        <select id="engineSelect">
+                            <option value="">Select Engine</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="bridgeSelect">Bridge:</label>
+                        <select id="bridgeSelect">
+                            <option value="">Select Bridge</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="overdrive-section">
+                    <h2>Overdrive Tokens</h2>
+                    <div class="overdrive-controls">
+                        <button id="addOverdrive" class="btn btn-small">Add Token</button>
+                        <button id="removeOverdrive" class="btn btn-small">Remove Token</button>
+                    </div>
+                    <div id="overdriveTokens" class="overdrive-tokens">
+                        <input type="number" min="0" max="5" value="3" class="overdrive-token">
+                        <input type="number" min="0" max="5" value="3" class="overdrive-token">
+                        <input type="number" min="0" max="5" value="2" class="overdrive-token">
+                    </div>
+                </div>
+
+                <div class="shields-section">
+                    <h2>Shields</h2>
+                    <div class="shield-group">
+                        <label>Front Shields:</label>
+                        <div id="frontShields" class="shield-inputs">
+                            <input type="number" min="0" max="3" value="2" class="shield-input">
+                            <input type="number" min="0" max="3" value="2" class="shield-input">
+                            <input type="number" min="0" max="3" value="2" class="shield-input">
+                        </div>
+                        <button class="btn btn-small" onclick="addShield('front')">Add</button>
+                        <button class="btn btn-small" onclick="removeShield('front')">Remove</button>
+                    </div>
+                    <div class="shield-group">
+                        <label>Rear Shields:</label>
+                        <div id="rearShields" class="shield-inputs">
+                            <input type="number" min="0" max="3" value="2" class="shield-input">
+                            <input type="number" min="0" max="3" value="2" class="shield-input">
+                        </div>
+                        <button class="btn btn-small" onclick="addShield('rear')">Add</button>
+                        <button class="btn btn-small" onclick="removeShield('rear')">Remove</button>
+                    </div>
+                </div>
+
+                <div class="sections">
+                    <h2>Ship Sections</h2>
+                    
+                    <div class="section-group">
+                        <h3>Left Section</h3>
+                        <div class="system-controls">
+                            <select id="leftSystemSelect">
+                                <option value="">Add System</option>
+                            </select>
+                            <button id="addLeftSystem" class="btn btn-small">Add</button>
+                        </div>
+                        <ul id="leftSystems" class="system-list"></ul>
+                    </div>
+                    
+                    <div class="section-group">
+                        <h3>Core Section</h3>
+                        <div class="system-controls">
+                            <select id="coreSystemSelect">
+                                <option value="">Add System</option>
+                            </select>
+                            <button id="addCoreSystem" class="btn btn-small">Add</button>
+                        </div>
+                        <ul id="coreSystems" class="system-list"></ul>
+                    </div>
+                    
+                    <div class="section-group">
+                        <h3>Right Section</h3>
+                        <div class="system-controls">
+                            <select id="rightSystemSelect">
+                                <option value="">Add System</option>
+                            </select>
+                            <button id="addRightSystem" class="btn btn-small">Add</button>
+                        </div>
+                        <ul id="rightSystems" class="system-list"></ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="right-panel">
+                <div class="preview-container">
+                    <h2>Ship Sheet Preview</h2>
+                    <div id="previewArea" class="preview-area">
+                        <div class="preview-placeholder">
+                            Click "Generate Ship Sheet" to see preview
+                        </div>
+                    </div>
+                    <div class="preview-controls">
+                        <button id="downloadSheet" class="btn btn-secondary" style="display: none;">Download Sheet</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

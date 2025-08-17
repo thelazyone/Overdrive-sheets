@@ -1,0 +1,105 @@
+{
+  "bridges": [
+    {
+      "name": "Command Bridge",
+      "rules": "",
+      "areas": [
+        {
+          "name": "Broadcast",
+          "description": "Control 2 for this Round",
+          "cost": {
+            "energy": 0,
+            "crew": 1
+          }
+        },
+        {
+          "name": "Bridge Guns",
+          "description": "",
+          "shoot": {
+            "damage": 2,
+            "range": "0-2",
+            "arc-start": 2,
+            "arc-end": 6
+          },
+          "cost": {
+            "energy": 0,
+            "crew": 1
+          }
+        }
+      ],
+      "electronics": true,
+      "hull": false,
+      "life_support": true
+    },
+    {
+      "name": "Main Bridge",
+      "rules": " ",
+      "areas": [
+        {
+          "name": "Support Comms",
+          "description": "+1 Control to another ship",
+          "cost": {
+            "energy": 2,
+            "crew": 2
+          }
+        },
+        {
+          "name": "Bridge Guns",
+          "description": "",
+          "shoot": {
+            "damage": 3,
+            "range": "0-2",
+            "arc-start": 1,
+            "arc-end": 7
+          },
+          "cost": {
+            "energy": 1,
+            "crew": 2
+          }
+        },
+        {
+          "name": "Objectives",
+          "description": "Capture 1 objective",
+          "cost": {
+            "energy": 2,
+            "crew": 2
+          }
+        }
+      ],
+      "electronics": true,
+      "hull": false,
+      "life_support": true
+    },
+    {
+      "name": "Lower Bridge",
+      "rules": " ",
+      "areas": [
+        {
+          "name": "",
+          "description": "+2 Command",
+          "cost": {
+            "energy": 0,
+            "crew": 2
+          }
+        },
+        {
+          "name": "Bridge Guns",
+          "description": "",
+          "shoot": {
+            "damage": 2,
+            "range": "0-2",
+            "arc-start": 1,
+            "arc-end": 7
+          },
+          "cost": {
+            "energy": 1,
+            "crew": 1
+          }
+        }
+      ],
+      "electronics": true,
+      "hull": false,
+      "life_support": true
+    }
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "mess_halls": [
+    {
+      "name": "Basic Mess",
+      "rules": "Crew: 3",
+      "med_bay": 1,
+      "electronics": false,
+      "hull": false,
+      "life_support": true
+    },
+    {
+      "name": "Standard Mess",
+      "rules": "Crew: 6",
+      "med_bay": 2,
+      "electronics": false,
+      "hull": false,
+      "life_support": true
+    },
+    {
+      "name": "Large Mess",
+      "rules": "Crew: 8",
+      "med_bay": 3,
+      "electronics": false,
+      "hull": false,
+      "life_support": true
+    }
+  ]
+}

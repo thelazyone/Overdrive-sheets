@@ -1,0 +1,67 @@
+{
+  "engines": [
+    {
+      "name": "Basic Engine",
+      "rules": "",
+      "areas": [
+        {
+          "name": "",
+          "description": "Change Speed",
+          "cost": {
+            "energy": 1,
+            "crew": 2
+          }
+        }
+      ],
+      "speed_slots": [
+        {"speed": "0", "rotation": "90°"},
+        {"speed": "0-1", "rotation": "45°"}
+      ],
+      "electronics": true,
+      "hull": false,
+      "life_support": false
+    },
+    {
+      "name": "Fast Engine",
+      "rules": "",
+      "areas": [
+        {
+          "name": "",
+          "description": "Change Speed",
+          "cost": {
+            "energy": 1,
+            "crew": 0
+          }
+        }
+      ],
+      "speed_slots": [
+        {"speed": "0-1", "rotation": "90°"},
+        {"speed": "1-3", "rotation": "45°"}
+      ],
+      "electronics": true,
+      "hull": false,
+      "life_support": false
+    },
+    {
+      "name": "Heavy Engine",
+      "rules": "",
+      "areas": [
+        {
+          "name": "",
+          "description": "Change Speed",
+          "cost": {
+            "energy": 2,
+            "crew": 1
+          }
+        }
+      ],
+      "speed_slots": [
+        {"speed": "0", "rotation": "90°"},
+        {"speed": "0-2", "rotation": "45°"}
+      ],
+      "electronics": true,
+      "hull": false,
+      "life_support": false
+    }
+  ]
+}

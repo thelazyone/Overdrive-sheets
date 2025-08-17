@@ -1,0 +1,36 @@
+{
+  "reactors": [
+    {
+      "name": "Basic Reactor",
+      "rules": "Energy Production: 3",
+      "circles": 4,
+      "electronics": true,
+      "hull": false,
+      "life_support": false
+    },
+    {
+      "name": "Standard Reactor",
+      "rules": "Energy Production: 4",
+      "circles": 5,
+      "electronics": true,
+      "hull": false,
+      "life_support": false
+    },
+    {
+      "name": "Advanced Reactor",
+      "rules": "Energy Production: 4",
+      "circles": 8,
+      "electronics": true,
+      "hull": false,
+      "life_support": false
+    },
+    {
+      "name": "Heavy Reactor",
+      "rules": "Energy Production: 5",
+      "circles": 6,
+      "electronics": true,
+      "hull": false,
+      "life_support": false
+    }
+  ]
+}
