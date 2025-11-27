@@ -155,7 +155,7 @@
             },
             {
                 "name": "Barracks",
-                "rules": "Holds 3 Soldiers",
+                "rules": "Holds 3 Crew",
                 "areas": [
                     {
                         "name": "",

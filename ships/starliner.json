@@ -148,7 +148,7 @@
             },
             {
                 "name": "Barracks",
-                "rules": "Holds 4 Soldiers",
+                "rules": "Holds 4 Crew",
                 "areas": [
                 ],
                 "electronics": false,

@@ -133,7 +133,7 @@
             },
             {
                 "name": "Barracks",
-                "rules": "Holds 2 Soldiers",
+                "rules": "Holds 2 Crew",
                 "areas": [
                     {
                         "name": "",

@@ -199,11 +199,11 @@
             },
             {
                 "name": "Barracks",
-                "rules": "Holds 4 Soldiers",
+                "rules": "Holds 4 Crew",
                 "areas": [
                     {
                         "name": "",
-                        "description": "Board up to 2 Soldiers",
+                        "description": "Board up to 2 Crew",
                         "cost": {
                             "energy": 0,
                             "crew": 1

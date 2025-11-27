@@ -50,6 +50,22 @@
                 "weapon": true
             },
             {
+                "name": "Broadband Antenna",
+                "areas": [
+                    {
+                        "name": "Broadcast",
+                        "description": "+1 Control",
+                        "cost": {
+                            "energy": 0,
+                            "crew": 0
+                        }
+                    }
+                ],
+                "electronics": true,
+                "hull": false,
+                "life_support": false
+            },
+            {
                 "name": "Shield Projector",
                 "areas": [
                     {
@@ -149,20 +165,27 @@
                 "life_support": false
             },
             {
-                "name": "Barracks",
-                "rules": "Holds 2 Soldiers",
+                "name": "Dual Flak Battery",
+                "rules": "Anti-Light",
+                "weapon": true,
                 "areas": [
                     {
-                        "name": "",
-                        "description": "Board up to 1 Crew",
+                        "name": "AA Burst",
+                        "description": "",
+                        "shoot": {
+                            "damage": 7,
+                            "range": "0-2",
+                            "arc-start": 0,
+                            "arc-end": 8   
+                        },
                         "cost": {
                             "energy": 1,
-                            "crew": 1
+                            "crew": 2
                         }
                     }
                 ],
                 "electronics": false,
-                "hull": false,
+                "hull": true,
                 "life_support": true
             },
             {
@@ -190,30 +213,6 @@
         ],
         "right": [
             {
-                "name": "Flak Battery",
-                "rules": "Anti-Light",
-                "weapon": true,
-                "areas": [
-                    {
-                        "name": "AA Burst",
-                        "description": "",
-                        "shoot": {
-                            "damage": 5,
-                            "range": "0-2",
-                            "arc-start": 3,
-                            "arc-end": 8   
-                        },
-                        "cost": {
-                            "energy": 1,
-                            "crew": 1
-                        }
-                    }
-                ],
-                "electronics": false,
-                "hull": true,
-                "life_support": true
-            },
-            {
                 "name": "Point-Defense",
                 "rules": "Anti-Light, Fast",
                 "weapon": true,
@@ -224,7 +223,7 @@
                         "shoot": {
                             "damage": 3,
                             "range": "0-2",
-                            "arc-start": 0,
+                            "arc-start": 3,
                             "arc-end": 8
                         },
                         "cost": {
@@ -252,6 +251,23 @@
                 "electronics": true,
                 "hull": false,
                 "life_support": false
+            },
+            {
+                "name": "Barracks",
+                "rules": "Holds 2 Crew",
+                "areas": [
+                    {
+                        "name": "",
+                        "description": "Board up to 1 Crew",
+                        "cost": {
+                            "energy": 1,
+                            "crew": 1
+                        }
+                    }
+                ],
+                "electronics": false,
+                "hull": false,
+                "life_support": true
             }
         ]
     }
