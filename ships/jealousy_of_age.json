@@ -34,7 +34,7 @@
                         "name": "Fast Burst",
                         "description": "",
                         "shoot": {
-                            "damage": 2,
+                            "damage": 3,
                             "range": "0-3",
                             "arc-start": 0,
                             "arc-end": 5    
@@ -48,7 +48,7 @@
                         "name": "Long Burst",
                         "description": "",
                         "shoot": {
-                            "damage": 4,
+                            "damage": 5,
                             "range": "0-3",
                             "arc-start": 0,
                             "arc-end": 5  
