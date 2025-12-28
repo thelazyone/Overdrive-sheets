@@ -1,0 +1,8 @@
+# Missions CSV
+# Format: Title;Image path;Description;Traits
+# Traits are separated by semicolons
+#
+#Rescue Operation;resources/crew_symbol.png;Rescue 3 crew members from the derelict ship. Rewards: Gain 2 Crew tokens;Rescue;Exploration
+#Defend the Station;;Protect the space station from enemy attacks for 3 rounds. Rewards: +2 Shield tokens;Defense;Combat
+#Explore Unknown Sector;;Chart 5 new sectors. Rewards: Draw 3 cards;Exploration;Discovery
+

@@ -1,0 +1,8 @@
+# Events CSV
+# Format: Title;Image path;Description;Traits
+# Traits are separated by semicolons
+#
+#Asteroid Field;resources/star_icon.png;All ships must roll for damage. Ships with Hull 3+ take half damage;Hazard;Space
+#Solar Flare;;All Electronics systems are disabled for 1 round;Hazard;Energy
+#Trade Opportunity;;Gain 3 Energy tokens. Draw 1 card;Opportunity;Trade
+

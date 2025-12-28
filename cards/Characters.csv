@@ -1,0 +1,7 @@
+# Characters CSV
+# Format: Title;Image path;Passive ability;Active ability;Traits
+# Traits are separated by semicolons
+Title;Image path;Passive ability;Active ability;Traits
+Captain Smith;;Gain +1 Control at the start of each round;;Military
+
+
