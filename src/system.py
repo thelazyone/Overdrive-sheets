@@ -478,8 +478,8 @@ def create_system(system, tile_width_px, tile_height_px, dpi):
         for idx, area in enumerate(system["areas"]):
             if idx > 0:
                 divider_y = current_y + vertical_spacing
-                divider_start_x = (tile_width_px - (tile_width_px * 0.5)) // 2
-                divider_end_x = divider_start_x + (tile_width_px * 0.5)
+                divider_start_x = (tile_width_px - (tile_width_px * 0.9)) // 2
+                divider_end_x = divider_start_x + (tile_width_px * 0.9)
                 draw.line([(divider_start_x, divider_y), 
                           (divider_end_x, divider_y)], 
                          fill="black", width=2)

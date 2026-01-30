@@ -10,7 +10,7 @@
     "reactor": {
         "name": "Reactor",
         "rules": "Energy Production: 3",
-        "circles":7,
+        "circles":6,
         "electronics": true,
         "hull": false,
         "life_support": false
@@ -25,64 +25,6 @@
     },
     "sections": {
         "left": [
-            {
-                "name": "Flak Battery",
-                "rules": "Anti-Light",
-                "areas": [
-                    {
-                        "name": "AA Burst",
-                        "description": "",
-                        "shoot": {
-                            "damage": 5,
-                            "range": "0-2",
-                            "arc-start": 0,
-                            "arc-end": 5   
-                        },
-                        "cost": {
-                            "energy": 1,
-                            "crew": 1
-                        }
-                    }
-                ],
-                "electronics": false,
-                "hull": true,
-                "life_support": true,
-                "weapon": true
-            },
-            {
-                "name": "Broadband Antenna",
-                "areas": [
-                    {
-                        "name": "Broadcast",
-                        "description": "+1 Control",
-                        "cost": {
-                            "energy": 0,
-                            "crew": 0
-                        }
-                    }
-                ],
-                "electronics": true,
-                "hull": false,
-                "life_support": false
-            },
-            {
-                "name": "Shield Projector",
-                "areas": [
-                    {
-                        "name": "Raise Shield",
-                        "description": "A Squadron within Control gets \\n+1 shield until end of round",
-                        "cost": {
-                            "energy": 2,
-                            "crew": 0
-                        }
-                    }
-                ],
-                "electronics": true,
-                "hull": false,
-                "life_support": false
-            }
-        ],
-        "core": [
             {
                 "name": "Command Bridge",
                 "rules": "",
@@ -116,6 +58,42 @@
                 "life_support": true
             },
             {
+                "name": "Barracks",
+                "rules": "Holds 3 Crew",
+                "areas": [
+                    {
+                        "name": "",
+                        "description": "Board up to 1 Crew",
+                        "cost": {
+                            "energy": 1,
+                            "crew": 1
+                        }
+                    }
+                ],
+                "electronics": false,
+                "hull": false,
+                "life_support": true
+            } ,
+            {
+                "name": "Broadband Antenna",
+                "areas": [
+                    {
+                        "name": "Broadcast",
+                        "description": "+1 Control while operational",
+                        "cost": {
+                            "energy": 0,
+                            "crew": 0
+                        }
+                    }
+                ],
+                "electronics": true,
+                "hull": false,
+                "life_support": false
+            }
+        ],
+        "core": [
+            
+            {
                 "name": "Asteroid Buster",
                 "rules": "Mining",
                 
@@ -125,10 +103,10 @@
                         "name": "Shoot",
                         "description": "",
                         "shoot": {
-                            "damage": 3,
+                            "damage": 4,
                             "range": "2-4",
-                            "arc-start": 2,
-                            "arc-end": 6                            
+                            "arc-start": 1,
+                            "arc-end": 7                            
                         },
                         "cost": {
                             "energy": 1,
@@ -149,10 +127,10 @@
                         "name": "Shoot",
                         "description": "",
                         "shoot": {
-                            "damage": 3,
+                            "damage": 4,
                             "range": "2-4",
-                            "arc-start": 2,
-                            "arc-end": 6      
+                            "arc-start": 1,
+                            "arc-end": 7      
                         },
                         "cost": {
                             "energy": 1,
@@ -224,7 +202,7 @@
                             "damage": 3,
                             "range": "0-2",
                             "arc-start": 3,
-                            "arc-end": 8
+                            "arc-end": 1
                         },
                         "cost": {
                             "energy": 1,
@@ -236,7 +214,7 @@
                 "hull": true,
                 "life_support": false
             },
-            {
+                 {
                 "name": "Drone Bay",
                 "areas": [
                     {
@@ -251,23 +229,6 @@
                 "electronics": true,
                 "hull": false,
                 "life_support": false
-            },
-            {
-                "name": "Barracks",
-                "rules": "Holds 2 Crew",
-                "areas": [
-                    {
-                        "name": "",
-                        "description": "Board up to 1 Crew",
-                        "cost": {
-                            "energy": 1,
-                            "crew": 1
-                        }
-                    }
-                ],
-                "electronics": false,
-                "hull": false,
-                "life_support": true
             }
         ]
     }

@@ -36,7 +36,7 @@
                         "shoot": {
                             "damage": 5,
                             "range": "0-2",
-                            "arc-start": 0,
+                            "arc-start": 7,
                             "arc-end": 5  
                         },
                         "cost": {
@@ -80,23 +80,15 @@
                             "range": "1-3"
                         },
                         "cost": {
-                            "energy": 1,
-                            "crew": 1
-                        }
-                    },
-                    {
-                        "name": "Aim",
-                        "description": "Required for the Main Battery",
-                        "cost": {
-                            "energy": 1,
-                            "crew": 1
-                        }
-                    },
-                    {
-                        "name": "Aim",
-                        "description": "Required for the Support Battery",
-                        "cost": {
                             "energy": 0,
+                            "crew": 1
+                        }
+                    },
+                    {
+                        "name": "Aim",
+                        "description": "Required for the Batteries",
+                        "cost": {
+                            "energy": 1,
                             "crew": 1
                         }
                     }
@@ -116,8 +108,8 @@
                         "shoot": {
                             "damage": 9,
                             "range": "3-6",
-                            "arc-start": 1,
-                            "arc-end": 7  
+                            "arc-start": 3,
+                            "arc-end": 5  
                         },
                         "cost": {
                             "energy": 2,
@@ -140,8 +132,8 @@
                         "shoot": {
                             "damage": 5,
                             "range": "3-6",
-                            "arc-start": 0,
-                            "arc-end": 8  
+                            "arc-start": 1,
+                            "arc-end": 7  
                         },
                         "cost": {
                             "energy": 2,
@@ -206,7 +198,7 @@
                             "damage": 5,
                             "range": "0-2",
                             "arc-start": 3,
-                            "arc-end": 8  
+                            "arc-end": 1  
                         },
                         "cost": {
                             "energy": 1,

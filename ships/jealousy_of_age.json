@@ -26,32 +26,18 @@
     "sections": {
         "left": [
             {
-                "name": "Autocannons",
-                "rules": "",
+                "name": "Asteroid Buster",
+                "rules": "Mining",
                 "weapon": true,
                 "areas": [
                     {
-                        "name": "Fast Burst",
+                        "name": "Shoot",
                         "description": "",
                         "shoot": {
-                            "damage": 3,
-                            "range": "0-3",
-                            "arc-start": 0,
-                            "arc-end": 5    
-                        },
-                        "cost": {
-                            "energy": 1,
-                            "crew": 0
-                        }
-                    },
-                    {
-                        "name": "Long Burst",
-                        "description": "",
-                        "shoot": {
-                            "damage": 5,
-                            "range": "0-3",
-                            "arc-start": 0,
-                            "arc-end": 5  
+                            "damage": 4,
+                            "range": "2-4",
+                            "arc-start": 1,
+                            "arc-end": 7      
                         },
                         "cost": {
                             "energy": 1,
@@ -64,13 +50,28 @@
                 "life_support": false
             },
             {
-                "name": "Target Tracking",
+                "name": "EMP Emitter",
+                "rules": "",
                 "areas": [
                     {
-                        "name": "Tracking",
-                        "description": "LS within Control get +1 to hit",
+                        "name": "EMP Pulse",
+                        "description": "EMP",
+                        "shoot": {
+                            "damage": 6,
+                            "range": "1-4",
+                            "arc-start": 1,
+                            "arc-end": 7  
+                        },
                         "cost": {
-                            "energy": 1,
+                            "energy": 3,
+                            "crew": 0
+                        }
+                    },
+                    {
+                        "name": "AA Burst",
+                        "description": "Remove 1 Shield to all LS \\nwithin Control",
+                        "cost": {
+                            "energy": 2,
                             "crew": 0
                         }
                     }
@@ -92,8 +93,8 @@
                         }
                     },
                     {
-                        "name": "Broadcast",
-                        "description": "Control 2 for this Round",
+                        "name": "Aim",
+                        "description": "Required for the Asteroid Busters",
                         "cost": {
                             "energy": 0,
                             "crew": 1
@@ -141,24 +142,6 @@
                 "life_support": true
             },
             {
-                "name": "Auxiliary Battery",
-                "rules": "",
-                "weapon": false,
-                "areas": [
-                    {
-                        "name": "",
-                        "description": "Increase Energy Production by 1 \\nduring the Maintenance Phase.",
-                        "cost": {
-                            "energy": 0,
-                            "crew": 1
-                        }
-                    }
-                ],
-                "electronics": false,
-                "hull": true,
-                "life_support": true
-            },
-            {
                 "name": "Engine",
                 "rules": "",
                 "areas": [
@@ -183,52 +166,27 @@
         ],
         "right": [
             {
-                "name": "Point-Defense",
-                "rules": "Anti-Light, Fast",
+                "name": "Asteroid Buster",
+                "rules": "Mining",
                 "weapon": true,
                 "areas": [
                     {
-                        "name": "AA Burst",
+                        "name": "Shoot",
                         "description": "",
                         "shoot": {
-                            "damage": 3,
-                            "range": "0-2",
-                            "arc-start": 0,
-                            "arc-end": 0
+                            "damage": 4,
+                            "range": "2-4",
+                            "arc-start": 1,
+                            "arc-end": 7      
                         },
                         "cost": {
                             "energy": 1,
-                            "crew": 0
+                            "crew": 1
                         }
                     }
                 ],
                 "electronics": false,
                 "hull": true,
-                "life_support": false
-            },
-            {
-                "name": "EMP Pulse",
-                "rules": "",
-                "areas": [
-                    {
-                        "name": "AA Burst",
-                        "description": "Remove 3 Shield to all CS within Control",
-                        "cost": {
-                            "energy": 3,
-                            "crew": 0
-                        }
-                    },
-                    {
-                        "name": "AA Burst",
-                        "description": "Remove 1 Shield to all LS \\nwithin Control",
-                        "cost": {
-                            "energy": 2,
-                            "crew": 0
-                        }
-                    }
-                ],
-                "electronics": true,
-                "hull": false,
                 "life_support": false
             }
         ]
