@@ -87,13 +87,13 @@
             
             {
                 "name": "Asteroid Buster",
-                "rules": "Mining",
+                "rules": "",
                 
                 "weapon": true,
                 "areas": [
                     {
                         "name": "Shoot",
-                        "description": "",
+                        "description": "Mining",
                         "shoot": {
                             "damage": 4,
                             "range": "2-4",
@@ -112,12 +112,12 @@
             },
             {
                 "name": "Asteroid Buster",
-                "rules": "Mining",
+                "rules": "",
                 "weapon": true,
                 "areas": [
                     {
                         "name": "Shoot",
-                        "description": "",
+                        "description": "Mining",
                         "shoot": {
                             "damage": 4,
                             "range": "2-4",
@@ -136,12 +136,12 @@
             },
             {
                 "name": "Dual Flak Battery",
-                "rules": "Anti-Light",
+                "rules": "",
                 "weapon": true,
                 "areas": [
                     {
                         "name": "AA Burst",
-                        "description": "",
+                        "description": "Anti-Light",
                         "shoot": {
                             "damage": 7,
                             "range": "0-2",
@@ -184,12 +184,12 @@
         "right": [
             {
                 "name": "Point-Defense",
-                "rules": "Anti-Light, Fast",
+                "rules": "",
                 "weapon": true,
                 "areas": [
                     {
                         "name": "AA Burst",
-                        "description": "",
+                        "description": "Anti-Light, Fast",
                         "shoot": {
                             "damage": 3,
                             "range": "0-2",

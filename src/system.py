@@ -218,18 +218,34 @@ def generate_action(draw, area, content_x, combat_number_font_size, description_
         elements.append(("image", (content_x, 0), engine_img))
         content_height = max(content_height, engine_img.height)
     
-    # Draw description
-    desc_end_x = content_x
+    # Draw firing arc if weapon has arc information (BEFORE description)
+    arc_width = 0
+    if "shoot" in area and "arc-start" in area["shoot"] and "arc-end" in area["shoot"]:
+        arc_start = area["shoot"]["arc-start"]
+        arc_end = area["shoot"]["arc-end"]
+        
+        # Create the firing arc image
+        arc_img = draw_firing_arc(draw, arc_start, arc_end, size=80)
+        arc_width = arc_img.width
+        
+        # Position the arc after the weapon symbol
+        arc_x = content_x + (weapon_width + 20 if weapon_width > 0 else 0)
+        arc_y = (content_height - arc_img.height) // 2  # Center vertically
+        
+        elements.append(("image", (arc_x, arc_y), arc_img))
+        content_height = max(content_height, arc_img.height)
+    
+    # Draw description (AFTER firing arc)
     if area["description"]:
         desc_text = area["description"].replace("Â°", "°")
+        
+        # Calculate description starting position (after weapon and arc)
         desc_x = content_x + (weapon_width + 20 if "shoot" in area or "engine" in area else 0)
+        if arc_width > 0:
+            desc_x += arc_width + 10  # Add arc width and spacing
         
-        # Calculate available width for description (reserve space for firing arc if needed)
-        firing_arc_space = 0
-        if "shoot" in area and "arc-start" in area["shoot"] and "arc-end" in area["shoot"]:
-            firing_arc_space = 50  # 40px arc + 10px spacing
-        
-        available_width = max_desc_width - (weapon_width + 20 if "shoot" in area or "engine" in area else 0) - firing_arc_space
+        # Calculate available width for description
+        available_width = max_desc_width - (weapon_width + 20 if "shoot" in area or "engine" in area else 0) - (arc_width + 10 if arc_width > 0 else 0)
         
         # Wrap text if necessary
         wrapped_lines = wrap_text(desc_text, description_font, available_width - 30, draw)
@@ -251,30 +267,7 @@ def generate_action(draw, area, content_x, combat_number_font_size, description_
             line_y = desc_y + (i * line_height)
             elements.append(("text", (desc_x, line_y), line, description_font))
         
-        # Calculate the end position of the description text
-        if wrapped_lines:
-            last_line = wrapped_lines[-1]
-            last_line_width, _ = get_text_size(draw, last_line, description_font)
-            desc_end_x = desc_x + last_line_width
-        
         content_height = max(content_height, total_text_height if "shoot" in area or "engine" in area else 60)
-    else:
-        # If no description, set desc_end_x to where description would start
-        desc_end_x = content_x + (weapon_width + 20 if "shoot" in area or "engine" in area else 0)
-    
-    # Draw firing arc if weapon has arc information
-    if "shoot" in area and "arc-start" in area["shoot"] and "arc-end" in area["shoot"]:
-        arc_start = area["shoot"]["arc-start"]
-        arc_end = area["shoot"]["arc-end"]
-        
-        # Create the firing arc image
-        arc_img = draw_firing_arc(draw, arc_start, arc_end, size=80)
-        
-        # Position the arc after the description text (or where it would be)
-        arc_x = desc_end_x + 10  # 10px spacing after text
-        arc_y = (content_height - arc_img.height) // 2  # Center vertically
-        
-        elements.append(("image", (arc_x, arc_y), arc_img))
     
     return content_height, elements
 
@@ -499,17 +492,20 @@ def create_system(system, tile_width_px, tile_height_px, dpi):
                                                              combat_number_font, description_font,
                                                              vertical_spacing, content_column_width)
             
-            min_area_height = 100
+            min_area_height = 95
             total_height = max(min_area_height, max(cost_height, content_height))
             
             if len(system["areas"]) == 1:
-                total_height = max(total_height, 120)
+                total_height = max(total_height, 115)
             
-            cost_y = current_y + (total_height - cost_height) // 2
+            # Shift content down within the area (more space above, less below)
+            vertical_offset = 10
+            
+            cost_y = current_y + (total_height - cost_height) // 2 + vertical_offset
             if cost_img:
                 img.paste(cost_img, (horizontal_margin, cost_y), cost_img)
             
-            content_y = current_y + (total_height - content_height) // 2
+            content_y = current_y + (total_height - content_height) // 2 + vertical_offset
             for element in content_elements:
                 element_type = element[0]
                 x, y = element[1]
@@ -522,7 +518,8 @@ def create_system(system, tile_width_px, tile_height_px, dpi):
             
             current_y += total_height + vertical_spacing
         
-        current_y += area_margin
+        # Reduced area margin at the end
+        current_y += int(area_margin * 0.7)
     elif system["name"].lower() not in ["mess", "reactor", "engine"]:
         min_system_height = 100
         current_y += min_system_height

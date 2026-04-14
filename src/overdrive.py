@@ -32,11 +32,19 @@ def render_overdrive_tokens(draw, ship_data, title_y, stats_font, label_font, bo
         
         # Draw each overdrive square with its number
         current_x = overdrive_x
+        border_width = 6  # Thicker border
+        corner_radius = int(square_size * 0.15)  # Rounded corners
+        
         for token_value in overdrive_tokens:
-            # Draw square border
-            draw.rectangle([(current_x, overdrive_y), 
-                           (current_x + square_size, overdrive_y + square_size)], 
-                          outline="black", width=3, fill="white")
+            # Draw rounded square border
+            draw.rounded_rectangle(
+                [(current_x, overdrive_y), 
+                 (current_x + square_size, overdrive_y + square_size)],
+                radius=corner_radius,
+                outline="black",
+                width=border_width,
+                fill="white"
+            )
             
             # Draw number in center of square
             token_text = str(token_value)
