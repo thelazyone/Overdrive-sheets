@@ -1,0 +1,200 @@
+{
+    "title": "Letter to a Lost Friend",
+    "subtitle": "Parsimony Class Utility Vessel",
+    "overdrive": [2,2],
+    "control": 2,
+    "shields": {
+        "front": [3, 3],
+        "rear": [3, 3]
+    },
+    "reactor": {
+        "name": "Reactor",
+        "rules": "Energy Production: 3",
+        "circles": 5,
+        "electronics": true,
+        "hull": false,
+        "life_support": false
+    },
+    "mess": {
+        "name": "Mess",
+        "rules": "Crew: 4",
+        "med_bay": 1,
+        "electronics": false,
+        "hull": false,
+        "life_support": true
+    },
+    "sections": {
+        "left": [
+            {
+                "name": "Flak Battery",
+                "rules": "Anti-Light",
+                "weapon": true,
+                "areas": [
+                    {
+                        "name": "AA Burst",
+                        "description": "",
+                        "shoot": {
+                            "damage": 5,
+                            "range": "0-2",
+                            "arc-start": 7,
+                            "arc-end": 5  
+                        },
+                        "cost": {
+                            "energy": 1,
+                            "crew": 1
+                        }
+                    }
+                ],
+                "electronics": false,
+                "hull": true,
+                "life_support": true
+            },
+            {
+                "name": "Crew Quarters",
+                "rules": "",
+                "areas": [
+                ],
+                "electronics": false,
+                "hull": true,
+                "life_support": true
+            }],
+        "core": [
+            {
+                "name": "Front Bridge",
+                "areas": [
+                    {
+                        "description": "Scan Objective",
+                        "cost": {
+                            "energy": 1,
+                            "crew": 0
+                        }
+                    }
+                ],
+                "electronics": true,
+                "hull": false,
+                "life_support": true
+            },
+            {
+                "name": "Prehensile Cranes",
+                "rules": "",
+                "weapon": true,
+                "areas": [
+                    {
+                        "name": "Assemble",
+                        "description": "Repair up to 2 damage points from a Capital Ship within Control range.",
+                        "cost": {
+                            "energy": 1,
+                            "crew": 2
+                        }
+                    },
+                    {
+                        "name": "Disassemble",
+                        "description": "Mining",
+                        "shoot": {
+                            "damage": 9,
+                            "range": "0-1",
+                            "arc-start": 3,
+                            "arc-end": 5  
+                        },
+                        "cost": {
+                            "energy": 2
+                        }
+                    }
+                ],
+                "electronics": true,
+                "hull": true,
+                "life_support": false
+            },
+            {
+                "name": "Docking Bay",
+                "rules": "",
+                "areas": [
+                    {
+                        "name": "",
+                        "description": "TODO cargo and utility",
+                        "cost": {
+                            "energy": 0,
+                            "crew": 0
+                        }
+                    }
+                ],
+                "electronics": false,
+                "hull": true,
+                "life_support": true
+            },
+            {
+                "name": "Engine",
+                "rules": "",
+                "areas": [
+                    {
+                        "name": "",
+                        "description": "Change Speed",
+                        "cost": {
+                            "energy": 1,
+                            "crew": 1
+                        }
+                    }
+                ],
+                "speed_slots": [
+                    {"speed": "0-1", "rotation": "180°"},
+                    {"speed": "1-2", "rotation": "90°"}
+                ],
+                "electronics": true,
+                "hull": false,
+                "life_support": false
+            }
+        ],
+        "right": [
+            {
+                "name": "Flak Battery",
+                "rules": "Anti-Light",
+                "weapon": true,
+                "areas": [
+                    {
+                        "name": "AA Burst",
+                        "description": "",
+                        "shoot": {
+                            "damage": 5,
+                            "range": "0-2",
+                            "arc-start": 3,
+                            "arc-end": 1  
+                        },
+                        "cost": {
+                            "energy": 1,
+                            "crew": 1
+                        }
+                    }
+                ],
+                "electronics": false,
+                "hull": true,
+                "life_support": true
+            },
+            {
+                "name": "Crew Quarters",
+                "rules": "",
+                "areas": [
+                ],
+                "electronics": false,
+                "hull": true,
+                "life_support": true
+            },
+            {
+                "name": "Long Range Scanner",
+                "rules": "",
+                "areas": [
+                    {
+                        "name": "",
+                        "description": "TODO scan and communication (all Control values increase)",
+                        "cost": {
+                            "energy": 0,
+                            "crew": 0
+                        }
+                    }
+                ],
+                "electronics": false,
+                "hull": true,
+                "life_support": true
+            }
+        ]
+    }
+} 
