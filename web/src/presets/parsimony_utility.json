@@ -1,6 +1,7 @@
 {
-  "title": "Parsimony",
-  "subtitle": "Utility Vessel Template",
+  "name": "Unnamed Ship",
+  "description": "Parsimony Utility Vessel",
+  "label": "Parsimony (utility)",
   "overdrive": [2, 2],
   "control": 2,
   "shields": {
@@ -21,13 +22,13 @@
     "kind": "slot",
     "label": "Reactor",
     "allowed": ["reactor_small", "reactor_medium"],
-    "selectedId": "reactor_small"
+    "selectedId": null
   },
   "mess": {
     "kind": "slot",
     "label": "Mess",
     "allowed": ["mess_small", "mess_medium"],
-    "selectedId": "mess_small"
+    "selectedId": null
   },
   "sections": {
     "left": [
@@ -35,7 +36,7 @@
         "kind": "slot",
         "label": "Left Weapon",
         "allowed": ["flak_battery_left", "point_defense_left"],
-        "selectedId": "flak_battery_left"
+        "selectedId": null
       },
       {
         "kind": "system",
@@ -55,7 +56,7 @@
         "kind": "slot",
         "label": "Bridge",
         "allowed": ["front_bridge", "main_bridge", "lower_bridge"],
-        "selectedId": "front_bridge"
+        "selectedId": null
       },
       {
         "kind": "system",
@@ -103,7 +104,7 @@
         "kind": "slot",
         "label": "Engine",
         "allowed": ["engine_small", "engine_large"],
-        "selectedId": "engine_small"
+        "selectedId": null
       }
     ],
     "right": [
@@ -111,7 +112,7 @@
         "kind": "slot",
         "label": "Right Weapon",
         "allowed": ["flak_battery_right", "point_defense_right"],
-        "selectedId": "flak_battery_right"
+        "selectedId": null
       },
       {
         "kind": "system",
@@ -129,7 +130,7 @@
         "kind": "slot",
         "label": "Sensors",
         "allowed": ["long_range_scanner", "advanced_sensors"],
-        "selectedId": "long_range_scanner"
+        "selectedId": null
       }
     ]
   }

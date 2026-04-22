@@ -1,25 +1,41 @@
 {
-  "title": "Sound of Shattered Glass",
-  "subtitle": "Opulence Freighter",
+  "name": "Unnamed Ship",
+  "description": "Opulence Class Freighter",
+  "label": "Opulence Freighter",
   "overdrive": [3, 2, 0],
   "control": 2,
   "shields": {
-    "kind": "slot",
-    "label": "Shields",
-    "allowed": ["shields_light", "shields_medium", "shields_heavy"],
-    "selectedId": "shields_medium"
+    "kind": "system",
+    "system": {
+      "kind": "shields",
+      "name": "Deflector Shields",
+      "rules": "",
+      "electronics": true,
+      "hull": false,
+      "life_support": false,
+      "areas": [],
+      "front": [2, 1, 1, 0],
+      "rear": [2, 1, 1]
+    }
   },
   "reactor": {
     "kind": "slot",
     "label": "Reactor",
-    "allowed": ["reactor_small", "reactor_large", "reactor_medium"],
-    "selectedId": "reactor_large"
+    "allowed": ["opulence_default_reactor", "opulence_improved_reactor"],
+    "selectedId": null
   },
   "mess": {
-    "kind": "slot",
-    "label": "Mess",
-    "allowed": ["mess_small", "mess_medium"],
-    "selectedId": "mess_small"
+    "kind": "system",
+    "system": {
+      "kind": "mess",
+      "name": "Mess",
+      "rules": "Crew: 4",
+      "med_bay": 1,
+      "electronics": false,
+      "hull": false,
+      "life_support": true,
+      "areas": []
+    }
   },
   "sections": {
     "left": [
@@ -27,33 +43,33 @@
         "kind": "slot",
         "label": "Bridge",
         "allowed": ["command_bridge", "front_bridge", "main_bridge", "lower_bridge"],
-        "selectedId": "command_bridge"
+        "selectedId": null
       },
       {
         "kind": "slot",
-        "label": "Barracks",
-        "allowed": ["barracks_3", "barracks", "barracks_6"],
-        "selectedId": "barracks_3"
+        "label": "Main System Slot",
+        "allowed": ["barracks_3", "point_defense"],
+        "selectedId": null
       },
       {
         "kind": "slot",
-        "label": "Sensors",
+        "label": "Sensors Slot",
         "allowed": ["broadband_antenna", "long_range_scanner", "advanced_sensors"],
-        "selectedId": "broadband_antenna"
+        "selectedId": null
       }
     ],
     "core": [
       {
         "kind": "slot",
-        "label": "Left Weapon",
-        "allowed": ["asteroid_buster_left", "flak_battery_left", "point_defense_left"],
-        "selectedId": "asteroid_buster_left"
+        "label": "Weapon Slot",
+        "allowed": ["asteroid_buster_left", "autocannon"],
+        "selectedId": null
       },
       {
         "kind": "slot",
-        "label": "Right Weapon",
-        "allowed": ["asteroid_buster_right", "flak_battery_right", "point_defense_right"],
-        "selectedId": "asteroid_buster_right"
+        "label": "Weapon Slot",
+        "allowed": ["asteroid_buster_right", "autocannon"],
+        "selectedId": null
       },
       {
         "kind": "system",
@@ -102,9 +118,9 @@
     "right": [
       {
         "kind": "slot",
-        "label": "Point-Defense",
-        "allowed": ["point_defense_right", "flak_battery_right"],
-        "selectedId": "point_defense_right"
+        "label": "Main System Slot",
+        "allowed": ["barracks_3", "point_defense"],
+        "selectedId": null
       },
       {
         "kind": "system",

@@ -157,8 +157,13 @@ export type SystemRef = z.infer<typeof SystemRefSchema>;
 // ---------------------------------------------------------------------------
 
 export const ShipSchema = z.object({
-  title: z.string(),
-  subtitle: z.string().default(""),
+  /** The ship's in-game name, shown at the top of the sheet. Templates ship
+   *  this as e.g. "Unnamed Ship" so users rename their instance. */
+  name: z.string().default("Unnamed Ship"),
+  /** Short text shown below the name on the sheet (e.g. ship class). */
+  description: z.string().default(""),
+  /** Human-readable template name shown in the preset dropdown; optional. */
+  label: z.string().default(""),
   overdrive: z.array(z.number().int()).default([]),
   control: z.number().int().default(0),
   shields: SystemRefSchema,
@@ -280,8 +285,9 @@ function migrateShieldsRef(raw: any): SystemRef {
 export function migrateShip(raw: any): Ship {
   const sections = raw?.sections ?? {};
   const migrated: any = {
-    title: raw?.title ?? "Untitled",
-    subtitle: raw?.subtitle ?? "",
+    name: raw?.name ?? raw?.title ?? "Unnamed Ship",
+    description: raw?.description ?? raw?.subtitle ?? "",
+    label: raw?.label ?? "",
     overdrive: Array.isArray(raw?.overdrive) ? raw.overdrive : [],
     control: Number(raw?.control ?? 0),
     shields: migrateShieldsRef(raw?.shields),

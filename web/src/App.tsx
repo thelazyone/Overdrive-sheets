@@ -2,17 +2,16 @@
  * Two-pane editor shell.
  *
  * Left pane:
- *   - Ship title (always editable — templates are meant to be renamed).
+ *   - Ship `name` (always editable — templates are meant to be renamed).
  *   - Customize toggle.
- *   - In customize mode: subtitle / overdrive / control also editable.
- *   - Section list (LEFT / CORE / RIGHT + reactor/mess). Each row shows the
- *     resolved system name, or `${label} (empty)` for unfilled slots.
- *   - Inspector panel below the list:
- *       - Slot row   → picker dropdown. In customize mode: + label / allowed
- *         list editor.
- *       - Inline row → in customize mode only: full system fields editor
- *         (name, rules, areas). Outside customize mode, inline rows are not
- *         selectable.
+ *   - In customize mode: `description`, `label`, `overdrive`, `control` also
+ *     editable.
+ *   - Section list (LEFT / CORE / RIGHT + reactor/mess/shields). Each slot
+ *     row carries an inline `<select>` picker, so system selection happens
+ *     without leaving the list.
+ *   - Inspector panel below the list — visible only in customize mode:
+ *       - Slot row   → edit slot label and allowed-systems list.
+ *       - Inline row → full system fields editor (name, rules, areas, etc.).
  *
  * Right pane: live <ShipSVG /> preview.
  *
@@ -60,8 +59,7 @@ export function App(): JSX.Element {
   const [customize, setCustomize] = createSignal<boolean>(false);
   const [error, setError] = createSignal<string | null>(null);
 
-  createEffect(() => {
-    const id = presetId();
+  const applyPreset = (id: string) => {
     try {
       setShip(loadPreset(id));
       setSelected(null);
@@ -69,7 +67,13 @@ export function App(): JSX.Element {
     } catch (e: any) {
       setError(e?.message ?? String(e));
     }
+  };
+
+  createEffect(() => {
+    applyPreset(presetId());
   });
+
+  const onReloadPreset = () => applyPreset(presetId());
 
   const onUpload = (event: Event) => {
     const input = event.target as HTMLInputElement;
@@ -94,14 +98,14 @@ export function App(): JSX.Element {
   const onDownloadJSON = () => {
     const s = ship();
     const blob = new Blob([JSON.stringify(s, null, 2)], { type: "application/json" });
-    triggerDownload(blob, slugify(s.title) + ".json");
+    triggerDownload(blob, slugify(s.name) + ".json");
   };
 
   const onDownloadPNG = async () => {
     const s = ship();
     const svgEl = document.querySelector(".ship-preview-wrapper svg") as SVGSVGElement | null;
     if (!svgEl) return;
-    await exportSvgAsPng(svgEl, SHEET_WIDTH, SHEET_HEIGHT, slugify(s.title) + ".png");
+    await exportSvgAsPng(svgEl, SHEET_WIDTH, SHEET_HEIGHT, slugify(s.name) + ".png");
   };
 
   const selection = (): { path: string; sysRef: SystemRef } | null => {
@@ -111,12 +115,11 @@ export function App(): JSX.Element {
     return sysRef ? { path, sysRef } : null;
   };
 
-  // Click handler: in default mode, only slots are selectable.
-  const onRowClick = (path: string, sysRef: SystemRef) => {
-    if (!customize() && sysRef.kind === "system") {
-      setSelected(null);
-      return;
-    }
+  // Clicking a row only selects it for the inspector in customize mode. In
+  // default mode, slots are picked directly via the inline dropdown in the
+  // row and inline systems are not interactive.
+  const onRowClick = (path: string, _sysRef: SystemRef) => {
+    if (!customize()) return;
     setSelected((cur) => (cur === path ? null : path));
   };
 
@@ -145,6 +148,14 @@ export function App(): JSX.Element {
             >
               <For each={PRESETS}>{(p) => <option value={p.id}>{p.name}</option>}</For>
             </select>
+            <button
+              type="button"
+              class="btn-icon"
+              onClick={onReloadPreset}
+              title="Reload template (discards customizations)"
+            >
+              Reload
+            </button>
           </div>
           <div class="toolbar-row toolbar-io-row">
             <label class="btn">
@@ -171,35 +182,40 @@ export function App(): JSX.Element {
           onChange={(patch) => setShip((s) => ({ ...s, ...patch }))}
         />
 
-        <div class="section-list">
+        <div
+          class="section-list"
+          classList={{ "section-list-expanded": !customize() }}
+        >
           <SectionList
             ship={ship()}
+            customize={customize()}
             selected={selected()}
             onSelect={onRowClick}
+            onShip={(fn) => setShip(fn)}
           />
         </div>
 
-        <div class="inspector">
-          <Show
-            when={selection()}
-            fallback={
-              <div class="inspector-empty">
-                {customize()
-                  ? "Select any row to edit it."
-                  : "Select a slot to pick a different system."}
-              </div>
-            }
-          >
-            {(sel) => (
-              <Inspector
-                path={sel().path}
-                sysRef={sel().sysRef}
-                customize={customize()}
-                onShip={(fn) => setShip(fn)}
-              />
-            )}
-          </Show>
-        </div>
+        <Show when={customize()}>
+          <div class="inspector">
+            <Show
+              when={selection()}
+              fallback={
+                <div class="inspector-empty">
+                  Select any row to edit its details.
+                </div>
+              }
+            >
+              {(sel) => (
+                <Inspector
+                  path={sel().path}
+                  sysRef={sel().sysRef}
+                  customize={customize()}
+                  onShip={(fn) => setShip(fn)}
+                />
+              )}
+            </Show>
+          </div>
+        </Show>
       </div>
 
       <div class="pane right-pane">
@@ -214,7 +230,7 @@ export function App(): JSX.Element {
 }
 
 // ---------------------------------------------------------------------------
-// Ship-level editor (title always, rest only in customize mode)
+// Ship-level editor (name always, rest only in customize mode)
 // ---------------------------------------------------------------------------
 
 function ShipHeaderEditor(props: {
@@ -225,21 +241,32 @@ function ShipHeaderEditor(props: {
   return (
     <div class="ship-header">
       <label class="field">
-        <span class="field-label">Ship name</span>
+        <span class="field-label">Name</span>
         <input
           type="text"
-          value={props.ship.title}
-          onInput={(e) => props.onChange({ title: e.currentTarget.value })}
+          value={props.ship.name}
+          onInput={(e) => props.onChange({ name: e.currentTarget.value })}
         />
       </label>
 
       <Show when={props.customize}>
         <label class="field">
-          <span class="field-label">Subtitle</span>
+          <span class="field-label">Description</span>
           <input
             type="text"
-            value={props.ship.subtitle}
-            onInput={(e) => props.onChange({ subtitle: e.currentTarget.value })}
+            value={props.ship.description}
+            onInput={(e) =>
+              props.onChange({ description: e.currentTarget.value })
+            }
+          />
+        </label>
+
+        <label class="field">
+          <span class="field-label">Template label (dropdown)</span>
+          <input
+            type="text"
+            value={props.ship.label}
+            onInput={(e) => props.onChange({ label: e.currentTarget.value })}
           />
         </label>
 
@@ -289,53 +316,64 @@ function parseNumberList(s: string): number[] {
 
 type OnSelect = (path: string, sysRef: SystemRef) => void;
 
-function SectionList(props: {
+interface SectionListProps {
   ship: Ship;
+  customize: boolean;
   selected: string | null;
   onSelect: OnSelect;
-}) {
+  onShip: ShipUpdater;
+}
+
+function SectionList(props: SectionListProps) {
+  const rowCommon = () => ({
+    customize: props.customize,
+    selected: props.selected,
+    onSelect: props.onSelect,
+    onShip: props.onShip,
+  });
+
   return (
     <>
       <SectionGroup
         title="LEFT"
         refs={props.ship.sections.left}
         section="left"
-        selected={props.selected}
-        onSelect={props.onSelect}
+        {...rowCommon()}
       />
       <SectionGroup
         title="CORE"
         refs={props.ship.sections.core}
         section="core"
-        selected={props.selected}
-        onSelect={props.onSelect}
+        {...rowCommon()}
       />
       <SectionGroup
         title="RIGHT"
         refs={props.ship.sections.right}
         section="right"
-        selected={props.selected}
-        onSelect={props.onSelect}
+        {...rowCommon()}
       />
       <div class="section-group">
         <h2>CORE SYSTEMS</h2>
         <SystemRow
           id="ship.reactor"
           sysRef={props.ship.reactor}
-          selected={props.selected}
-          onSelect={props.onSelect}
+          canonicalLabel="Reactor"
+          canonicalKind="reactor"
+          {...rowCommon()}
         />
         <SystemRow
           id="ship.mess"
           sysRef={props.ship.mess}
-          selected={props.selected}
-          onSelect={props.onSelect}
+          canonicalLabel="Mess"
+          canonicalKind="mess"
+          {...rowCommon()}
         />
         <SystemRow
           id="ship.shields"
           sysRef={props.ship.shields}
-          selected={props.selected}
-          onSelect={props.onSelect}
+          canonicalLabel="Shields"
+          canonicalKind="shields"
+          {...rowCommon()}
         />
       </div>
     </>
@@ -346,8 +384,10 @@ function SectionGroup(props: {
   title: string;
   section: "left" | "core" | "right";
   refs: SystemRef[];
+  customize: boolean;
   selected: string | null;
   onSelect: OnSelect;
+  onShip: ShipUpdater;
 }) {
   return (
     <div class="section-group">
@@ -357,8 +397,10 @@ function SectionGroup(props: {
           <SystemRow
             id={`sections.${props.section}[${i()}]`}
             sysRef={r}
+            customize={props.customize}
             selected={props.selected}
             onSelect={props.onSelect}
+            onShip={props.onShip}
           />
         )}
       </For>
@@ -369,29 +411,67 @@ function SectionGroup(props: {
   );
 }
 
+/**
+ * Infer a "kind hint" for an empty slot by looking at the first allowed
+ * system in the library. Used so the badge can read e.g. "generic" for a
+ * bridge slot instead of the less-informative "slot".
+ */
+function inferSlotKind(sysRef: SystemRef): System["kind"] | null {
+  if (sysRef.kind !== "slot") return null;
+  for (const id of sysRef.allowed) {
+    const sys = library[id];
+    if (sys) return sys.kind;
+  }
+  return null;
+}
+
 function SystemRow(props: {
   id: string;
   sysRef: SystemRef;
+  customize: boolean;
   selected: string | null;
   onSelect: OnSelect;
+  onShip: ShipUpdater;
+  /** Canonical label (e.g. "Reactor") forced for the three core-system rows;
+   *  when set, the displayed label always starts with this, regardless of
+   *  the resolved system's name. */
+  canonicalLabel?: string;
+  /** Canonical kind used for the badge when the slot is empty and we can't
+   *  infer from the library. */
+  canonicalKind?: System["kind"];
 }) {
   const resolved = () => resolveRef(props.sysRef, library);
   const isSlot = () => props.sysRef.kind === "slot";
   const isEmptySlot = () => isSlot() && !resolved();
+  // Rows are clickable (for inspector selection) only in customize mode.
+  // Inline systems are never clickable outside customize mode.
+  const isClickable = () => props.customize;
 
-  const badge = () => {
-    if (isSlot()) return "slot";
-    return resolved()?.kind ?? "sys";
+  // Badge shows the system KIND (reactor/mess/shields/engine/generic).
+  // Slotness is communicated by the yellow background on the row, not by
+  // the word "slot" in the badge.
+  const badge = (): string => {
+    const r = resolved();
+    if (r) return r.kind;
+    return (
+      inferSlotKind(props.sysRef) ?? props.canonicalKind ?? "slot"
+    );
   };
 
-  const label = () => {
+  // Label: prefer a canonical name (for the three core-system rows),
+  // otherwise fall back to the slot label or the resolved system name.
+  const label = (): string => {
     const r = resolved();
+    if (props.canonicalLabel) {
+      if (isEmptySlot()) return `${props.canonicalLabel} (unselected)`;
+      if (!isSlot()) return `${props.canonicalLabel} (default)`;
+      return props.canonicalLabel;
+    }
     if (r) return r.name;
-    // Empty slot: use the slot's label if present.
     if (props.sysRef.kind === "slot") {
       return props.sysRef.label
-        ? `${props.sysRef.label} (empty)`
-        : "(empty slot)";
+        ? `${props.sysRef.label} (unselected)`
+        : "(unselected slot)";
     }
     return "(unnamed)";
   };
@@ -401,15 +481,48 @@ function SystemRow(props: {
       "system-row",
       isSlot() ? "is-slot" : "",
       isEmptySlot() ? "is-empty" : "",
+      isClickable() ? "is-clickable" : "is-readonly",
       props.selected === props.id ? "selected" : "",
     ]
       .filter(Boolean)
       .join(" ");
 
+  const onRowClick = () => {
+    if (!isClickable()) return;
+    props.onSelect(props.id, props.sysRef);
+  };
+
+  const onPick = (value: string) => {
+    props.onShip((s) =>
+      withSlotSelection(s, props.id, value === "" ? null : value),
+    );
+  };
+
   return (
-    <div class={classes()} onClick={() => props.onSelect(props.id, props.sysRef)}>
+    <div class={classes()} onClick={onRowClick}>
       <span class="kind">{badge()}</span>
       <span class="name">{label()}</span>
+      <Show when={props.sysRef.kind === "slot" ? props.sysRef : null}>
+        {(slot) => (
+          <select
+            class="row-picker"
+            value={slot().selectedId ?? ""}
+            onClick={(e) => e.stopPropagation()}
+            onChange={(e) => {
+              e.stopPropagation();
+              onPick(e.currentTarget.value);
+            }}
+            title="Pick installed system"
+          >
+            <option value="">— none —</option>
+            <For each={slot().allowed}>
+              {(id) => (
+                <option value={id}>{library[id]?.name ?? id}</option>
+              )}
+            </For>
+          </select>
+        )}
+      </Show>
     </div>
   );
 }
@@ -470,30 +583,9 @@ function SlotInspector(props: {
         <span class="tag">slot</span>
         <span class="title">{props.sysRef.label ?? "Slot"}</span>
       </div>
-
-      <label class="field">
-        <span class="field-label">Installed system</span>
-        <select
-          value={props.sysRef.selectedId ?? ""}
-          onChange={(e) => {
-            const v = e.currentTarget.value;
-            props.onShip((s) => withSlotSelection(s, props.path, v === "" ? null : v));
-          }}
-        >
-          <option value="">— empty —</option>
-          <For each={props.sysRef.allowed}>
-            {(id) => {
-              const sys = library[id];
-              return (
-                <option value={id}>
-                  {sys ? sys.name : id}
-                  {sys && sys.name.toLowerCase() !== id ? ` — ${id}` : ""}
-                </option>
-              );
-            }}
-          </For>
-        </select>
-      </label>
+      <div class="inspector-note">
+        Pick the installed system from the dropdown in the row above.
+      </div>
 
       <Show when={current()}>
         <SystemSummary system={current()!} />

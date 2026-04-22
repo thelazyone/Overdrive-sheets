@@ -242,16 +242,26 @@
       { "speed": "2-3", "rotation": "0°" }
     ]
   },
-  "reactor_large": {
-    "kind": "reactor",
-    "name": "Reactor",
-    "rules": "Energy Production: 3",
-    "circles": 6,
-    "electronics": true,
-    "hull": false,
-    "life_support": false,
-    "areas": []
-  },
+    "opulence_default_reactor": {
+      "kind": "reactor",
+      "name": "Reactor",
+      "rules": "Energy Production: 3",
+      "circles": 6,
+      "electronics": true,
+      "hull": false,
+      "life_support": false,
+      "areas": []
+    },
+    "opulence_improved_reactor": {
+      "kind": "reactor",
+      "name": "Improved Reactor",
+      "rules": "Energy Production: 3",
+      "circles": 8,
+      "electronics": true,
+      "hull": false,
+      "life_support": false,
+      "areas": []
+    },
   "front_bridge": {
     "kind": "generic",
     "name": "Front Bridge",

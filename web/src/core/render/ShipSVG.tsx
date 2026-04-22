@@ -2,7 +2,7 @@
  * Ported from `python/src/ship_profile.py::create_ship_sheet`.
  *
  * Top-level ship sheet layout:
- *   - Header row: OVERDRIVE label + squares on the left, title + subtitle
+ *   - Header row: OVERDRIVE label + squares on the left, name + description
  *     centered, CONTROL value on the right.
  *   - Three columns of systems with LEFT / CENTER / RIGHT labels. The core
  *     column has Mess + Reactor pinned at the bottom with a CORE label.
@@ -45,9 +45,9 @@ function renderHeader(ship: Ship): { el: JSX.Element; bottomY: number } {
   const subtitleFont = cssFont(SHEET_SUBTITLE_SIZE, FONT_TITILLIUM);
   const statsFont = cssFont(SHEET_STATS_SIZE, FONT_EUROSTILE);
 
-  const titleText = ship.title.toUpperCase();
+  const titleText = ship.name.toUpperCase();
   const titleMetrics = measureText(titleText, titleFont);
-  const subtitleMetrics = measureText(ship.subtitle, subtitleFont);
+  const subtitleMetrics = measureText(ship.description, subtitleFont);
 
   const titleY = 50;
   const subtitleY = titleY + titleMetrics.height + 20;
@@ -73,7 +73,7 @@ function renderHeader(ship: Ship): { el: JSX.Element; bottomY: number } {
         dominant-baseline="hanging"
         style={{ font: subtitleFont, fill: "black" }}
       >
-        {ship.subtitle}
+        {ship.description}
       </text>
       <text
         x={SHEET_WIDTH - controlMetrics.width - BOX_MARGIN}
@@ -193,51 +193,80 @@ function ShipSVGInner(
   const bottomBoxY = SHEET_HEIGHT - bottomBoxHeight - BOX_MARGIN;
   const bottomBoxWidth = SHEET_WIDTH / 3 - BOX_MARGIN;
 
-  // Compute Mess/Reactor layout for the core bottom.
-  const reactorSystem = resolveRef(ship.reactor, library);
-  const messSystem = resolveRef(ship.mess, library);
+  // Reactor and Mess each occupy a fixed-width bottom slot, independent of
+  // each other: if one is unresolved (empty slot) we still draw the other and
+  // show a dashed placeholder in the missing one. This mirrors the behaviour
+  // of the column sections above, so the sheet layout is stable.
+  const CORE_BOTTOM_PLACEHOLDER_HEIGHT = 240;
+  const CORE_BOTTOM_GAP = 20;
 
-  const reactorLayout = reactorSystem ? layoutSystem(reactorSystem) : null;
-  const messLayout = messSystem ? layoutSystem(messSystem) : null;
-
-  const scaleForBottomBox = (layoutWidth: number) => bottomBoxWidth / layoutWidth;
-
-  let reactorEl: JSX.Element = null;
-  let messEl: JSX.Element = null;
-  let coreLabelEl: JSX.Element = null;
-
-  if (reactorLayout) {
-    const scale = scaleForBottomBox(reactorLayout.width);
-    const h = reactorLayout.height * scale;
-    const yPos = SHEET_HEIGHT - h - BOX_MARGIN;
-    reactorEl = (
-      <g transform={`translate(${BOX_MARGIN} ${yPos}) scale(${scale})`}>
-        {reactorLayout.el}
-      </g>
-    );
-
-    if (messLayout) {
-      const mScale = scaleForBottomBox(messLayout.width);
-      const mH = messLayout.height * mScale;
-      const mY = yPos - mH - 20;
-      messEl = (
-        <g transform={`translate(${BOX_MARGIN} ${mY}) scale(${mScale})`}>
-          {messLayout.el}
-        </g>
-      );
-      coreLabelEl = (
-        <text
-          x={BOX_MARGIN + bottomBoxWidth / 2}
-          y={mY - 20}
-          text-anchor="middle"
-          dominant-baseline="alphabetic"
-          style={{ font: columnLabelFont, fill: "black" }}
-        >
-          CORE
-        </text>
-      );
+  function bottomCoreBlock(
+    ref: SystemRef,
+  ): { height: number; render: (y: number) => JSX.Element } {
+    const sys = resolveRef(ref, library);
+    if (sys) {
+      const layout = layoutSystem(sys);
+      const scale = bottomBoxWidth / layout.width;
+      const height = layout.height * scale;
+      return {
+        height,
+        render: (y: number) => (
+          <g transform={`translate(${BOX_MARGIN} ${y}) scale(${scale})`}>
+            {layout.el}
+          </g>
+        ),
+      };
     }
+    const placeholderFont = cssFont(SHEET_LABEL_SIZE, FONT_EUROSTILE);
+    const label =
+      ref.kind === "slot" ? (ref.label ?? "SLOT").toUpperCase() : "EMPTY";
+    return {
+      height: CORE_BOTTOM_PLACEHOLDER_HEIGHT,
+      render: (y: number) => (
+        <g transform={`translate(${BOX_MARGIN} ${y})`}>
+          <rect
+            x={0}
+            y={0}
+            width={bottomBoxWidth}
+            height={CORE_BOTTOM_PLACEHOLDER_HEIGHT}
+            fill="none"
+            stroke="rgb(150,150,150)"
+            stroke-dasharray="10 8"
+            stroke-width={4}
+          />
+          <text
+            x={bottomBoxWidth / 2}
+            y={CORE_BOTTOM_PLACEHOLDER_HEIGHT / 2}
+            text-anchor="middle"
+            dominant-baseline="central"
+            style={{ font: placeholderFont, fill: "rgb(150,150,150)" }}
+          >
+            {label}
+          </text>
+        </g>
+      ),
+    };
   }
+
+  const reactorBlock = bottomCoreBlock(ship.reactor);
+  const messBlock = bottomCoreBlock(ship.mess);
+
+  const reactorY = SHEET_HEIGHT - reactorBlock.height - BOX_MARGIN;
+  const messY = reactorY - messBlock.height - CORE_BOTTOM_GAP;
+
+  const reactorEl: JSX.Element = reactorBlock.render(reactorY);
+  const messEl: JSX.Element = messBlock.render(messY);
+  const coreLabelEl: JSX.Element = (
+    <text
+      x={BOX_MARGIN + bottomBoxWidth / 2}
+      y={messY - 20}
+      text-anchor="middle"
+      dominant-baseline="alphabetic"
+      style={{ font: columnLabelFont, fill: "black" }}
+    >
+      CORE
+    </text>
+  );
 
   // Side (left/right) columns contain only their section systems at SCALE width.
   const scaledSystemWidth = columnWidth;

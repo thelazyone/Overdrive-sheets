@@ -1,6 +1,7 @@
 {
-  "title": "Bishok Cruiser",
-  "subtitle": "Mainline Combatant Template",
+  "name": "Unnamed Ship",
+  "description": "Bishok Cruiser",
+  "label": "Bishok Cruiser",
   "overdrive": [3, 3, 2],
   "control": 3,
   "shields": {
@@ -21,13 +22,13 @@
     "kind": "slot",
     "label": "Reactor",
     "allowed": ["reactor_small", "reactor_medium"],
-    "selectedId": "reactor_medium"
+    "selectedId": null
   },
   "mess": {
     "kind": "slot",
     "label": "Mess",
     "allowed": ["mess_small", "mess_medium"],
-    "selectedId": "mess_medium"
+    "selectedId": null
   },
   "sections": {
     "left": [
@@ -35,13 +36,13 @@
         "kind": "slot",
         "label": "Forward Weapon",
         "allowed": ["point_defense_left", "flak_battery_left"],
-        "selectedId": "point_defense_left"
+        "selectedId": null
       },
       {
         "kind": "slot",
         "label": "Command",
         "allowed": ["control_station", "lower_bridge"],
-        "selectedId": "control_station"
+        "selectedId": null
       },
       {
         "kind": "system",
@@ -61,7 +62,7 @@
         "kind": "slot",
         "label": "Main Bridge",
         "allowed": ["main_bridge", "lower_bridge"],
-        "selectedId": "main_bridge"
+        "selectedId": null
       },
       {
         "kind": "system",
@@ -91,7 +92,7 @@
         "kind": "slot",
         "label": "Engine",
         "allowed": ["engine_large", "engine_small"],
-        "selectedId": "engine_large"
+        "selectedId": null
       }
     ],
     "right": [
@@ -99,13 +100,13 @@
         "kind": "slot",
         "label": "Forward Weapon",
         "allowed": ["point_defense_right", "flak_battery_right"],
-        "selectedId": "point_defense_right"
+        "selectedId": null
       },
       {
         "kind": "slot",
         "label": "Sensors",
         "allowed": ["advanced_sensors", "long_range_scanner"],
-        "selectedId": "advanced_sensors"
+        "selectedId": null
       },
       {
         "kind": "system",

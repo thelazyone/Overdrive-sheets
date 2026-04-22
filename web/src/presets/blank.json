@@ -1,6 +1,7 @@
 {
-  "title": "New Ship",
-  "subtitle": "Custom Build",
+  "name": "Unnamed Ship",
+  "description": "",
+  "label": "Blank template",
   "overdrive": [2],
   "control": 2,
   "shields": {
