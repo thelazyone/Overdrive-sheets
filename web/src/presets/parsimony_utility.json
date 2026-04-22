@@ -1,0 +1,136 @@
+{
+  "title": "Parsimony",
+  "subtitle": "Utility Vessel Template",
+  "overdrive": [2, 2],
+  "control": 2,
+  "shields": {
+    "kind": "system",
+    "system": {
+      "kind": "shields",
+      "name": "Shields",
+      "rules": "",
+      "electronics": true,
+      "hull": false,
+      "life_support": false,
+      "areas": [],
+      "front": [3, 3],
+      "rear": [3, 3]
+    }
+  },
+  "reactor": {
+    "kind": "slot",
+    "label": "Reactor",
+    "allowed": ["reactor_small", "reactor_medium"],
+    "selectedId": "reactor_small"
+  },
+  "mess": {
+    "kind": "slot",
+    "label": "Mess",
+    "allowed": ["mess_small", "mess_medium"],
+    "selectedId": "mess_small"
+  },
+  "sections": {
+    "left": [
+      {
+        "kind": "slot",
+        "label": "Left Weapon",
+        "allowed": ["flak_battery_left", "point_defense_left"],
+        "selectedId": "flak_battery_left"
+      },
+      {
+        "kind": "system",
+        "system": {
+          "kind": "generic",
+          "name": "Crew Quarters",
+          "rules": "",
+          "hull": true,
+          "electronics": false,
+          "life_support": true,
+          "areas": []
+        }
+      }
+    ],
+    "core": [
+      {
+        "kind": "slot",
+        "label": "Bridge",
+        "allowed": ["front_bridge", "main_bridge", "lower_bridge"],
+        "selectedId": "front_bridge"
+      },
+      {
+        "kind": "system",
+        "system": {
+          "kind": "generic",
+          "name": "Prehensile Cranes",
+          "rules": "",
+          "weapon": true,
+          "electronics": true,
+          "hull": true,
+          "life_support": false,
+          "areas": [
+            {
+              "name": "Assemble",
+              "description": "Repair up to 2 damage points from a Capital Ship within Control range.",
+              "cost": { "energy": 1, "crew": 2 }
+            },
+            {
+              "name": "Disassemble",
+              "description": "Mining",
+              "shoot": { "damage": 9, "range": "0-1", "arc-start": 3, "arc-end": 5 },
+              "cost": { "energy": 2 }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "system",
+        "system": {
+          "kind": "generic",
+          "name": "Docking Bay",
+          "rules": "",
+          "electronics": false,
+          "hull": true,
+          "life_support": true,
+          "areas": [
+            {
+              "description": "TODO cargo and utility",
+              "cost": { "energy": 0, "crew": 0 }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "slot",
+        "label": "Engine",
+        "allowed": ["engine_small", "engine_large"],
+        "selectedId": "engine_small"
+      }
+    ],
+    "right": [
+      {
+        "kind": "slot",
+        "label": "Right Weapon",
+        "allowed": ["flak_battery_right", "point_defense_right"],
+        "selectedId": "flak_battery_right"
+      },
+      {
+        "kind": "system",
+        "system": {
+          "kind": "generic",
+          "name": "Crew Quarters",
+          "rules": "",
+          "hull": true,
+          "electronics": false,
+          "life_support": true,
+          "areas": []
+        }
+      },
+      {
+        "kind": "slot",
+        "label": "Sensors",
+        "allowed": ["long_range_scanner", "advanced_sensors"],
+        "selectedId": "long_range_scanner"
+      }
+    ]
+  }
+}

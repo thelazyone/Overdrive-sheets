@@ -1,0 +1,12 @@
+/*
+ * Web fonts pulled from Google Fonts CDN.
+ *
+ * - Titillium Web matches the Python tool's body font directly.
+ * - Orbitron stands in for "Eurostile Extended" (malformed TTF - see TODO.md).
+ *
+ * Google's `display=swap` lets the UI render with fallback fonts while the
+ * real faces download; our measurement pass also waits for the real fonts
+ * via `waitForFonts()` before rendering the ship SVG.
+ */
+
+@import url("https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Titillium+Web:wght@400;600;700&display=swap");

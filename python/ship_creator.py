@@ -3,14 +3,23 @@ import os
 import argparse
 from src.ship_profile import create_ship_sheet
 
+# The Python tool is now rooted at <repo>/python/. Shared assets (fonts,
+# resources) still live at <repo>/..  (the Pillow/system.py code uses
+# relative paths like "fonts/..."), so we chdir to the repo root for the
+# duration of generation so those references keep resolving.
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+REPO_ROOT = os.path.dirname(SCRIPT_DIR)
+
 def main():
     # Set up argument parser
     parser = argparse.ArgumentParser(description='Generate ship sheets from JSON files.')
     parser.add_argument('-s', '--ship', help='Generate a specific ship by providing its JSON file path (e.g., ships/my_ship.json)')
     args = parser.parse_args()
 
-    # Create ships directory if it doesn't exist
-    ships_dir = "ships"
+    os.chdir(REPO_ROOT)
+
+    # Ships directory now lives next to this script at python/ships/.
+    ships_dir = os.path.join("python", "ships")
     if not os.path.exists(ships_dir):
         os.makedirs(ships_dir)
     

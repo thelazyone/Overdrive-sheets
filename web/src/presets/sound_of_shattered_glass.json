@@ -1,0 +1,129 @@
+{
+  "title": "Sound of Shattered Glass",
+  "subtitle": "Opulence Freighter",
+  "overdrive": [3, 2, 0],
+  "control": 2,
+  "shields": {
+    "kind": "slot",
+    "label": "Shields",
+    "allowed": ["shields_light", "shields_medium", "shields_heavy"],
+    "selectedId": "shields_medium"
+  },
+  "reactor": {
+    "kind": "slot",
+    "label": "Reactor",
+    "allowed": ["reactor_small", "reactor_large", "reactor_medium"],
+    "selectedId": "reactor_large"
+  },
+  "mess": {
+    "kind": "slot",
+    "label": "Mess",
+    "allowed": ["mess_small", "mess_medium"],
+    "selectedId": "mess_small"
+  },
+  "sections": {
+    "left": [
+      {
+        "kind": "slot",
+        "label": "Bridge",
+        "allowed": ["command_bridge", "front_bridge", "main_bridge", "lower_bridge"],
+        "selectedId": "command_bridge"
+      },
+      {
+        "kind": "slot",
+        "label": "Barracks",
+        "allowed": ["barracks_3", "barracks", "barracks_6"],
+        "selectedId": "barracks_3"
+      },
+      {
+        "kind": "slot",
+        "label": "Sensors",
+        "allowed": ["broadband_antenna", "long_range_scanner", "advanced_sensors"],
+        "selectedId": "broadband_antenna"
+      }
+    ],
+    "core": [
+      {
+        "kind": "slot",
+        "label": "Left Weapon",
+        "allowed": ["asteroid_buster_left", "flak_battery_left", "point_defense_left"],
+        "selectedId": "asteroid_buster_left"
+      },
+      {
+        "kind": "slot",
+        "label": "Right Weapon",
+        "allowed": ["asteroid_buster_right", "flak_battery_right", "point_defense_right"],
+        "selectedId": "asteroid_buster_right"
+      },
+      {
+        "kind": "system",
+        "system": {
+          "kind": "generic",
+          "name": "Dual Flak Battery",
+          "rules": "",
+          "weapon": true,
+          "electronics": false,
+          "hull": true,
+          "life_support": true,
+          "areas": [
+            {
+              "name": "AA Burst",
+              "description": "Anti-Light",
+              "shoot": { "damage": 7, "range": "0-2", "arc-start": 0, "arc-end": 8 },
+              "cost": { "energy": 1, "crew": 1 }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "system",
+        "system": {
+          "kind": "engine",
+          "name": "Engine",
+          "rules": "",
+          "electronics": true,
+          "hull": false,
+          "life_support": false,
+          "areas": [
+            {
+              "name": "",
+              "description": "Change Speed",
+              "cost": { "energy": 1, "crew": 1 }
+            }
+          ],
+          "speed_slots": [
+            { "speed": "0-1", "rotation": "90°" },
+            { "speed": "1-2", "rotation": "0°" },
+            { "speed": "2-3", "rotation": "0°" }
+          ]
+        }
+      }
+    ],
+    "right": [
+      {
+        "kind": "slot",
+        "label": "Point-Defense",
+        "allowed": ["point_defense_right", "flak_battery_right"],
+        "selectedId": "point_defense_right"
+      },
+      {
+        "kind": "system",
+        "system": {
+          "kind": "generic",
+          "name": "Drone Bay",
+          "rules": "",
+          "electronics": true,
+          "hull": false,
+          "life_support": false,
+          "areas": [
+            {
+              "name": "Service Drone",
+              "description": "Scan gets one extra target",
+              "cost": { "energy": 2, "crew": 0 }
+            }
+          ]
+        }
+      }
+    ]
+  }
+}
