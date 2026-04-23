@@ -11,7 +11,9 @@
       "electronics": true,
       "hull": false,
       "life_support": false,
-      "areas": []
+      "areas": [],
+      "weapon": false,
+      "main": false
     },
     "opulence_mess": {
       "kind": "mess",
@@ -21,7 +23,9 @@
       "electronics": false,
       "hull": false,
       "life_support": true,
-      "areas": []
+      "areas": [],
+      "weapon": false,
+      "main": false
     },
     "opulence_command_bridge": {
       "kind": "generic",
@@ -33,12 +37,18 @@
       "areas": [
         {
           "description": "Scan Objective",
-          "cost": { "energy": 0, "crew": 1 }
+          "cost": {
+            "energy": 0,
+            "crew": 1
+          }
         },
         {
           "name": "Broadcast",
           "description": "Control 3 for this Round",
-          "cost": { "energy": 0, "crew": 1 }
+          "cost": {
+            "energy": 0,
+            "crew": 1
+          }
         }
       ]
     },
@@ -53,9 +63,14 @@
         {
           "name": "",
           "description": "Board up to 1 Crew",
-          "cost": { "energy": 1, "crew": 1 }
+          "cost": {
+            "energy": 1,
+            "crew": 1
+          }
         }
-      ]
+      ],
+      "weapon": false,
+      "main": false
     },
     "opulence_engine": {
       "kind": "engine",
@@ -68,14 +83,28 @@
         {
           "name": "",
           "description": "Change Speed",
-          "cost": { "energy": 1, "crew": 1 }
+          "cost": {
+            "energy": 1,
+            "crew": 1
+          }
         }
       ],
       "speed_slots": [
-        { "speed": "0-1", "rotation": "90°" },
-        { "speed": "1-2", "rotation": "0°" },
-        { "speed": "2-3", "rotation": "0°" }
-      ]
+        {
+          "speed": "0-1",
+          "rotation": "90°"
+        },
+        {
+          "speed": "1-2",
+          "rotation": "0°"
+        },
+        {
+          "speed": "2-3",
+          "rotation": "0°"
+        }
+      ],
+      "weapon": false,
+      "main": false
     },
     "opulence_drone_bay": {
       "kind": "generic",
@@ -88,12 +117,19 @@
         {
           "name": "Service Drone",
           "description": "Scan gets one extra target",
-          "cost": { "energy": 2, "crew": 0 }
+          "cost": {
+            "energy": 2,
+            "crew": 0
+          }
         }
       ]
     }
   },
-  "overdrive": [3, 2, 0],
+  "overdrive": [
+    3,
+    2,
+    0
+  ],
   "control": 2,
   "shields": {
     "kind": "system",
@@ -105,14 +141,27 @@
       "hull": false,
       "life_support": false,
       "areas": [],
-      "front": [2, 1, 1, 0],
-      "rear": [2, 1, 1]
+      "front": [
+        2,
+        1,
+        1,
+        0
+      ],
+      "rear": [
+        2,
+        1,
+        1
+      ],
+      "weapon": false,
+      "main": false
     }
   },
   "reactor": {
     "kind": "slot",
     "label": "Reactor",
-    "allowed": ["opulence_reactor"],
+    "allowed": [
+      "opulence_reactor"
+    ],
     "selectedId": null
   },
   "mess": {
@@ -125,7 +174,9 @@
       "electronics": false,
       "hull": false,
       "life_support": true,
-      "areas": []
+      "areas": [],
+      "weapon": false,
+      "main": false
     }
   },
   "sections": {
@@ -133,19 +184,26 @@
       {
         "kind": "slot",
         "label": "Bridge",
-        "allowed": ["opulence_command_bridge"],
+        "allowed": [
+          "opulence_command_bridge"
+        ],
         "selectedId": null
       },
       {
         "kind": "slot",
         "label": "Main System",
-        "allowed": ["point_defense", "opulence_barracks"],
+        "allowed": [
+          "point_defense",
+          "opulence_barracks"
+        ],
         "selectedId": null
       },
       {
         "kind": "slot",
         "label": "Sensors",
-        "allowed": ["broadband_antenna"],
+        "allowed": [
+          "broadband_antenna"
+        ],
         "selectedId": null
       }
     ],
@@ -153,13 +211,17 @@
       {
         "kind": "slot",
         "label": "Weapon",
-        "allowed": ["asteroid_buster"],
+        "allowed": [
+          "asteroid_buster"
+        ],
         "selectedId": null
       },
       {
         "kind": "slot",
         "label": "Weapon",
-        "allowed": ["asteroid_buster"],
+        "allowed": [
+          "asteroid_buster"
+        ],
         "selectedId": null
       },
       {
@@ -176,10 +238,19 @@
             {
               "name": "AA Burst",
               "description": "Anti-Light",
-              "shoot": { "damage": 7, "range": "0-2", "arc-start": 0, "arc-end": 8 },
-              "cost": { "energy": 1, "crew": 1 }
+              "shoot": {
+                "damage": 7,
+                "range": "0-2",
+                "arc-start": 0,
+                "arc-end": 8
+              },
+              "cost": {
+                "energy": 1,
+                "crew": 1
+              }
             }
-          ]
+          ],
+          "main": false
         }
       },
       {
@@ -195,14 +266,28 @@
             {
               "name": "",
               "description": "Change Speed",
-              "cost": { "energy": 1, "crew": 1 }
+              "cost": {
+                "energy": 1,
+                "crew": 1
+              }
             }
           ],
           "speed_slots": [
-            { "speed": "0-1", "rotation": "90°" },
-            { "speed": "1-2", "rotation": "0°" },
-            { "speed": "2-3", "rotation": "0°" }
-          ]
+            {
+              "speed": "0-1",
+              "rotation": "90°"
+            },
+            {
+              "speed": "1-2",
+              "rotation": "0°"
+            },
+            {
+              "speed": "2-3",
+              "rotation": "0°"
+            }
+          ],
+          "weapon": false,
+          "main": false
         }
       }
     ],
@@ -210,7 +295,10 @@
       {
         "kind": "slot",
         "label": "Main System",
-        "allowed": ["point_defense", "opulence_barracks"],
+        "allowed": [
+          "point_defense",
+          "opulence_barracks"
+        ],
         "selectedId": null
       },
       {
@@ -226,9 +314,14 @@
             {
               "name": "Service Drone",
               "description": "Scan gets one extra target",
-              "cost": { "energy": 2, "crew": 0 }
+              "cost": {
+                "energy": 2,
+                "crew": 0
+              }
             }
-          ]
+          ],
+          "weapon": false,
+          "main": false
         }
       }
     ]

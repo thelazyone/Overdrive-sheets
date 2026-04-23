@@ -425,8 +425,28 @@ def generate_top_left_system_icons(draw, system, weapon_img, star_img, vertical_
 
 # Firing arc drawing moved to firing_arcs.py
 
+def _is_mess(system):
+    return system.get("kind") == "mess" or system.get("name", "").lower() == "mess"
+
+
+def _is_reactor(system):
+    return system.get("kind") == "reactor" or system.get("name", "").lower() == "reactor"
+
+
+def _is_engine(system):
+    return system.get("kind") == "engine" or system.get("name", "").lower() == "engine"
+
+
+def _is_shields(system):
+    return system.get("kind") == "shields"
+
+
 def create_system(system, tile_width_px, tile_height_px, dpi):
     """Create a generic system tile."""
+    if _is_shields(system):
+        from .shields_system_tile import create_shields_system_tile
+        return create_shields_system_tile(system, tile_width_px, tile_height_px, dpi)
+
     # Create canvas with extra height to accommodate all content
     img = Image.new("RGB", (tile_width_px, tile_height_px * 2), "white")  # Double the height to ensure enough space
     draw = ImageDraw.Draw(img)
@@ -442,7 +462,7 @@ def create_system(system, tile_width_px, tile_height_px, dpi):
     
     # Calculate effective width for title and rules
     effective_width = tile_width_px
-    if system["name"].lower() == "mess" and "med_bay" in system and system["med_bay"] > 0:
+    if _is_mess(system) and "med_bay" in system and system.get("med_bay", 0) > 0:
         effective_width = int(tile_width_px * 0.7)  # 70% width for main section
     
     # Generate title
@@ -453,11 +473,11 @@ def create_system(system, tile_width_px, tile_height_px, dpi):
     current_y += generate_rules(draw, system, subtitle_font, effective_width, current_y, vertical_spacing)
     
     # Handle special systems
-    if system["name"].lower() == "mess":
+    if _is_mess(system):
         current_y = generate_mess_content(draw, system, title_font, subtitle_font, area_title_font, description_font, med_bay_img, tile_width_px, current_y, vertical_spacing)
-    elif system["name"].lower() == "reactor":
+    elif _is_reactor(system):
         current_y = generate_reactor_content(draw, system, energy_large_img, current_y, vertical_spacing)
-    elif system["name"].lower() == "engine":
+    elif _is_engine(system):
         # Add extra spacing for engines to push slots down from title
         current_y += int(tile_height_px * 0.03)  # Additional spacing for engines
         # Generate engine speed slots after normal area processing
@@ -520,7 +540,7 @@ def create_system(system, tile_width_px, tile_height_px, dpi):
         
         # Reduced area margin at the end
         current_y += int(area_margin * 0.7)
-    elif system["name"].lower() not in ["mess", "reactor", "engine"]:
+    elif not (_is_mess(system) or _is_reactor(system) or _is_engine(system)):
         min_system_height = 100
         current_y += min_system_height
     
