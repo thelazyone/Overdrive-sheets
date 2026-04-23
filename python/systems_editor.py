@@ -4,8 +4,9 @@ list systems and ship slots (reactor/mess/shields + section slots), edit in the 
 and render a full 300 DPI tile (same as print/export), then downscale for on-screen
 preview. Slot rows show label, allowed ids, and selectedId; the preview resolves
 selectedId through the merged library (top-level + dedicatedSystems) like the web app.
-FocusOut / Return — not on every keypress. Raw JSON for the selected entry is
-in a resizable lower pane in the form column.
+FocusOut / Return — not on every keypress. An optional raw JSON column on the right of the form is available from
+the “Show JSON” toolbar checkbox (off by default). The tile preview is
+a full-width strip below the editor.
 """
 from __future__ import annotations
 
@@ -240,6 +241,8 @@ class SystemsEditor(tk.Tk):
         self._bulk_load = False
         self._json_mute = False
         self._list_silent = False
+        self._preview_pil: Image.Image | None = None
+        self._preview_refit_after: str | None = None
 
         self._build_menu()
         self._build_ui()
@@ -274,11 +277,23 @@ class SystemsEditor(tk.Tk):
             ttk.Button(tb, text=text, command=cmd).pack(side=tk.LEFT, padx=(2, 2 + pad) if pad else 2)
         ttk.Separator(tb, orient=tk.VERTICAL).pack(side=tk.LEFT, fill=tk.Y, padx=6)
         ttk.Button(tb, text="New system", command=self._new_system).pack(side=tk.LEFT, padx=2)
+        ttk.Separator(tb, orient=tk.VERTICAL).pack(side=tk.LEFT, fill=tk.Y, padx=6)
+        self._json_panel_var = tk.BooleanVar(value=False)
+        ttk.Checkbutton(
+            tb,
+            text="Show JSON",
+            variable=self._json_panel_var,
+            command=self._on_json_panel_toggle,
+        ).pack(side=tk.LEFT, padx=2)
 
-        main = ttk.PanedWindow(self, orient=tk.HORIZONTAL)
-        main.pack(fill=tk.BOTH, expand=True, padx=4, pady=(0, 4))
+        # Vertical split: (list | form | [JSON?]) on top, full-width preview below.
+        outer = ttk.PanedWindow(self, orient=tk.VERTICAL)
+        outer.pack(fill=tk.BOTH, expand=True, padx=4, pady=(0, 4))
 
-        left = ttk.Frame(main, width=240)
+        top_h = ttk.PanedWindow(outer, orient=tk.HORIZONTAL)
+        self._top_h_pane = top_h
+
+        left = ttk.Frame(top_h, width=240)
         lf = ttk.LabelFrame(left, text="Systems & slots (ship)", padding=4)
         lf.pack(fill=tk.BOTH, expand=True)
         self._listbox = tk.Listbox(lf, width=34, font=("Segoe UI", 10), height=22)
@@ -290,10 +305,9 @@ class SystemsEditor(tk.Tk):
         ttk.Button(left, text="+ New system", command=self._new_system).pack(
             fill=tk.X, pady=(6, 0)
         )
-        main.add(left, weight=0)
+        top_h.add(left, weight=0)
 
-        mid = ttk.PanedWindow(main, orient=tk.VERTICAL)
-        form_wrap = ttk.Frame(mid)
+        form_wrap = ttk.Frame(top_h)
         cv = tk.Canvas(form_wrap, highlightthickness=0)
         scroll = ttk.Scrollbar(form_wrap, orient=tk.VERTICAL, command=cv.yview)
         self._form = ttk.Frame(cv)
@@ -311,21 +325,21 @@ class SystemsEditor(tk.Tk):
         scroll.pack(side=tk.RIGHT, fill=tk.Y)
         self._canvas = cv
         self._form_columns()
-        mid.add(form_wrap, weight=3)
+        top_h.add(form_wrap, weight=3)
 
-        json_frame = ttk.LabelFrame(
-            mid,
-            text="Selected entry — JSON (resize pane above; focus out to apply edits)",
+        self._json_frame = ttk.LabelFrame(
+            top_h,
+            text="JSON — on the right (sash; focus out to apply)",
             padding=4,
         )
-        j_wrap = ttk.Frame(json_frame)
+        j_wrap = ttk.Frame(self._json_frame)
         j_wrap.pack(fill=tk.BOTH, expand=True)
         jy = ttk.Scrollbar(j_wrap, orient=tk.VERTICAL)
         jx = ttk.Scrollbar(j_wrap, orient=tk.HORIZONTAL)
         self._json_text = tk.Text(
             j_wrap,
-            height=16,
-            width=40,
+            height=12,
+            width=50,
             font=("Consolas", 10),
             wrap=tk.NONE,
             undo=True,
@@ -339,19 +353,24 @@ class SystemsEditor(tk.Tk):
         j_wrap.grid_rowconfigure(0, weight=1)
         j_wrap.grid_columnconfigure(0, weight=1)
         self._json_text.bind("<FocusOut>", self._on_json_focus_out)
-        mid.add(json_frame, weight=2)
-        main.add(mid, weight=2)
+        # JSON is off by default; "Show JSON" adds this pane to the right of the form.
+        outer.add(top_h, weight=2)
 
-        right = ttk.Frame(main, width=400)
-        self._img_label = ttk.Label(right, anchor=tk.NW)
-        self._img_label.pack(fill=tk.BOTH, expand=True)
+        preview_row = ttk.Frame(outer)
+        pv_inner = ttk.Frame(preview_row)
+        pv_inner.pack(fill=tk.BOTH, expand=True, padx=2, pady=(0, 4))
         ttk.Label(
-            right,
-            text="Preview: 300 DPI render, scaled to fit (WYSIWYG) — focus out / Enter to refresh",
+            pv_inner,
+            text="Preview: 300 DPI render, scaled to fit the area (WYSIWYG) — focus out / Enter to refresh",
             font=("Segoe UI", 9),
             foreground="#555",
-        ).pack(side=tk.BOTTOM, anchor=tk.W)
-        main.add(right, weight=1)
+        ).pack(side=tk.TOP, anchor=tk.W, fill=tk.X)
+        self._img_area = ttk.Frame(pv_inner)
+        self._img_area.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
+        self._img_label = ttk.Label(self._img_area, anchor=tk.CENTER, justify=tk.CENTER)
+        self._img_label.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
+        self._img_area.bind("<Configure>", self._on_preview_area_configure)
+        outer.add(preview_row, weight=2)
 
         self.minsize(1000, 700)
         self.geometry("1500x920")
@@ -481,6 +500,59 @@ class SystemsEditor(tk.Tk):
         self._areas_frame.grid(row=r, column=0, columnspan=2, sticky=tk.EW, pady=4)
         p.grid_columnconfigure(1, weight=1)
         self._row_areas = r
+
+    def _on_preview_area_configure(self, event: tk.Event) -> None:
+        if event.widget is not self._img_area:
+            return
+        if self._preview_pil is None:
+            return
+        if self._preview_refit_after:
+            self.after_cancel(self._preview_refit_after)
+        self._preview_refit_after = self.after(80, self._refit_preview_from_cache)
+
+    def _refit_preview_from_cache(self) -> None:
+        self._preview_refit_after = None
+        if self._preview_pil is not None:
+            self._fit_preview_to_area(self._preview_pil)
+
+    def _fit_preview_to_area(self, im: Image.Image) -> None:
+        self.update_idletasks()
+        aw = self._img_area.winfo_width()
+        ah = self._img_area.winfo_height()
+        pad = 10
+        aw = max(1, aw - 2 * pad)
+        ah = max(1, ah - 2 * pad)
+        if aw < 32 or ah < 32:
+            aw, ah = 900, 400
+        iw, ih = im.size
+        s = min(aw / iw, ah / ih)
+        nw, nh = max(1, int(iw * s)), max(1, int(ih * s))
+        out = im.resize((nw, nh), Image.Resampling.LANCZOS) if (nw, nh) != (iw, ih) else im
+        self._photo = ImageTk.PhotoImage(out)
+        self._img_label.configure(image=self._photo, text="")
+
+    def _set_preview_error(self, message: str) -> None:
+        self._preview_pil = None
+        if self._photo is not None:
+            self._photo = None
+        self._img_label.configure(text=message, image="")
+        self._img_label.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
+
+    def _on_json_panel_toggle(self) -> None:
+        if not hasattr(self, "_json_frame") or not hasattr(self, "_top_h_pane"):
+            return
+        top, jf = self._top_h_pane, self._json_frame
+        if self._json_panel_var.get():
+            if str(jf) not in top.panes():
+                top.add(jf, weight=1)
+            self._sync_json_panel()
+        else:
+            if str(jf) in top.panes():
+                self._on_json_focus_out()
+            try:
+                top.forget(jf)
+            except tk.TclError:
+                pass
 
     def _bind_done(self, w: tk.Widget) -> None:
         w.bind("<FocusOut>", self._on_done)
@@ -910,41 +982,26 @@ class SystemsEditor(tk.Tk):
                 lib = build_merged_library(self._data or {})
                 sid = self._active.get("selectedId")
                 if sid is None or str(sid).strip() == "":
-                    self._img_label.configure(
-                        text="(No selectedId) Pick an installed id to preview the tile.",
-                        image="",
+                    self._set_preview_error(
+                        "(No selectedId) Pick an installed id to preview the tile."
                     )
-                    if self._photo:
-                        self._photo = None
                     return
                 key = str(sid).strip()
                 if key not in lib:
-                    self._img_label.configure(
-                        text=f"selectedId {key!r} not in merged library (top-level + dedicatedSystems).",
-                        image="",
+                    self._set_preview_error(
+                        f"selectedId {key!r} not in merged library (top-level + dedicatedSystems)."
                     )
-                    if self._photo:
-                        self._photo = None
                     return
                 sys_def = copy.deepcopy(lib[key])
                 im = create_system(sys_def, tw, th, DPI)
             else:
                 im = create_system(copy.deepcopy(self._active), tw, th, DPI)
         except Exception as ex:
-            self._img_label.configure(
-                text=f"Render error: {ex}", image=""
-            )
-            if self._photo:
-                self._photo = None
+            self._set_preview_error(f"Render error: {ex}")
             return
-        # Display-only resize (layout matches full-resolution output)
-        max_w = 700
-        w, h = im.size
-        if w > max_w:
-            scale = max_w / w
-            im = im.resize((max_w, int(h * scale)), Image.Resampling.LANCZOS)
-        self._photo = ImageTk.PhotoImage(im)
-        self._img_label.configure(image=self._photo, text="")
+        self._preview_pil = im
+        self._img_label.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
+        self._fit_preview_to_area(im)
 
     def _on_list_select(self, event=None) -> None:
         if self._list_silent:
