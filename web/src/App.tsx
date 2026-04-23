@@ -23,29 +23,32 @@
  * system-reference prop below is named `sysRef`.
  */
 
-import { For, Show, createEffect, createResource, createSignal, type JSX } from "solid-js";
 import {
-  migrateShip,
+  For,
+  Show,
+  createEffect,
+  createMemo,
+  createResource,
+  createSignal,
+  type JSX,
+} from "solid-js";
+import {
+  DEDICATED_SYSTEMS_KEY,
+  mergeSystemLibraries,
   resolveRef,
-  SystemLibrarySchema,
+  splitShipDocument,
   type Area,
   type Ship,
   type System,
+  type SystemLibrary,
   type SystemRef,
 } from "./core/schema";
+import { baseLibrary } from "./core/library/loadBaseLibrary";
+import { ShipLibraryProvider, useShipLibrary } from "./core/shipLibraryContext";
 import { ShipSVG } from "./core/render/ShipSVG";
-import systemsLib from "./core/library/systems.json";
 import { waitForFonts } from "./core/render/measure";
 import { SHEET_HEIGHT, SHEET_WIDTH } from "./core/render/constants";
 import { DEFAULT_PRESET_ID, PRESETS } from "./presets";
-
-const library = SystemLibrarySchema.parse(systemsLib);
-const LIBRARY_IDS = Object.keys(library).sort();
-
-function loadPreset(id: string): Ship {
-  const entry = PRESETS.find((p) => p.id === id) ?? PRESETS[0];
-  return migrateShip(entry.data);
-}
 
 export function App(): JSX.Element {
   const [fontsReady] = createResource(async () => {
@@ -53,15 +56,28 @@ export function App(): JSX.Element {
     return true;
   });
 
+  const initial = splitShipDocument(
+    (PRESETS.find((p) => p.id === DEFAULT_PRESET_ID) ?? PRESETS[0]).data
+  );
+  const [dedicatedLib, setDedicatedLib] = createSignal<SystemLibrary>(
+    initial.dedicated
+  );
+  const [ship, setShip] = createSignal<Ship>(initial.ship);
   const [presetId, setPresetId] = createSignal<string>(DEFAULT_PRESET_ID);
-  const [ship, setShip] = createSignal<Ship>(loadPreset(DEFAULT_PRESET_ID));
   const [selected, setSelected] = createSignal<string | null>(null);
   const [customize, setCustomize] = createSignal<boolean>(false);
   const [error, setError] = createSignal<string | null>(null);
 
+  const fullLibrary = createMemo(() =>
+    mergeSystemLibraries(baseLibrary, dedicatedLib())
+  );
+
   const applyPreset = (id: string) => {
     try {
-      setShip(loadPreset(id));
+      const entry = PRESETS.find((p) => p.id === id) ?? PRESETS[0];
+      const { ship: s, dedicated } = splitShipDocument(entry.data);
+      setShip(s);
+      setDedicatedLib(dedicated);
       setSelected(null);
       setError(null);
     } catch (e: any) {
@@ -83,8 +99,9 @@ export function App(): JSX.Element {
     reader.onload = () => {
       try {
         const raw = JSON.parse(reader.result as string);
-        const parsed = migrateShip(raw);
-        setShip(parsed);
+        const { ship: s, dedicated } = splitShipDocument(raw);
+        setShip(s);
+        setDedicatedLib(dedicated);
         setSelected(null);
         setError(null);
       } catch (e: any) {
@@ -97,7 +114,14 @@ export function App(): JSX.Element {
 
   const onDownloadJSON = () => {
     const s = ship();
-    const blob = new Blob([JSON.stringify(s, null, 2)], { type: "application/json" });
+    const d = dedicatedLib();
+    const out =
+      d && Object.keys(d).length > 0
+        ? { ...s, [DEDICATED_SYSTEMS_KEY]: d }
+        : s;
+    const blob = new Blob([JSON.stringify(out, null, 2)], {
+      type: "application/json",
+    });
     triggerDownload(blob, slugify(s.name) + ".json");
   };
 
@@ -124,6 +148,7 @@ export function App(): JSX.Element {
   };
 
   return (
+    <ShipLibraryProvider value={fullLibrary}>
     <div class="app">
       <div class="pane left-pane">
         <div class="toolbar">
@@ -221,11 +246,12 @@ export function App(): JSX.Element {
       <div class="pane right-pane">
         <div class="ship-preview-wrapper">
           <Show when={fontsReady()}>
-            <ShipSVG ship={ship()} library={library} responsive />
+            <ShipSVG ship={ship()} library={fullLibrary()} responsive />
           </Show>
         </div>
       </div>
     </div>
+    </ShipLibraryProvider>
   );
 }
 
@@ -416,10 +442,13 @@ function SectionGroup(props: {
  * system in the library. Used so the badge can read e.g. "generic" for a
  * bridge slot instead of the less-informative "slot".
  */
-function inferSlotKind(sysRef: SystemRef): System["kind"] | null {
+function inferSlotKind(
+  sysRef: SystemRef,
+  lib: SystemLibrary
+): System["kind"] | null {
   if (sysRef.kind !== "slot") return null;
   for (const id of sysRef.allowed) {
-    const sys = library[id];
+    const sys = lib[id];
     if (sys) return sys.kind;
   }
   return null;
@@ -440,7 +469,8 @@ function SystemRow(props: {
    *  infer from the library. */
   canonicalKind?: System["kind"];
 }) {
-  const resolved = () => resolveRef(props.sysRef, library);
+  const getLib = useShipLibrary();
+  const resolved = () => resolveRef(props.sysRef, getLib());
   const isSlot = () => props.sysRef.kind === "slot";
   const isEmptySlot = () => isSlot() && !resolved();
   // Rows are clickable (for inspector selection) only in customize mode.
@@ -454,7 +484,7 @@ function SystemRow(props: {
     const r = resolved();
     if (r) return r.kind;
     return (
-      inferSlotKind(props.sysRef) ?? props.canonicalKind ?? "slot"
+      inferSlotKind(props.sysRef, getLib()) ?? props.canonicalKind ?? "slot"
     );
   };
 
@@ -517,7 +547,7 @@ function SystemRow(props: {
             <option value="">— none —</option>
             <For each={slot().allowed}>
               {(id) => (
-                <option value={id}>{library[id]?.name ?? id}</option>
+                <option value={id}>{getLib()[id]?.name ?? id}</option>
               )}
             </For>
           </select>
@@ -575,7 +605,8 @@ function SlotInspector(props: {
   customize: boolean;
   onShip: ShipUpdater;
 }) {
-  const current = () => resolveRef(props.sysRef, library);
+  const getLib = useShipLibrary();
+  const current = () => resolveRef(props.sysRef, getLib());
 
   return (
     <div class="inspector-body">
@@ -607,6 +638,8 @@ function SlotCustomizer(props: {
   sysRef: Extract<SystemRef, { kind: "slot" }>;
   onShip: ShipUpdater;
 }) {
+  const getLib = useShipLibrary();
+  const libraryIdList = createMemo(() => Object.keys(getLib()).sort());
   const setLabel = (label: string) => {
     props.onShip((s) =>
       withRefUpdate(s, props.path, (r) =>
@@ -656,7 +689,7 @@ function SlotCustomizer(props: {
             {(id) => (
               <li>
                 <span class="allowed-name">
-                  {library[id]?.name ?? id}
+                  {getLib()[id]?.name ?? id}
                   <span class="allowed-id"> ({id})</span>
                 </span>
                 <button
@@ -681,11 +714,11 @@ function SlotCustomizer(props: {
             }}
           >
             <option value="">+ add system…</option>
-            <For each={LIBRARY_IDS}>
+            <For each={libraryIdList()}>
               {(id) => (
                 <Show when={!props.sysRef.allowed.includes(id)}>
                   <option value={id}>
-                    {library[id].name} — {id}
+                    {getLib()[id].name} — {id}
                   </option>
                 </Show>
               )}

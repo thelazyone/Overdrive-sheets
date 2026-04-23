@@ -2,6 +2,97 @@
   "name": "Unnamed Ship",
   "description": "Opulence Class Freighter",
   "label": "Opulence Freighter",
+  "dedicatedSystems": {
+    "opulence_reactor": {
+      "kind": "reactor",
+      "name": "Reactor",
+      "rules": "Energy Production: 3",
+      "circles": 6,
+      "electronics": true,
+      "hull": false,
+      "life_support": false,
+      "areas": []
+    },
+    "opulence_mess": {
+      "kind": "mess",
+      "name": "Mess",
+      "rules": "Crew: 4",
+      "med_bay": 1,
+      "electronics": false,
+      "hull": false,
+      "life_support": true,
+      "areas": []
+    },
+    "opulence_command_bridge": {
+      "kind": "generic",
+      "name": "Command Bridge",
+      "rules": "",
+      "electronics": true,
+      "hull": false,
+      "life_support": true,
+      "areas": [
+        {
+          "description": "Scan Objective",
+          "cost": { "energy": 0, "crew": 1 }
+        },
+        {
+          "name": "Broadcast",
+          "description": "Control 3 for this Round",
+          "cost": { "energy": 0, "crew": 1 }
+        }
+      ]
+    },
+    "opulence_barracks": {
+      "kind": "generic",
+      "name": "Barracks",
+      "rules": "Holds 3 Crew",
+      "hull": false,
+      "electronics": false,
+      "life_support": true,
+      "areas": [
+        {
+          "name": "",
+          "description": "Board up to 1 Crew",
+          "cost": { "energy": 1, "crew": 1 }
+        }
+      ]
+    },
+    "opulence_engine": {
+      "kind": "engine",
+      "name": "Engine",
+      "rules": "",
+      "electronics": true,
+      "hull": false,
+      "life_support": false,
+      "areas": [
+        {
+          "name": "",
+          "description": "Change Speed",
+          "cost": { "energy": 1, "crew": 1 }
+        }
+      ],
+      "speed_slots": [
+        { "speed": "0-1", "rotation": "90°" },
+        { "speed": "1-2", "rotation": "0°" },
+        { "speed": "2-3", "rotation": "0°" }
+      ]
+    },
+    "opulence_drone_bay": {
+      "kind": "generic",
+      "name": "Drone Bay",
+      "rules": "",
+      "electronics": true,
+      "hull": false,
+      "life_support": false,
+      "areas": [
+        {
+          "name": "Service Drone",
+          "description": "Scan gets one extra target",
+          "cost": { "energy": 2, "crew": 0 }
+        }
+      ]
+    }
+  },
   "overdrive": [3, 2, 0],
   "control": 2,
   "shields": {
@@ -21,7 +112,7 @@
   "reactor": {
     "kind": "slot",
     "label": "Reactor",
-    "allowed": ["opulence_default_reactor", "opulence_improved_reactor"],
+    "allowed": ["opulence_reactor"],
     "selectedId": null
   },
   "mess": {
@@ -42,33 +133,33 @@
       {
         "kind": "slot",
         "label": "Bridge",
-        "allowed": ["command_bridge", "front_bridge", "main_bridge", "lower_bridge"],
+        "allowed": ["opulence_command_bridge"],
         "selectedId": null
       },
       {
         "kind": "slot",
-        "label": "Main System Slot",
-        "allowed": ["barracks_3", "point_defense"],
+        "label": "Main System",
+        "allowed": ["point_defense", "opulence_barracks"],
         "selectedId": null
       },
       {
         "kind": "slot",
-        "label": "Sensors Slot",
-        "allowed": ["broadband_antenna", "long_range_scanner", "advanced_sensors"],
+        "label": "Sensors",
+        "allowed": ["broadband_antenna"],
         "selectedId": null
       }
     ],
     "core": [
       {
         "kind": "slot",
-        "label": "Weapon Slot",
-        "allowed": ["asteroid_buster_left", "autocannon"],
+        "label": "Weapon",
+        "allowed": ["asteroid_buster"],
         "selectedId": null
       },
       {
         "kind": "slot",
-        "label": "Weapon Slot",
-        "allowed": ["asteroid_buster_right", "autocannon"],
+        "label": "Weapon",
+        "allowed": ["asteroid_buster"],
         "selectedId": null
       },
       {
@@ -118,8 +209,8 @@
     "right": [
       {
         "kind": "slot",
-        "label": "Main System Slot",
-        "allowed": ["barracks_3", "point_defense"],
+        "label": "Main System",
+        "allowed": ["point_defense", "opulence_barracks"],
         "selectedId": null
       },
       {

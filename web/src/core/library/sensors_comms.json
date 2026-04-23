@@ -1,0 +1,17 @@
+{
+  "broadband_antenna": {
+    "kind": "generic",
+    "name": "Broadband Antenna",
+    "rules": "",
+    "electronics": true,
+    "hull": false,
+    "life_support": false,
+    "areas": [
+      {
+        "name": "Broadcast",
+        "description": "+1 Control while operational",
+        "cost": { "energy": 0, "crew": 0 }
+      }
+    ]
+  }
+}

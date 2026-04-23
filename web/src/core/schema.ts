@@ -311,6 +311,48 @@ export const SystemLibrarySchema = z.record(z.string(), SystemSchema);
 export type SystemLibrary = z.infer<typeof SystemLibrarySchema>;
 
 /**
+ * Merges multiple library objects (e.g. several JSON files). Throws if the same
+ * id appears in more than one part.
+ */
+export function mergeSystemLibraries(...parts: SystemLibrary[]): SystemLibrary {
+  const out: Record<string, System> = {};
+  for (const p of parts) {
+    for (const id of Object.keys(p)) {
+      if (id in out) {
+        throw new Error(
+          `Duplicate system id "${id}" when merging system libraries.`
+        );
+      }
+      out[id] = p[id]!;
+    }
+  }
+  return out as SystemLibrary;
+}
+
+/** Ship JSON may carry a `dedicatedSystems` map alongside normal ship fields. */
+export const DEDICATED_SYSTEMS_KEY = "dedicatedSystems" as const;
+
+export function parseDedicatedSystems(raw: unknown): SystemLibrary {
+  if (raw == null) return {};
+  return SystemLibrarySchema.parse(raw);
+}
+
+/**
+ * Splits a loaded JSON document into a validated {@link Ship} and optional
+ * per-template systems (e.g. Opulence-only hull modules).
+ */
+export function splitShipDocument(raw: any): { ship: Ship; dedicated: SystemLibrary } {
+  if (!raw || typeof raw !== "object") {
+    return { ship: migrateShip({}), dedicated: {} };
+  }
+  const { dedicatedSystems, ...rest } = raw as any;
+  return {
+    ship: migrateShip(rest),
+    dedicated: parseDedicatedSystems(dedicatedSystems),
+  };
+}
+
+/**
  * Resolve a SystemRef into a concrete System, using the library to look up
  * selected slot IDs. Returns null for an empty slot (caller draws a
  * placeholder).
