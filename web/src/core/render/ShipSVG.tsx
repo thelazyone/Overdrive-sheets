@@ -8,7 +8,7 @@
  *     column has Mess + Reactor pinned at the bottom with a CORE label.
  *   - Right-bottom box with Front/Rear shields.
  *
- * Slot refs are resolved against the provided library before layout.
+ * Slot refs resolve to `options[selectedIndex]` on each slot (ship-local).
  */
 
 import { createMemo, For, type JSX } from "solid-js";
@@ -24,13 +24,7 @@ import {
   SHEET_WIDTH,
 } from "./constants";
 import { measureText } from "./measure";
-import {
-  resolveRef,
-  type Ship,
-  type System,
-  type SystemLibrary,
-  type SystemRef,
-} from "../schema";
+import { resolveRef, type Ship, type System, type SystemRef } from "../schema";
 import { layoutSystem } from "./SystemSVG";
 import { OverdriveSVG } from "./OverdriveSVG";
 import { ShieldsSVG } from "./ShieldsSVG";
@@ -91,11 +85,8 @@ function renderHeader(ship: Ship): { el: JSX.Element; bottomY: number } {
   return { el, bottomY };
 }
 
-function resolveShields(
-  ship: Ship,
-  library: SystemLibrary,
-): { front: number[]; rear: number[] } {
-  const sys = resolveRef(ship.shields, library);
+function resolveShields(ship: Ship): { front: number[]; rear: number[] } {
+  const sys = resolveRef(ship.shields);
   if (sys && sys.kind === "shields") {
     return { front: sys.front, rear: sys.rear };
   }
@@ -108,17 +99,16 @@ function resolveShields(
  */
 function SystemRefSVG(props: {
   ref: SystemRef;
-  library: SystemLibrary;
   x: number;
   y: number;
   columnWidth: number;
 }): { el: JSX.Element; height: number } {
-  const resolved = resolveRef(props.ref, props.library);
+  const resolved = resolveRef(props.ref);
   if (!resolved) {
     // Empty slot placeholder
     const placeholderHeight = 200 * SCALE;
     const labelFont = cssFont(SHEET_LABEL_SIZE, FONT_EUROSTILE);
-    const label = props.ref.kind === "slot" ? props.ref.label ?? "SLOT" : "SLOT";
+    const label = "SLOT";
     const el = (
       <g transform={`translate(${props.x} ${props.y})`}>
         <rect
@@ -164,17 +154,12 @@ function renderSystemAt(system: System, x: number, y: number, columnWidth: numbe
 
 export interface ShipSVGProps {
   ship: Ship;
-  library: SystemLibrary;
   /** If true, renders without explicit width/height attributes so the parent
    *  can control scaling via CSS. Defaults to false (fixed A5 dimensions). */
   responsive?: boolean;
 }
 
-function ShipSVGInner(
-  ship: Ship,
-  library: SystemLibrary,
-  responsive: boolean,
-): JSX.Element {
+function ShipSVGInner(ship: Ship, responsive: boolean): JSX.Element {
   const header = renderHeader(ship);
 
   // Columns layout
@@ -203,7 +188,7 @@ function ShipSVGInner(
   function bottomCoreBlock(
     ref: SystemRef,
   ): { height: number; render: (y: number) => JSX.Element } {
-    const sys = resolveRef(ref, library);
+    const sys = resolveRef(ref);
     if (sys) {
       const layout = layoutSystem(sys);
       const scale = bottomBoxWidth / layout.width;
@@ -218,8 +203,7 @@ function ShipSVGInner(
       };
     }
     const placeholderFont = cssFont(SHEET_LABEL_SIZE, FONT_EUROSTILE);
-    const label =
-      ref.kind === "slot" ? (ref.label ?? "SLOT").toUpperCase() : "EMPTY";
+    const label = ref.kind === "slot" ? "SLOT" : "EMPTY";
     return {
       height: CORE_BOTTOM_PLACEHOLDER_HEIGHT,
       render: (y: number) => (
@@ -277,7 +261,6 @@ function ShipSVGInner(
     section.forEach((ref) => {
       const layoutBase = SystemRefSVG({
         ref,
-        library,
         x: 0,
         y: 0,
         columnWidth: scaledSystemWidth,
@@ -298,7 +281,6 @@ function ShipSVGInner(
     ship.sections.core.forEach((ref) => {
       const base = SystemRefSVG({
         ref,
-        library,
         x: 0,
         y: 0,
         columnWidth: scaledSystemWidth,
@@ -371,8 +353,8 @@ function ShipSVGInner(
         y={bottomBoxY}
         width={bottomBoxWidth}
         height={bottomBoxHeight}
-        front={resolveShields(ship, library).front}
-        rear={resolveShields(ship, library).rear}
+        front={resolveShields(ship).front}
+        rear={resolveShields(ship).rear}
       />
 
     </svg>
@@ -382,12 +364,12 @@ function ShipSVGInner(
 /**
  * Public wrapper. Wrapping the imperative layout in a {@link createMemo} is
  * what makes the SVG reactive: the inner function re-runs whenever
- * `props.ship` or `props.library` changes by reference, which produces a
- * fresh JSX tree that Solid then splices into the DOM.
+ * `props.ship` changes by reference, which produces a fresh JSX tree that
+ * Solid then splices into the DOM.
  */
 export function ShipSVG(props: ShipSVGProps): JSX.Element {
   const rendered = createMemo(() =>
-    ShipSVGInner(props.ship, props.library, !!props.responsive),
+    ShipSVGInner(props.ship, !!props.responsive),
   );
   return <>{rendered()}</>;
 }

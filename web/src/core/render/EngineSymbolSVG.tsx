@@ -44,6 +44,7 @@ export function EngineSymbolSVG(props: Props): JSX.Element {
         y={0}
         width={WIDTH}
         height={HEIGHT}
+        preserveAspectRatio="none"
       />
       <text
         x={55}

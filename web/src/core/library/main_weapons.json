@@ -1,0 +1,106 @@
+{
+  "asteroid_buster": {
+    "kind": "generic",
+    "name": "Asteroid Buster",
+    "rules": "",
+    "weapon": true,
+    "electronics": false,
+    "hull": true,
+    "life_support": false,
+    "areas": [
+      {
+        "name": "Shoot",
+        "description": "Mining",
+        "shoot": {
+          "damage": 4,
+          "range": "2-4",
+          "arc-start": 1,
+          "arc-end": 7
+        },
+        "cost": {
+          "energy": 1,
+          "crew": 1
+        }
+      }
+    ],
+    "main": false
+  },
+  "dual_flak_battery": {
+    "kind": "generic",
+    "name": "Dual Flak Battery",
+    "rules": "",
+    "weapon": true,
+    "electronics": false,
+    "hull": true,
+    "life_support": true,
+    "areas": [
+      {
+        "name": "AA Burst",
+        "description": "Anti-Light",
+        "shoot": {
+          "damage": 7,
+          "range": "0-2",
+          "arc-start": 0,
+          "arc-end": 8
+        },
+        "cost": {
+          "energy": 1,
+          "crew": 1
+        }
+      }
+    ],
+    "main": false
+  },
+  "point_defense": {
+    "kind": "generic",
+    "name": "Point-Defense",
+    "rules": "",
+    "weapon": true,
+    "hull": true,
+    "electronics": false,
+    "life_support": false,
+    "areas": [
+      {
+        "name": "AA Burst",
+        "description": "Anti-Light, Fast",
+        "shoot": {
+          "damage": 3,
+          "range": "0-2",
+          "arc-start": 3,
+          "arc-end": 1
+        },
+        "cost": {
+          "energy": 1,
+          "crew": 0
+        }
+      }
+    ],
+    "main": false
+  },
+  "double_minigun": {
+    "kind": "generic",
+    "name": "Double Minigun",
+    "rules": "",
+    "weapon": true,
+    "main": false,
+    "hull": true,
+    "electronics": true,
+    "life_support": false,
+    "areas": [
+      {
+        "name": "",
+        "description": "Fast",
+        "cost": {
+          "energy": 1,
+          "crew": 0
+        },
+        "shoot": {
+          "damage": 3,
+          "range": "0-2",
+          "arc-start": 3,
+          "arc-end": 1
+        }
+      }
+    ]
+  }
+}

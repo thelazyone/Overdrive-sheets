@@ -2,7 +2,7 @@
  * Ship presets shown in the "Load preset..." dropdown.
  *
  * Presets live in `web/src/presets/` as static JSON modules so they're
- * type-checked through {@link migrateShip} at load time.
+ * validated by `parseShipDocument` when loaded in the app.
  */
 
 import contemplation from "./contemplation_escort_vessel.json";

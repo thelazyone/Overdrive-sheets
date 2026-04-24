@@ -2,129 +2,6 @@
   "name": "Unnamed Ship",
   "description": "Opulence Class Freighter",
   "label": "Opulence Freighter",
-  "dedicatedSystems": {
-    "opulence_reactor": {
-      "kind": "reactor",
-      "name": "Reactor",
-      "rules": "Energy Production: 3",
-      "circles": 6,
-      "electronics": true,
-      "hull": false,
-      "life_support": false,
-      "areas": [],
-      "weapon": false,
-      "main": false
-    },
-    "opulence_mess": {
-      "kind": "mess",
-      "name": "Mess",
-      "rules": "Crew: 4",
-      "med_bay": 1,
-      "electronics": false,
-      "hull": false,
-      "life_support": true,
-      "areas": [],
-      "weapon": false,
-      "main": false
-    },
-    "opulence_command_bridge": {
-      "kind": "generic",
-      "name": "Command Bridge",
-      "rules": "",
-      "electronics": true,
-      "hull": false,
-      "life_support": true,
-      "areas": [
-        {
-          "description": "Scan Objective",
-          "cost": {
-            "energy": 0,
-            "crew": 1
-          }
-        },
-        {
-          "name": "Broadcast",
-          "description": "Control 3 for this Round",
-          "cost": {
-            "energy": 0,
-            "crew": 1
-          }
-        }
-      ]
-    },
-    "opulence_barracks": {
-      "kind": "generic",
-      "name": "Barracks",
-      "rules": "Holds 3 Crew",
-      "hull": false,
-      "electronics": false,
-      "life_support": true,
-      "areas": [
-        {
-          "name": "",
-          "description": "Board up to 1 Crew",
-          "cost": {
-            "energy": 1,
-            "crew": 1
-          }
-        }
-      ],
-      "weapon": false,
-      "main": false
-    },
-    "opulence_engine": {
-      "kind": "engine",
-      "name": "Engine",
-      "rules": "",
-      "electronics": true,
-      "hull": false,
-      "life_support": false,
-      "areas": [
-        {
-          "name": "",
-          "description": "Change Speed",
-          "cost": {
-            "energy": 1,
-            "crew": 1
-          }
-        }
-      ],
-      "speed_slots": [
-        {
-          "speed": "0-1",
-          "rotation": "90°"
-        },
-        {
-          "speed": "1-2",
-          "rotation": "0°"
-        },
-        {
-          "speed": "2-3",
-          "rotation": "0°"
-        }
-      ],
-      "weapon": false,
-      "main": false
-    },
-    "opulence_drone_bay": {
-      "kind": "generic",
-      "name": "Drone Bay",
-      "rules": "",
-      "electronics": true,
-      "hull": false,
-      "life_support": false,
-      "areas": [
-        {
-          "name": "Service Drone",
-          "description": "Scan gets one extra target",
-          "cost": {
-            "energy": 2,
-            "crew": 0
-          }
-        }
-      ]
-    }
-  },
   "overdrive": [
     3,
     2,
@@ -158,18 +35,27 @@
   },
   "reactor": {
     "kind": "slot",
-    "label": "Reactor",
-    "allowed": [
-      "opulence_reactor"
-    ],
-    "selectedId": null
+    "options": [
+      {
+        "kind": "reactor",
+        "name": "Reactor",
+        "rules": "Energy Production: 3",
+        "circles": 6,
+        "electronics": true,
+        "hull": false,
+        "life_support": false,
+        "areas": [],
+        "weapon": false,
+        "main": false
+      }
+    ]
   },
   "mess": {
     "kind": "system",
     "system": {
       "kind": "mess",
       "name": "Mess",
-      "rules": "Crew: 4",
+      "rules": "Crew: 3",
       "med_bay": 1,
       "electronics": false,
       "hull": false,
@@ -183,46 +69,196 @@
     "left": [
       {
         "kind": "slot",
-        "label": "Bridge",
-        "allowed": [
-          "opulence_command_bridge"
-        ],
-        "selectedId": null
+        "options": [
+          {
+            "kind": "generic",
+            "name": "Command Bridge",
+            "rules": "",
+            "electronics": true,
+            "hull": false,
+            "life_support": true,
+            "areas": [
+              {
+                "description": "Scan Objective",
+                "cost": {
+                  "energy": 0,
+                  "crew": 1
+                },
+                "name": ""
+              },
+              {
+                "name": "Broadcast",
+                "description": "Control 3 for this Round",
+                "cost": {
+                  "energy": 0,
+                  "crew": 1
+                }
+              }
+            ],
+            "weapon": false,
+            "main": false
+          }
+        ]
       },
       {
         "kind": "slot",
-        "label": "Main System",
-        "allowed": [
-          "point_defense",
-          "opulence_barracks"
-        ],
-        "selectedId": null
+        "options": [
+          {
+            "kind": "generic",
+            "name": "Point-Defense",
+            "rules": "",
+            "weapon": true,
+            "hull": true,
+            "electronics": false,
+            "life_support": false,
+            "areas": [
+              {
+                "name": "AA Burst",
+                "description": "Anti-Light, Fast",
+                "shoot": {
+                  "damage": 3,
+                  "range": "0-2",
+                  "arc-start": 7,
+                  "arc-end": 5
+                },
+                "cost": {
+                  "energy": 1,
+                  "crew": 0
+                }
+              }
+            ],
+            "main": false
+          },
+          {
+            "kind": "generic",
+            "name": "Barracks",
+            "rules": "Holds 3 Crew",
+            "hull": false,
+            "electronics": false,
+            "life_support": true,
+            "areas": [
+              {
+                "name": "",
+                "description": "Board up to 1 Crew",
+                "cost": {
+                  "energy": 1,
+                  "crew": 1
+                }
+              }
+            ],
+            "weapon": false,
+            "main": false
+          }
+        ]
       },
       {
         "kind": "slot",
-        "label": "Sensors",
-        "allowed": [
-          "broadband_antenna"
-        ],
-        "selectedId": null
+        "options": [
+          {
+            "kind": "generic",
+            "name": "Broadband Antenna",
+            "rules": "",
+            "electronics": true,
+            "hull": false,
+            "life_support": false,
+            "areas": [
+              {
+                "name": "Broadcast",
+                "description": "+1 Control while operational",
+                "cost": {
+                  "energy": 0,
+                  "crew": 0
+                }
+              }
+            ],
+            "weapon": false,
+            "main": false
+          },
+          {
+            "kind": "generic",
+            "name": "Resource Scanner",
+            "rules": "",
+            "weapon": false,
+            "main": false,
+            "hull": false,
+            "electronics": false,
+            "life_support": false,
+            "areas": [
+              {
+                "name": "",
+                "description": "Something",
+                "cost": {
+                  "energy": 2,
+                  "crew": 0
+                }
+              }
+            ]
+          }
+        ]
       }
     ],
     "core": [
       {
         "kind": "slot",
-        "label": "Weapon",
-        "allowed": [
-          "asteroid_buster"
-        ],
-        "selectedId": null
+        "options": [
+          {
+            "kind": "generic",
+            "name": "Asteroid Buster",
+            "rules": "",
+            "weapon": true,
+            "electronics": false,
+            "hull": true,
+            "life_support": false,
+            "areas": [
+              {
+                "name": "Shoot",
+                "description": "Mining",
+                "shoot": {
+                  "damage": 4,
+                  "range": "2-4",
+                  "arc-start": 1,
+                  "arc-end": 7
+                },
+                "cost": {
+                  "energy": 1,
+                  "crew": 1
+                }
+              }
+            ],
+            "main": false
+          }
+        ]
       },
       {
         "kind": "slot",
-        "label": "Weapon",
-        "allowed": [
-          "asteroid_buster"
-        ],
-        "selectedId": null
+        "options": [
+          {
+            "kind": "generic",
+            "name": "Asteroid Buster",
+            "rules": "",
+            "weapon": true,
+            "electronics": false,
+            "hull": true,
+            "life_support": false,
+            "areas": [
+              {
+                "name": "Shoot",
+                "description": "Mining",
+                "shoot": {
+                  "damage": 4,
+                  "range": "2-4",
+                  "arc-start": 1,
+                  "arc-end": 7
+                },
+                "cost": {
+                  "energy": 1,
+                  "crew": 1
+                }
+              }
+            ],
+            "main": false
+          }
+        ]
       },
       {
         "kind": "system",
@@ -246,7 +282,7 @@
               },
               "cost": {
                 "energy": 1,
-                "crew": 1
+                "crew": 0
               }
             }
           ],
@@ -294,12 +330,54 @@
     "right": [
       {
         "kind": "slot",
-        "label": "Main System",
-        "allowed": [
-          "point_defense",
-          "opulence_barracks"
-        ],
-        "selectedId": null
+        "options": [
+          {
+            "kind": "generic",
+            "name": "Point-Defense",
+            "rules": "",
+            "weapon": true,
+            "hull": true,
+            "electronics": false,
+            "life_support": false,
+            "areas": [
+              {
+                "name": "AA Burst",
+                "description": "Anti-Light, Fast",
+                "shoot": {
+                  "damage": 3,
+                  "range": "0-2",
+                  "arc-start": 3,
+                  "arc-end": 1
+                },
+                "cost": {
+                  "energy": 1,
+                  "crew": 0
+                }
+              }
+            ],
+            "main": false
+          },
+          {
+            "kind": "generic",
+            "name": "Barracks",
+            "rules": "Holds 3 Crew",
+            "hull": false,
+            "electronics": false,
+            "life_support": true,
+            "areas": [
+              {
+                "name": "",
+                "description": "Board up to 1 Crew",
+                "cost": {
+                  "energy": 1,
+                  "crew": 1
+                }
+              }
+            ],
+            "weapon": false,
+            "main": false
+          }
+        ]
       },
       {
         "kind": "system",

@@ -1,8 +1,7 @@
 /**
- * Verify that every preset in `web/src/presets/*.json`, plus every legacy
- * `python/ships/*.json`, parses through the migration layer and the Zod
- * schema, and that every library entry (all `web/src/core/library/*.json`
- * files merged) passes the System schema.
+ * Verify that every preset in `web/src/presets/*.json` parses as a 0.1 ship
+ * document, and that merged `web/src/core/library/*.json` passes the system
+ * library schema.
  *
  * Run from the `web/` folder:
  *   npx tsx scripts/verify-ships.ts
@@ -14,14 +13,12 @@ import { fileURLToPath } from "node:url";
 
 import {
   mergeSystemLibraries,
-  splitShipDocument,
+  parseShipDocument,
   SystemLibrarySchema,
   type SystemLibrary,
 } from "../src/core/schema";
 
 const here = dirname(fileURLToPath(import.meta.url));
-const repoRoot = resolve(here, "..", "..");
-const legacyShipsDir = resolve(repoRoot, "python", "ships");
 const presetsDir = resolve(here, "..", "src", "presets");
 const libraryDir = resolve(here, "..", "src", "core", "library");
 
@@ -46,27 +43,26 @@ try {
   console.error(e?.message ?? e?.errors ?? e);
 }
 
-function verifyDir(label: string, dir: string): void {
-  const jsonFiles = readdirSync(dir).filter((f) => f.endsWith(".json"));
+function verifyPresets(): void {
+  const jsonFiles = readdirSync(presetsDir).filter((f) => f.endsWith(".json"));
   for (const file of jsonFiles) {
-    const path = resolve(dir, file);
+    const path = resolve(presetsDir, file);
     try {
       const raw = JSON.parse(readFileSync(path, "utf-8"));
-      const { ship } = splitShipDocument(raw);
+      const ship = parseShipDocument(raw);
       const sections = ship.sections;
       const total =
         sections.left.length + sections.core.length + sections.right.length;
-      console.log(`${label}/${file}: ok (${total} systems)`);
+      console.log(`presets/${file}: ok (${total} systems)`);
     } catch (e: any) {
       anyFail = true;
-      console.error(`${label}/${file}: FAIL`);
+      console.error(`presets/${file}: FAIL`);
       console.error(e?.errors ?? e?.message ?? e);
     }
   }
 }
 
-verifyDir("presets", presetsDir);
-verifyDir("python/ships", legacyShipsDir);
+verifyPresets();
 
 if (anyFail) {
   process.exit(1);

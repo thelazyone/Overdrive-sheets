@@ -6,8 +6,8 @@ import {
 
 /**
  * Merges every `*.json` in this directory into one library. Add new top-level
- * files (e.g. `other_faction.json`) to share more systems; ship-specific
- * systems can live in a preset as `dedicatedSystems` instead.
+ * files (e.g. `other_faction.json`) to share more systems. The editor can
+ * clone library entries into a slot as ship-local copies.
  */
 export function loadBaseLibraryFromModules(): SystemLibrary {
   const modules = import.meta.glob<string>("./*.json", {

@@ -2,46 +2,10 @@
   "name": "Unnamed Ship",
   "description": "Contemplation Class Escort Vessel",
   "label": "Contemplation Escort Vessel",
-  "dedicatedSystems": {
-    "contemplation_reactor": {
-      "kind": "reactor",
-      "name": "Reactor",
-      "rules": "Energy Production: 2",
-      "circles": 6,
-      "electronics": true,
-      "hull": false,
-      "life_support": false,
-      "areas": [],
-      "weapon": false,
-      "main": false
-    },
-    "contemplation_engine": {
-      "kind": "engine",
-      "name": "Engine",
-      "rules": "",
-      "electronics": true,
-      "hull": false,
-      "life_support": false,
-      "areas": [
-        {
-          "name": "",
-          "description": "Change Speed",
-          "cost": {
-            "energy": 1,
-            "crew": 1
-          }
-        }
-      ],
-      "speed_slots": [
-        { "speed": "0-1", "rotation": "90°" },
-        { "speed": "1-2", "rotation": "45°" },
-        { "speed": "2-3", "rotation": "0°" }
-      ],
-      "weapon": false,
-      "main": false
-    }
-  },
-  "overdrive": [2, 0],
+  "overdrive": [
+    2,
+    0
+  ],
   "control": 1,
   "shields": {
     "kind": "system",
@@ -53,24 +17,42 @@
       "hull": false,
       "life_support": false,
       "areas": [],
-      "front": [2, 2, 1],
-      "rear": [2, 2],
+      "front": [
+        2,
+        2,
+        1
+      ],
+      "rear": [
+        2,
+        2
+      ],
       "weapon": false,
       "main": false
     }
   },
   "reactor": {
     "kind": "slot",
-    "label": "Reactor",
-    "allowed": ["contemplation_reactor"],
-    "selectedId": null
+    "options": [
+      {
+        "kind": "reactor",
+        "name": "Reactor",
+        "rules": "Energy Production: 2",
+        "circles": 6,
+        "electronics": true,
+        "hull": false,
+        "life_support": false,
+        "areas": [],
+        "weapon": false,
+        "main": false
+      }
+    ]
   },
   "mess": {
     "kind": "system",
     "system": {
       "kind": "mess",
       "name": "Mess",
-      "rules": "Crew: 4",
+      "rules": "Crew: 3",
       "med_bay": 1,
       "electronics": false,
       "hull": false,
@@ -84,9 +66,34 @@
     "left": [
       {
         "kind": "slot",
-        "label": "Weapon",
-        "allowed": ["asteroid_buster"],
-        "selectedId": null
+        "options": [
+          {
+            "kind": "generic",
+            "name": "Asteroid Buster",
+            "rules": "",
+            "weapon": true,
+            "electronics": false,
+            "hull": true,
+            "life_support": false,
+            "areas": [
+              {
+                "name": "Shoot",
+                "description": "Mining",
+                "shoot": {
+                  "damage": 4,
+                  "range": "2-4",
+                  "arc-start": 1,
+                  "arc-end": 7
+                },
+                "cost": {
+                  "energy": 1,
+                  "crew": 1
+                }
+              }
+            ],
+            "main": false
+          }
+        ]
       },
       {
         "kind": "system",
@@ -109,14 +116,6 @@
               },
               "cost": {
                 "energy": 3,
-                "crew": 0
-              }
-            },
-            {
-              "name": "AA Burst",
-              "description": "Remove 1 Shield to all LS \\nwithin Control",
-              "cost": {
-                "energy": 2,
                 "crew": 0
               }
             }
@@ -142,15 +141,8 @@
               "cost": {
                 "energy": 0,
                 "crew": 1
-              }
-            },
-            {
-              "name": "Aim",
-              "description": "Required for the Asteroid Busters",
-              "cost": {
-                "energy": 0,
-                "crew": 1
-              }
+              },
+              "name": ""
             },
             {
               "name": "Bridge Guns",
@@ -200,17 +192,75 @@
       },
       {
         "kind": "slot",
-        "label": "Engine",
-        "allowed": ["contemplation_engine"],
-        "selectedId": null
+        "options": [
+          {
+            "kind": "engine",
+            "name": "Engine",
+            "rules": "",
+            "electronics": true,
+            "hull": false,
+            "life_support": false,
+            "areas": [
+              {
+                "name": "",
+                "description": "Change Speed",
+                "cost": {
+                  "energy": 1,
+                  "crew": 1
+                }
+              }
+            ],
+            "speed_slots": [
+              {
+                "speed": "0-1",
+                "rotation": "90°"
+              },
+              {
+                "speed": "1-2",
+                "rotation": "45°"
+              },
+              {
+                "speed": "2-3",
+                "rotation": "0°"
+              }
+            ],
+            "weapon": false,
+            "main": false
+          }
+        ]
       }
     ],
     "right": [
       {
         "kind": "slot",
-        "label": "Weapon",
-        "allowed": ["asteroid_buster"],
-        "selectedId": null
+        "options": [
+          {
+            "kind": "generic",
+            "name": "Asteroid Buster",
+            "rules": "",
+            "weapon": true,
+            "electronics": false,
+            "hull": true,
+            "life_support": false,
+            "areas": [
+              {
+                "name": "Shoot",
+                "description": "Mining",
+                "shoot": {
+                  "damage": 4,
+                  "range": "2-4",
+                  "arc-start": 1,
+                  "arc-end": 7
+                },
+                "cost": {
+                  "energy": 1,
+                  "crew": 1
+                }
+              }
+            ],
+            "main": false
+          }
+        ]
       }
     ]
   }

@@ -7,10 +7,10 @@
  *   - In customize mode: `description`, `label`, `overdrive`, `control` also
  *     editable.
  *   - Section list (LEFT / CORE / RIGHT + reactor/mess/shields). Each slot
- *     row carries an inline `<select>` picker, so system selection happens
- *     without leaving the list.
+ *     row carries an inline `<select>` to pick which duplicated option is
+ *     installed.
  *   - Inspector panel below the list — visible only in customize mode:
- *       - Slot row   → edit slot label and allowed-systems list.
+ *       - Slot row   → list of system options (add / remove / duplicate / edit).
  *       - Inline row → full system fields editor (name, rules, areas, etc.).
  *
  * Right pane: live <ShipSVG /> preview.
@@ -33,14 +33,14 @@ import {
   type JSX,
 } from "solid-js";
 import {
-  DEDICATED_SYSTEMS_KEY,
-  mergeSystemLibraries,
+  cloneSystem,
+  exportShipDocument,
+  parseShipDocument,
   resolveRef,
-  splitShipDocument,
+  SystemSchema,
   type Area,
   type Ship,
   type System,
-  type SystemLibrary,
   type SystemRef,
 } from "./core/schema";
 import { baseLibrary } from "./core/library/loadBaseLibrary";
@@ -56,28 +56,20 @@ export function App(): JSX.Element {
     return true;
   });
 
-  const initial = splitShipDocument(
-    (PRESETS.find((p) => p.id === DEFAULT_PRESET_ID) ?? PRESETS[0]).data
+  const [ship, setShip] = createSignal<Ship>(
+    parseShipDocument(
+      (PRESETS.find((p) => p.id === DEFAULT_PRESET_ID) ?? PRESETS[0]).data,
+    ),
   );
-  const [dedicatedLib, setDedicatedLib] = createSignal<SystemLibrary>(
-    initial.dedicated
-  );
-  const [ship, setShip] = createSignal<Ship>(initial.ship);
   const [presetId, setPresetId] = createSignal<string>(DEFAULT_PRESET_ID);
   const [selected, setSelected] = createSignal<string | null>(null);
   const [customize, setCustomize] = createSignal<boolean>(false);
   const [error, setError] = createSignal<string | null>(null);
 
-  const fullLibrary = createMemo(() =>
-    mergeSystemLibraries(baseLibrary, dedicatedLib())
-  );
-
   const applyPreset = (id: string) => {
     try {
       const entry = PRESETS.find((p) => p.id === id) ?? PRESETS[0];
-      const { ship: s, dedicated } = splitShipDocument(entry.data);
-      setShip(s);
-      setDedicatedLib(dedicated);
+      setShip(parseShipDocument(entry.data));
       setSelected(null);
       setError(null);
     } catch (e: any) {
@@ -99,9 +91,7 @@ export function App(): JSX.Element {
     reader.onload = () => {
       try {
         const raw = JSON.parse(reader.result as string);
-        const { ship: s, dedicated } = splitShipDocument(raw);
-        setShip(s);
-        setDedicatedLib(dedicated);
+        setShip(parseShipDocument(raw));
         setSelected(null);
         setError(null);
       } catch (e: any) {
@@ -114,12 +104,8 @@ export function App(): JSX.Element {
 
   const onDownloadJSON = () => {
     const s = ship();
-    const d = dedicatedLib();
-    const out =
-      d && Object.keys(d).length > 0
-        ? { ...s, [DEDICATED_SYSTEMS_KEY]: d }
-        : s;
-    const blob = new Blob([JSON.stringify(out, null, 2)], {
+    const flat = exportShipDocument(s);
+    const blob = new Blob([JSON.stringify(flat, null, 2)], {
       type: "application/json",
     });
     triggerDownload(blob, slugify(s.name) + ".json");
@@ -148,7 +134,7 @@ export function App(): JSX.Element {
   };
 
   return (
-    <ShipLibraryProvider value={fullLibrary}>
+    <ShipLibraryProvider value={() => baseLibrary}>
     <div class="app">
       <div class="pane left-pane">
         <div class="toolbar">
@@ -246,7 +232,7 @@ export function App(): JSX.Element {
       <div class="pane right-pane">
         <div class="ship-preview-wrapper">
           <Show when={fontsReady()}>
-            <ShipSVG ship={ship()} library={fullLibrary()} responsive />
+            <ShipSVG ship={ship()} responsive />
           </Show>
         </div>
       </div>
@@ -437,21 +423,11 @@ function SectionGroup(props: {
   );
 }
 
-/**
- * Infer a "kind hint" for an empty slot by looking at the first allowed
- * system in the library. Used so the badge can read e.g. "generic" for a
- * bridge slot instead of the less-informative "slot".
- */
-function inferSlotKind(
-  sysRef: SystemRef,
-  lib: SystemLibrary
-): System["kind"] | null {
+/** Infer a "kind hint" for an empty slot from the first listed option. */
+function inferSlotKind(sysRef: SystemRef): System["kind"] | null {
   if (sysRef.kind !== "slot") return null;
-  for (const id of sysRef.allowed) {
-    const sys = lib[id];
-    if (sys) return sys.kind;
-  }
-  return null;
+  const first = sysRef.options[0];
+  return first ? first.kind : null;
 }
 
 function SystemRow(props: {
@@ -466,11 +442,10 @@ function SystemRow(props: {
    *  the resolved system's name. */
   canonicalLabel?: string;
   /** Canonical kind used for the badge when the slot is empty and we can't
-   *  infer from the library. */
+   *  infer from listed options. */
   canonicalKind?: System["kind"];
 }) {
-  const getLib = useShipLibrary();
-  const resolved = () => resolveRef(props.sysRef, getLib());
+  const resolved = () => resolveRef(props.sysRef);
   const isSlot = () => props.sysRef.kind === "slot";
   const isEmptySlot = () => isSlot() && !resolved();
   // Rows are clickable (for inspector selection) only in customize mode.
@@ -483,13 +458,11 @@ function SystemRow(props: {
   const badge = (): string => {
     const r = resolved();
     if (r) return r.kind;
-    return (
-      inferSlotKind(props.sysRef, getLib()) ?? props.canonicalKind ?? "slot"
-    );
+    return inferSlotKind(props.sysRef) ?? props.canonicalKind ?? "slot";
   };
 
   // Label: prefer a canonical name (for the three core-system rows),
-  // otherwise fall back to the slot label or the resolved system name.
+  // otherwise the resolved system name or an empty-slot hint.
   const label = (): string => {
     const r = resolved();
     if (props.canonicalLabel) {
@@ -498,11 +471,7 @@ function SystemRow(props: {
       return props.canonicalLabel;
     }
     if (r) return r.name;
-    if (props.sysRef.kind === "slot") {
-      return props.sysRef.label
-        ? `${props.sysRef.label} (unselected)`
-        : "(unselected slot)";
-    }
+    if (props.sysRef.kind === "slot") return "(unselected slot)";
     return "(unnamed)";
   };
 
@@ -524,7 +493,11 @@ function SystemRow(props: {
 
   const onPick = (value: string) => {
     props.onShip((s) =>
-      withSlotSelection(s, props.id, value === "" ? null : value),
+      withSlotSelectedIndex(
+        s,
+        props.id,
+        value === "" ? null : Number(value),
+      ),
     );
   };
 
@@ -536,18 +509,22 @@ function SystemRow(props: {
         {(slot) => (
           <select
             class="row-picker"
-            value={slot().selectedId ?? ""}
+            value={
+              slot().selectedIndex == null ? "" : String(slot().selectedIndex)
+            }
             onClick={(e) => e.stopPropagation()}
             onChange={(e) => {
               e.stopPropagation();
               onPick(e.currentTarget.value);
             }}
-            title="Pick installed system"
+            title="Pick installed option"
           >
             <option value="">— none —</option>
-            <For each={slot().allowed}>
-              {(id) => (
-                <option value={id}>{getLib()[id]?.name ?? id}</option>
+            <For each={slot().options}>
+              {(sys, i) => (
+                <option value={String(i())}>
+                  {sys.name || `Option ${i() + 1}`}
+                </option>
               )}
             </For>
           </select>
@@ -606,126 +583,223 @@ function SlotInspector(props: {
   onShip: ShipUpdater;
 }) {
   const getLib = useShipLibrary();
-  const current = () => resolveRef(props.sysRef, getLib());
+  const libraryIdList = createMemo(() => Object.keys(getLib()).sort());
+  const [editIdx, setEditIdx] = createSignal<number | null>(null);
+
+  createEffect(() => {
+    const s = props.sysRef;
+    const n = s.options.length;
+    const cur = editIdx();
+    if (n === 0) {
+      if (cur !== null) setEditIdx(null);
+      return;
+    }
+    if (cur == null || cur < 0 || cur >= n) {
+      setEditIdx(0);
+    }
+  });
+
+  const activeSystem = () => {
+    const i = editIdx();
+    if (i == null) return null;
+    return props.sysRef.options[i] ?? null;
+  };
+
+  const patchActive = (next: System) => {
+    const i = editIdx();
+    if (i == null) return;
+    props.onShip((ship) =>
+      withRefUpdate(ship, props.path, (r) => {
+        if (r.kind !== "slot") return r;
+        const options = r.options.map((o, j) => (j === i ? next : o));
+        return { ...r, options };
+      }),
+    );
+  };
+
+  const addOptionFromLibrary = (id: string) => {
+    if (!id) return;
+    const sys = getLib()[id];
+    if (!sys) return;
+    props.onShip((s) =>
+      withRefUpdate(s, props.path, (r) =>
+        r.kind === "slot"
+          ? { ...r, options: [...r.options, cloneSystem(sys)] }
+          : r,
+      ),
+    );
+  };
+
+  const addBlankGeneric = () => {
+    const blank = SystemSchema.parse({
+      kind: "generic",
+      name: "New system",
+      rules: "",
+      areas: [],
+      weapon: false,
+      main: false,
+      hull: false,
+      electronics: false,
+      life_support: false,
+    });
+    props.onShip((s) =>
+      withRefUpdate(s, props.path, (r) =>
+        r.kind === "slot" ? { ...r, options: [...r.options, blank] } : r,
+      ),
+    );
+  };
+
+  const removeCurrentOption = () => {
+    const optIndex = editIdx();
+    if (optIndex == null) return;
+    props.onShip((s) =>
+      withRefUpdate(s, props.path, (r) => {
+        if (r.kind !== "slot") return r;
+        const options = r.options.filter((_, i) => i !== optIndex);
+        let selectedIndex = r.selectedIndex;
+        if (selectedIndex === optIndex) selectedIndex = null;
+        else if (selectedIndex != null && selectedIndex > optIndex) {
+          selectedIndex = selectedIndex - 1;
+        }
+        return { ...r, options, selectedIndex };
+      }),
+    );
+    setEditIdx((cur) => {
+      if (cur == null) return null;
+      if (cur === optIndex) return null;
+      if (cur > optIndex) return cur - 1;
+      return cur;
+    });
+  };
+
+  const duplicateCurrentOption = () => {
+    const optIndex = editIdx();
+    if (optIndex == null) return;
+    props.onShip((s) =>
+      withRefUpdate(s, props.path, (r) => {
+        if (r.kind !== "slot") return r;
+        const orig = r.options[optIndex];
+        if (!orig) return r;
+        const copy = cloneSystem(orig);
+        const options = [
+          ...r.options.slice(0, optIndex + 1),
+          copy,
+          ...r.options.slice(optIndex + 1),
+        ];
+        return { ...r, options };
+      }),
+    );
+    setEditIdx((cur) => {
+      if (cur == null) return null;
+      return cur + 1;
+    });
+  };
+
+  const optionCount = () => props.sysRef.options.length;
+  const selectValue = () => {
+    if (optionCount() === 0 || editIdx() == null) return "";
+    return String(editIdx());
+  };
 
   return (
     <div class="inspector-body">
       <div class="inspector-header">
         <span class="tag">slot</span>
-        <span class="title">{props.sysRef.label ?? "Slot"}</span>
+        <span class="title">Slot</span>
       </div>
       <div class="inspector-note">
-        Pick the installed system from the dropdown in the row above.
+        Pick an option below to view or edit. The row picker sets which one is
+        installed on the sheet preview.
       </div>
 
-      <Show when={current()}>
-        <SystemSummary system={current()!} />
-      </Show>
-
-      <Show when={props.customize}>
-        <SlotCustomizer
-          path={props.path}
-          sysRef={props.sysRef}
-          onShip={props.onShip}
-        />
-      </Show>
-    </div>
-  );
-}
-
-function SlotCustomizer(props: {
-  path: string;
-  sysRef: Extract<SystemRef, { kind: "slot" }>;
-  onShip: ShipUpdater;
-}) {
-  const getLib = useShipLibrary();
-  const libraryIdList = createMemo(() => Object.keys(getLib()).sort());
-  const setLabel = (label: string) => {
-    props.onShip((s) =>
-      withRefUpdate(s, props.path, (r) =>
-        r.kind === "slot" ? { ...r, label: label || undefined } : r
-      )
-    );
-  };
-  const addAllowed = (id: string) => {
-    if (!id) return;
-    props.onShip((s) =>
-      withRefUpdate(s, props.path, (r) =>
-        r.kind === "slot" && !r.allowed.includes(id)
-          ? { ...r, allowed: [...r.allowed, id] }
-          : r
-      )
-    );
-  };
-  const removeAllowed = (id: string) => {
-    props.onShip((s) =>
-      withRefUpdate(s, props.path, (r) => {
-        if (r.kind !== "slot") return r;
-        return {
-          ...r,
-          allowed: r.allowed.filter((x) => x !== id),
-          selectedId: r.selectedId === id ? null : r.selectedId,
-        };
-      })
-    );
-  };
-
-  return (
-    <div class="customizer">
-      <div class="customizer-title">Customize slot</div>
       <label class="field">
-        <span class="field-label">Slot label</span>
-        <input
-          type="text"
-          value={props.sysRef.label ?? ""}
-          onInput={(e) => setLabel(e.currentTarget.value)}
-        />
-      </label>
-
-      <div class="field">
-        <span class="field-label">Allowed systems</span>
-        <ul class="allowed-list">
-          <For each={props.sysRef.allowed}>
-            {(id) => (
-              <li>
-                <span class="allowed-name">
-                  {getLib()[id]?.name ?? id}
-                  <span class="allowed-id"> ({id})</span>
-                </span>
-                <button
-                  type="button"
-                  class="btn-small"
-                  onClick={() => removeAllowed(id)}
-                >
-                  remove
-                </button>
-              </li>
+        <span class="field-label">Option</span>
+        <select
+          value={selectValue()}
+          disabled={optionCount() === 0}
+          onChange={(e) => {
+            const v = e.currentTarget.value;
+            setEditIdx(v === "" ? null : Number(v));
+          }}
+        >
+          <Show when={optionCount() === 0}>
+            <option value="">— No systems in this slot —</option>
+          </Show>
+          <For each={props.sysRef.options}>
+            {(sys, i) => (
+              <option value={String(i())}>
+                {sys.name || `Option ${i() + 1}`}
+              </option>
             )}
           </For>
-          <Show when={props.sysRef.allowed.length === 0}>
-            <li class="allowed-empty">(nothing allowed yet)</li>
-          </Show>
-        </ul>
-        <div class="add-row">
+        </select>
+      </label>
+
+      <Show when={props.customize}>
+        <div class="inspector-slot-actions add-row">
+          <button type="button" class="btn-small" onClick={addBlankGeneric}>
+            Add
+          </button>
+          <button
+            type="button"
+            class="btn-small"
+            disabled={optionCount() === 0}
+            onClick={removeCurrentOption}
+          >
+            Remove
+          </button>
+          <button
+            type="button"
+            class="btn-small"
+            disabled={optionCount() === 0}
+            onClick={duplicateCurrentOption}
+          >
+            Duplicate
+          </button>
           <select
             onChange={(e) => {
-              addAllowed(e.currentTarget.value);
+              addOptionFromLibrary(e.currentTarget.value);
               e.currentTarget.value = "";
             }}
           >
-            <option value="">+ add system…</option>
+            <option value="">Add from library…</option>
             <For each={libraryIdList()}>
               {(id) => (
-                <Show when={!props.sysRef.allowed.includes(id)}>
-                  <option value={id}>
-                    {getLib()[id].name} — {id}
-                  </option>
-                </Show>
+                <option value={id}>
+                  {getLib()[id].name} — {id}
+                </option>
               )}
             </For>
           </select>
         </div>
-      </div>
+      </Show>
+
+      <Show when={activeSystem()}>
+        <Show
+          when={props.customize}
+          fallback={<SystemSummary system={activeSystem()!} />}
+        >
+          <SystemEditor
+            system={activeSystem()!}
+            onChange={patchActive}
+          />
+        </Show>
+      </Show>
+
+      <Show when={!activeSystem()}>
+        <Show
+          when={props.customize}
+          fallback={
+            <div class="inspector-empty">
+              This slot has no system copies yet.
+            </div>
+          }
+        >
+          <p class="inspector-hint">
+            Use Add or Add from library… to create a system, then edit it below.
+          </p>
+        </Show>
+      </Show>
     </div>
   );
 }
@@ -1069,11 +1143,22 @@ function withRefUpdate(
   return { ...ship, sections: { ...ship.sections, [section]: nextList } };
 }
 
-/** Convenience: set the `selectedId` of the slot at `path`. */
-function withSlotSelection(ship: Ship, path: string, newId: string | null): Ship {
-  return withRefUpdate(ship, path, (r) =>
-    r.kind === "slot" ? { ...r, selectedId: newId } : r
-  );
+/** Set `selectedIndex` on the slot at `path` (clamped / cleared when invalid). */
+function withSlotSelectedIndex(
+  ship: Ship,
+  path: string,
+  idx: number | null,
+): Ship {
+  return withRefUpdate(ship, path, (r) => {
+    if (r.kind !== "slot") return r;
+    const n = r.options.length;
+    let next = idx;
+    if (n === 0) next = null;
+    else if (next != null && (next < 0 || next >= n || !Number.isInteger(next))) {
+      next = null;
+    }
+    return { ...r, selectedIndex: next };
+  });
 }
 
 // ---------------------------------------------------------------------------

@@ -1,21 +1,14 @@
 import { z } from "zod";
 
 /**
- * Single source of truth for ship + system data. Shared by the renderer and
- * by both editor modes (user slot picker / developer full editor).
+ * Ship + system schema for **Overdrive Sheets 0.1** (web).
  *
- * Ported from the ad-hoc JSON shape used by the Python tool, with two
- * intentional differences:
- *
- *   1. Slots are a first-class concept via a discriminated `SystemRef`
- *      union (`{ kind: "system", system }` or `{ kind: "slot", allowed,
- *      selectedId }`). Existing JSON with inline systems is migrated by
- *      {@link migrateShip} automatically.
- *
- *   2. The special systems (Mess, Reactor, Engine) are identified by a
- *      `kind` discriminator instead of matching on `system.name.toLowerCase()`
- *      as `python/src/system.py` does. {@link migrateShip} translates the
- *      legacy name match into an explicit kind.
+ * - {@link SystemRef}: inline `{ kind: "system", system }` or `{ kind: "slot",
+ *   options }` (optional `selectedIndex` for live web preview only; preset JSON
+ *   omits it so installs start empty).
+ * - {@link parseShipDocument} is the only entry point for loaded JSON.
+ * - Optional on-disk {@link SystemLibrary} is for the editor’s “clone from
+ *   library” helper only, not for resolving slots at runtime.
  */
 
 // ---------------------------------------------------------------------------
@@ -106,8 +99,8 @@ export const EngineSystemSchema = SystemBaseSchema.extend({
 export type EngineSystem = z.infer<typeof EngineSystemSchema>;
 
 /**
- * Shields are treated as a first-class system so they can be referenced by a
- * slot, picked from the library, and edited through the same inspector as
+ * Shields are treated as a first-class system so they can live in a slot
+ * (as duplicated options) or inline, and edited through the same inspector as
  * any other system.
  *
  * `front` / `rear` store the shield "column" values (see shields.py): each
@@ -134,18 +127,25 @@ export type System = z.infer<typeof SystemSchema>;
 // ---------------------------------------------------------------------------
 
 /**
- * A slot is a placeholder that can hold any system from a library, restricted
- * to an `allowed` list of library IDs. `selectedId = null` means empty.
+ * A slot lists full {@link System} copies (preset templates). Preset JSON usually
+ * omits `selectedIndex` (defaults to null); the web app may set it for preview.
  */
 export const SlotSchema = z.object({
   kind: z.literal("slot"),
-  label: z.string().optional(),
-  allowed: z.array(z.string()),
-  selectedId: z.string().nullable().default(null),
+  options: z.array(SystemSchema).default([]),
+  selectedIndex: z.number().int().min(0).nullable().default(null),
 });
 export type Slot = z.infer<typeof SlotSchema>;
 
-/** Either an inline system or a slot reference into the library. */
+function normalizeSlot(s: Slot): Slot {
+  const n = s.options.length;
+  let idx = s.selectedIndex;
+  if (n === 0) idx = null;
+  else if (idx != null && (idx < 0 || idx >= n)) idx = null;
+  return { ...s, selectedIndex: idx };
+}
+
+/** Either an inline system or a slot holding duplicated system options. */
 export const SystemRefSchema = z.discriminatedUnion("kind", [
   z.object({ kind: z.literal("system"), system: SystemSchema }),
   SlotSchema,
@@ -177,133 +177,38 @@ export const ShipSchema = z.object({
 });
 export type Ship = z.infer<typeof ShipSchema>;
 
-// ---------------------------------------------------------------------------
-// Legacy migration
-// ---------------------------------------------------------------------------
-
-const KNOWN_KINDS: readonly System["kind"][] = [
-  "generic",
-  "mess",
-  "reactor",
-  "engine",
-  "shields",
-];
-
-/**
- * Resolve the `kind` discriminator for a legacy system object that uses
- * name-matching (python/src/system.py lines 445, 456, 460). Preserves an
- * explicit `kind` if the raw already has one we recognize.
- */
-function inferSystemKind(raw: any): System["kind"] {
-  if (raw?.kind && KNOWN_KINDS.includes(raw.kind)) return raw.kind;
-  const name = String(raw?.name ?? "").toLowerCase();
-  if (name === "mess") return "mess";
-  if (name === "reactor") return "reactor";
-  if (name === "engine") return "engine";
-  if (name === "shields") return "shields";
-  return "generic";
+export function cloneSystem(system: System): System {
+  return SystemSchema.parse(JSON.parse(JSON.stringify(system)));
 }
 
-/**
- * Transform a legacy (pre-slot) system object into the schema shape.
- * Adds missing defaults and the `kind` field.
- */
-function migrateSystem(raw: any): System {
-  const kind = inferSystemKind(raw);
-  const base: any = {
-    kind,
-    name: raw?.name ?? (kind === "shields" ? "Shields" : ""),
-    rules: raw?.rules ?? "",
-    areas: Array.isArray(raw?.areas) ? raw.areas : [],
-    weapon: !!raw?.weapon,
-    main: !!raw?.main,
-    hull: !!raw?.hull,
-    electronics: !!raw?.electronics,
-    life_support: !!raw?.life_support,
-  };
-  if (kind === "mess") base.med_bay = raw?.med_bay ?? 0;
-  if (kind === "reactor") base.circles = raw?.circles ?? 0;
-  if (kind === "engine") base.speed_slots = raw?.speed_slots ?? [];
-  if (kind === "shields") {
-    base.front = Array.isArray(raw?.front) ? raw.front : [];
-    base.rear = Array.isArray(raw?.rear) ? raw.rear : [];
-  }
-  return SystemSchema.parse(base);
-}
-
-/** Wrap a legacy inline system in a SystemRef if it isn't already one. */
-function migrateSystemRef(raw: any): SystemRef {
-  if (raw && typeof raw === "object" && raw.kind === "slot") {
-    return SlotSchema.parse(raw);
-  }
-  if (raw && typeof raw === "object" && raw.kind === "system" && raw.system) {
-    return { kind: "system", system: migrateSystem(raw.system) };
-  }
-  return { kind: "system", system: migrateSystem(raw) };
-}
-
-/**
- * Migrate the ship's `shields` field, which has seen three shapes:
- *   1. Legacy: `{ front: [...], rear: [...] }`                    (python ships)
- *   2. v1:     `{ kind: "shields", value: { front, rear } }`      (first pass)
- *   3. v2:     SystemRef around a shields-kind system             (current)
- * Returns the v2 SystemRef either way.
- */
-function migrateShieldsRef(raw: any): SystemRef {
-  if (raw && typeof raw === "object") {
-    if (raw.kind === "slot") return SlotSchema.parse(raw);
-    if (raw.kind === "system" && raw.system) {
-      return { kind: "system", system: migrateSystem(raw.system) };
-    }
-    if (raw.kind === "shields" && raw.value) {
-      return {
-        kind: "system",
-        system: migrateSystem({
-          kind: "shields",
-          name: "Shields",
-          front: raw.value.front,
-          rear: raw.value.rear,
-        }),
-      };
-    }
-  }
+function normalizeShipRefs(ship: Ship): Ship {
+  const norm = (r: SystemRef): SystemRef =>
+    r.kind === "slot" ? normalizeSlot(r) : r;
   return {
-    kind: "system",
-    system: migrateSystem({
-      kind: "shields",
-      name: "Shields",
-      front: Array.isArray(raw?.front) ? raw.front : [],
-      rear: Array.isArray(raw?.rear) ? raw.rear : [],
-    }),
-  };
-}
-
-/**
- * Parse a ship JSON that may be in the legacy (pre-slot, name-matched) shape
- * OR the new schema shape. Returns a validated {@link Ship} either way.
- */
-export function migrateShip(raw: any): Ship {
-  const sections = raw?.sections ?? {};
-  const migrated: any = {
-    name: raw?.name ?? raw?.title ?? "Unnamed Ship",
-    description: raw?.description ?? raw?.subtitle ?? "",
-    label: raw?.label ?? "",
-    overdrive: Array.isArray(raw?.overdrive) ? raw.overdrive : [],
-    control: Number(raw?.control ?? 0),
-    shields: migrateShieldsRef(raw?.shields),
-    reactor: migrateSystemRef(raw?.reactor),
-    mess: migrateSystemRef(raw?.mess),
+    ...ship,
+    shields: norm(ship.shields),
+    reactor: norm(ship.reactor),
+    mess: norm(ship.mess),
     sections: {
-      left: (sections.left ?? []).map(migrateSystemRef),
-      core: (sections.core ?? []).map(migrateSystemRef),
-      right: (sections.right ?? []).map(migrateSystemRef),
+      left: ship.sections.left.map(norm),
+      core: ship.sections.core.map(norm),
+      right: ship.sections.right.map(norm),
     },
   };
-  return ShipSchema.parse(migrated);
+}
+
+/**
+ * Parse and validate ship JSON. Unknown top-level keys (e.g. old tooling
+ * fields) are stripped by Zod. Coerces out-of-range slot `selectedIndex` to
+ * `null`.
+ */
+export function parseShipDocument(raw: unknown): Ship {
+  const base = raw == null || typeof raw !== "object" ? {} : raw;
+  return normalizeShipRefs(ShipSchema.parse(base));
 }
 
 // ---------------------------------------------------------------------------
-// Library (premade systems available to slots)
+// Library (editor: clone premade systems into a slot)
 // ---------------------------------------------------------------------------
 
 /** Runtime-validated library shape: `{ [id]: System }`. */
@@ -329,36 +234,54 @@ export function mergeSystemLibraries(...parts: SystemLibrary[]): SystemLibrary {
   return out as SystemLibrary;
 }
 
-/** Ship JSON may carry a `dedicatedSystems` map alongside normal ship fields. */
-export const DEDICATED_SYSTEMS_KEY = "dedicatedSystems" as const;
-
-export function parseDedicatedSystems(raw: unknown): SystemLibrary {
-  if (raw == null) return {};
-  return SystemLibrarySchema.parse(raw);
-}
-
 /**
- * Splits a loaded JSON document into a validated {@link Ship} and optional
- * per-template systems (e.g. Opulence-only hull modules).
+ * Resolve a SystemRef into a concrete System. Slots use `options[selectedIndex]`.
+ * Returns null when nothing is selected (caller draws a placeholder).
  */
-export function splitShipDocument(raw: any): { ship: Ship; dedicated: SystemLibrary } {
-  if (!raw || typeof raw !== "object") {
-    return { ship: migrateShip({}), dedicated: {} };
-  }
-  const { dedicatedSystems, ...rest } = raw as any;
-  return {
-    ship: migrateShip(rest),
-    dedicated: parseDedicatedSystems(dedicatedSystems),
-  };
-}
-
-/**
- * Resolve a SystemRef into a concrete System, using the library to look up
- * selected slot IDs. Returns null for an empty slot (caller draws a
- * placeholder).
- */
-export function resolveRef(ref: SystemRef, library: SystemLibrary): System | null {
+export function resolveRef(ref: SystemRef): System | null {
   if (ref.kind === "system") return ref.system;
-  if (ref.selectedId == null) return null;
-  return library[ref.selectedId] ?? null;
+  const idx = ref.selectedIndex;
+  if (idx == null || idx < 0 || idx >= ref.options.length) return null;
+  return ref.options[idx] ?? null;
+}
+
+const EMPTY_SLOT_PLACEHOLDER = SystemSchema.parse({
+  kind: "generic",
+  name: "(empty slot)",
+  rules: "",
+  areas: [],
+  weapon: false,
+  main: false,
+  hull: false,
+  electronics: false,
+  life_support: false,
+});
+
+/** Inline refs to {@link System}; empty slots become a placeholder row. */
+export function flattenSystemRefForExport(ref: SystemRef): System {
+  if (ref.kind === "system") {
+    return cloneSystem(ref.system);
+  }
+  const resolved = resolveRef(ref);
+  if (resolved) return cloneSystem(resolved);
+  return cloneSystem(EMPTY_SLOT_PLACEHOLDER);
+}
+
+/** Flattened ship JSON (no slot objects). */
+export function exportShipDocument(ship: Ship): Record<string, unknown> {
+  return {
+    name: ship.name,
+    description: ship.description,
+    label: ship.label,
+    overdrive: ship.overdrive,
+    control: ship.control,
+    shields: flattenSystemRefForExport(ship.shields),
+    reactor: flattenSystemRefForExport(ship.reactor),
+    mess: flattenSystemRefForExport(ship.mess),
+    sections: {
+      left: ship.sections.left.map((r) => flattenSystemRefForExport(r)),
+      core: ship.sections.core.map((r) => flattenSystemRefForExport(r)),
+      right: ship.sections.right.map((r) => flattenSystemRefForExport(r)),
+    },
+  };
 }
