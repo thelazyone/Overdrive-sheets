@@ -1,0 +1,333 @@
+{
+  "name": "Unnamed Ship",
+  "description": "Opulence Class Freighter",
+  "label": "Opulence Freighter",
+  "overdrive": [
+    3,
+    2,
+    0
+  ],
+  "control": 2,
+  "shields": {
+    "kind": "system",
+    "system": {
+      "name": "Deflector Shields",
+      "rules": "",
+      "areas": [],
+      "weapon": false,
+      "main": false,
+      "hull": false,
+      "electronics": true,
+      "life_support": false,
+      "kind": "shields",
+      "front": [
+        2,
+        1,
+        1,
+        0
+      ],
+      "rear": [
+        2,
+        1,
+        1
+      ]
+    }
+  },
+  "reactor": {
+    "kind": "slot",
+    "label": "Reactor",
+    "allowed": [
+      "opulence_reactor"
+    ],
+    "selectedId": "opulence_reactor"
+  },
+  "mess": {
+    "kind": "system",
+    "system": {
+      "name": "Mess",
+      "rules": "Crew: 4",
+      "areas": [],
+      "weapon": false,
+      "main": false,
+      "hull": false,
+      "electronics": false,
+      "life_support": true,
+      "kind": "mess",
+      "med_bay": 1
+    }
+  },
+  "sections": {
+    "left": [
+      {
+        "kind": "slot",
+        "label": "Bridge",
+        "allowed": [
+          "opulence_command_bridge"
+        ],
+        "selectedId": "opulence_command_bridge"
+      },
+      {
+        "kind": "slot",
+        "label": "Main System",
+        "allowed": [
+          "point_defense",
+          "opulence_barracks"
+        ],
+        "selectedId": "point_defense"
+      },
+      {
+        "kind": "slot",
+        "label": "Sensors",
+        "allowed": [
+          "broadband_antenna"
+        ],
+        "selectedId": "broadband_antenna"
+      }
+    ],
+    "core": [
+      {
+        "kind": "slot",
+        "label": "Weapon",
+        "allowed": [
+          "asteroid_buster"
+        ],
+        "selectedId": "asteroid_buster"
+      },
+      {
+        "kind": "slot",
+        "label": "Weapon",
+        "allowed": [
+          "asteroid_buster"
+        ],
+        "selectedId": "asteroid_buster"
+      },
+      {
+        "kind": "system",
+        "system": {
+          "name": "Dual Flak Battery",
+          "rules": "",
+          "areas": [
+            {
+              "name": "AA Burst",
+              "description": "Anti-Light",
+              "shoot": {
+                "damage": 7,
+                "range": "0-2",
+                "arc-start": 0,
+                "arc-end": 8
+              },
+              "cost": {
+                "energy": 1,
+                "crew": 1
+              }
+            }
+          ],
+          "weapon": true,
+          "main": false,
+          "hull": true,
+          "electronics": false,
+          "life_support": true,
+          "kind": "generic"
+        }
+      },
+      {
+        "kind": "system",
+        "system": {
+          "name": "Engine",
+          "rules": "",
+          "areas": [
+            {
+              "name": "",
+              "description": "Change Speed",
+              "cost": {
+                "energy": 1,
+                "crew": 1
+              }
+            }
+          ],
+          "weapon": false,
+          "main": false,
+          "hull": false,
+          "electronics": true,
+          "life_support": false,
+          "kind": "engine",
+          "speed_slots": [
+            {
+              "speed": "0-1",
+              "rotation": "90°"
+            },
+            {
+              "speed": "1-2",
+              "rotation": "0°"
+            },
+            {
+              "speed": "2-3",
+              "rotation": "0°"
+            }
+          ]
+        }
+      }
+    ],
+    "right": [
+      {
+        "kind": "slot",
+        "label": "Main System",
+        "allowed": [
+          "point_defense",
+          "opulence_barracks"
+        ],
+        "selectedId": "point_defense"
+      },
+      {
+        "kind": "system",
+        "system": {
+          "name": "Drone Bay",
+          "rules": "",
+          "areas": [
+            {
+              "name": "Service Drone",
+              "description": "Scan gets one extra target",
+              "cost": {
+                "energy": 2,
+                "crew": 0
+              }
+            }
+          ],
+          "weapon": false,
+          "main": false,
+          "hull": false,
+          "electronics": true,
+          "life_support": false,
+          "kind": "generic"
+        }
+      }
+    ]
+  },
+  "dedicatedSystems": {
+    "opulence_reactor": {
+      "name": "Reactor",
+      "rules": "Energy Production: 3",
+      "areas": [],
+      "weapon": false,
+      "main": false,
+      "hull": false,
+      "electronics": true,
+      "life_support": false,
+      "kind": "reactor",
+      "circles": 6
+    },
+    "opulence_mess": {
+      "name": "Mess",
+      "rules": "Crew: 4",
+      "areas": [],
+      "weapon": false,
+      "main": false,
+      "hull": false,
+      "electronics": false,
+      "life_support": true,
+      "kind": "mess",
+      "med_bay": 1
+    },
+    "opulence_command_bridge": {
+      "name": "Command Bridge",
+      "rules": "",
+      "areas": [
+        {
+          "description": "Scan Objective",
+          "cost": {
+            "energy": 0,
+            "crew": 1
+          }
+        },
+        {
+          "name": "Broadcast",
+          "description": "Control 3 for this Round",
+          "cost": {
+            "energy": 0,
+            "crew": 1
+          }
+        }
+      ],
+      "weapon": false,
+      "main": false,
+      "hull": false,
+      "electronics": true,
+      "life_support": true,
+      "kind": "generic"
+    },
+    "opulence_barracks": {
+      "name": "Barracks",
+      "rules": "Holds 3 Crew",
+      "areas": [
+        {
+          "name": "",
+          "description": "Board up to 1 Crew",
+          "cost": {
+            "energy": 1,
+            "crew": 1
+          }
+        }
+      ],
+      "weapon": false,
+      "main": false,
+      "hull": false,
+      "electronics": false,
+      "life_support": true,
+      "kind": "generic"
+    },
+    "opulence_engine": {
+      "name": "Engine",
+      "rules": "",
+      "areas": [
+        {
+          "name": "",
+          "description": "Change Speed",
+          "cost": {
+            "energy": 1,
+            "crew": 1
+          }
+        }
+      ],
+      "weapon": false,
+      "main": false,
+      "hull": false,
+      "electronics": true,
+      "life_support": false,
+      "kind": "engine",
+      "speed_slots": [
+        {
+          "speed": "0-1",
+          "rotation": "90°"
+        },
+        {
+          "speed": "1-2",
+          "rotation": "0°"
+        },
+        {
+          "speed": "2-3",
+          "rotation": "0°"
+        }
+      ]
+    },
+    "opulence_drone_bay": {
+      "name": "Drone Bay",
+      "rules": "",
+      "areas": [
+        {
+          "name": "Service Drone",
+          "description": "Scan gets one extra target",
+          "cost": {
+            "energy": 2,
+            "crew": 0
+          }
+        }
+      ],
+      "weapon": false,
+      "main": false,
+      "hull": false,
+      "electronics": true,
+      "life_support": false,
+      "kind": "generic"
+    }
+  }
+}

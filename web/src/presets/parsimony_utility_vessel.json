@@ -1,0 +1,289 @@
+{
+  "name": "Unnamed Ship",
+  "description": "Parsimony Class Utility Vessel",
+  "label": "Parsimony Utility Vessel",
+  "dedicatedSystems": {
+    "parsimony_reactor": {
+      "kind": "reactor",
+      "name": "Reactor",
+      "rules": "Energy Production: 3",
+      "circles": 5,
+      "electronics": true,
+      "hull": false,
+      "life_support": false,
+      "areas": [],
+      "weapon": false,
+      "main": false
+    },
+    "parsimony_prehensile_cranes": {
+      "kind": "generic",
+      "name": "Prehensile Cranes",
+      "rules": "",
+      "weapon": true,
+      "electronics": true,
+      "hull": true,
+      "life_support": false,
+      "areas": [
+        {
+          "name": "Assemble",
+          "description": "Repair up to 2 damage points from a Capital Ship within Control range.",
+          "cost": {
+            "energy": 1,
+            "crew": 2
+          }
+        },
+        {
+          "name": "Disassemble",
+          "description": "Mining",
+          "shoot": {
+            "damage": 9,
+            "range": "0-1",
+            "arc-start": 3,
+            "arc-end": 5
+          },
+          "cost": {
+            "energy": 2
+          }
+        }
+      ],
+      "main": false
+    },
+    "parsimony_long_range_scanner": {
+      "kind": "generic",
+      "name": "Long Range Scanner",
+      "rules": "",
+      "electronics": false,
+      "hull": true,
+      "life_support": true,
+      "areas": [
+        {
+          "name": "",
+          "description": "TODO scan and communication (all Control values increase)",
+          "cost": {
+            "energy": 0,
+            "crew": 0
+          }
+        }
+      ],
+      "weapon": false,
+      "main": false
+    }
+  },
+  "overdrive": [2, 2],
+  "control": 2,
+  "shields": {
+    "kind": "system",
+    "system": {
+      "kind": "shields",
+      "name": "Deflector Shields",
+      "rules": "",
+      "electronics": true,
+      "hull": false,
+      "life_support": false,
+      "areas": [],
+      "front": [3, 3],
+      "rear": [3, 3],
+      "weapon": false,
+      "main": false
+    }
+  },
+  "reactor": {
+    "kind": "slot",
+    "label": "Reactor",
+    "allowed": ["parsimony_reactor"],
+    "selectedId": null
+  },
+  "mess": {
+    "kind": "system",
+    "system": {
+      "kind": "mess",
+      "name": "Mess",
+      "rules": "Crew: 4",
+      "med_bay": 1,
+      "electronics": false,
+      "hull": false,
+      "life_support": true,
+      "areas": [],
+      "weapon": false,
+      "main": false
+    }
+  },
+  "sections": {
+    "left": [
+      {
+        "kind": "system",
+        "system": {
+          "kind": "generic",
+          "name": "Flak Battery",
+          "rules": "Anti-Light",
+          "weapon": true,
+          "electronics": false,
+          "hull": true,
+          "life_support": true,
+          "areas": [
+            {
+              "name": "AA Burst",
+              "description": "",
+              "shoot": {
+                "damage": 5,
+                "range": "0-2",
+                "arc-start": 7,
+                "arc-end": 5
+              },
+              "cost": {
+                "energy": 1,
+                "crew": 1
+              }
+            }
+          ],
+          "main": false
+        }
+      },
+      {
+        "kind": "system",
+        "system": {
+          "kind": "generic",
+          "name": "Crew Quarters",
+          "rules": "",
+          "electronics": false,
+          "hull": true,
+          "life_support": true,
+          "areas": [],
+          "weapon": false,
+          "main": false
+        }
+      }
+    ],
+    "core": [
+      {
+        "kind": "system",
+        "system": {
+          "kind": "generic",
+          "name": "Front Bridge",
+          "rules": "",
+          "electronics": true,
+          "hull": false,
+          "life_support": true,
+          "areas": [
+            {
+              "description": "Scan Objective",
+              "cost": {
+                "energy": 1,
+                "crew": 0
+              }
+            }
+          ],
+          "weapon": false,
+          "main": false
+        }
+      },
+      {
+        "kind": "slot",
+        "label": "Front Slot",
+        "allowed": ["parsimony_prehensile_cranes"],
+        "selectedId": null
+      },
+      {
+        "kind": "system",
+        "system": {
+          "kind": "generic",
+          "name": "Docking Bay",
+          "rules": "",
+          "electronics": false,
+          "hull": true,
+          "life_support": true,
+          "areas": [
+            {
+              "name": "",
+              "description": "TODO cargo and utility",
+              "cost": {
+                "energy": 0,
+                "crew": 0
+              }
+            }
+          ],
+          "weapon": false,
+          "main": false
+        }
+      },
+      {
+        "kind": "system",
+        "system": {
+          "kind": "engine",
+          "name": "Engine",
+          "rules": "",
+          "electronics": true,
+          "hull": false,
+          "life_support": false,
+          "areas": [
+            {
+              "name": "",
+              "description": "Change Speed",
+              "cost": {
+                "energy": 1,
+                "crew": 1
+              }
+            }
+          ],
+          "speed_slots": [
+            { "speed": "0-1", "rotation": "180°" },
+            { "speed": "1-2", "rotation": "90°" }
+          ],
+          "weapon": false,
+          "main": false
+        }
+      }
+    ],
+    "right": [
+      {
+        "kind": "system",
+        "system": {
+          "kind": "generic",
+          "name": "Flak Battery",
+          "rules": "Anti-Light",
+          "weapon": true,
+          "electronics": false,
+          "hull": true,
+          "life_support": true,
+          "areas": [
+            {
+              "name": "AA Burst",
+              "description": "",
+              "shoot": {
+                "damage": 5,
+                "range": "0-2",
+                "arc-start": 3,
+                "arc-end": 1
+              },
+              "cost": {
+                "energy": 1,
+                "crew": 1
+              }
+            }
+          ],
+          "main": false
+        }
+      },
+      {
+        "kind": "system",
+        "system": {
+          "kind": "generic",
+          "name": "Crew Quarters",
+          "rules": "",
+          "electronics": false,
+          "hull": true,
+          "life_support": true,
+          "areas": [],
+          "weapon": false,
+          "main": false
+        }
+      },
+      {
+        "kind": "slot",
+        "label": "Sensors",
+        "allowed": ["parsimony_long_range_scanner"],
+        "selectedId": null
+      }
+    ]
+  }
+}
