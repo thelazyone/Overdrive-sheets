@@ -32,6 +32,7 @@
   },
   "reactor": {
     "kind": "slot",
+    "label": "Reactor",
     "options": [
       {
         "kind": "reactor",
@@ -66,6 +67,7 @@
     "left": [
       {
         "kind": "slot",
+        "label": "Weapon",
         "options": [
           {
             "kind": "generic",
@@ -192,6 +194,7 @@
       },
       {
         "kind": "slot",
+        "label": "Engine",
         "options": [
           {
             "kind": "engine",
@@ -233,6 +236,7 @@
     "right": [
       {
         "kind": "slot",
+        "label": "Weapon",
         "options": [
           {
             "kind": "generic",

@@ -129,9 +129,13 @@ export type System = z.infer<typeof SystemSchema>;
 /**
  * A slot lists full {@link System} copies (preset templates). Preset JSON usually
  * omits `selectedIndex` (defaults to null); the web app may set it for preview.
+ * `label` is editor-only metadata (shown in the web UI); exported flat ship JSON
+ * omits slot objects.
  */
 export const SlotSchema = z.object({
   kind: z.literal("slot"),
+  /** Short name for this slot in the editor (e.g. "Weapon"). */
+  label: z.string().default(""),
   options: z.array(SystemSchema).default([]),
   selectedIndex: z.number().int().min(0).nullable().default(null),
 });
@@ -151,6 +155,22 @@ export const SystemRefSchema = z.discriminatedUnion("kind", [
   SlotSchema,
 ]);
 export type SystemRef = z.infer<typeof SystemRefSchema>;
+
+/**
+ * Dashed-box text on the ship SVG when {@link resolveRef} returns null (e.g. no
+ * option picked for a slot). Uses the slot’s `label` when set.
+ */
+export function placeholderTextForUnresolvedRef(ref: SystemRef): string {
+  if (ref.kind === "slot") {
+    const t = ref.label.trim();
+    if (t) {
+      const u = t.toUpperCase();
+      return u.length > 22 ? `${u.slice(0, 20)}…` : u;
+    }
+    return "SLOT";
+  }
+  return "EMPTY";
+}
 
 // ---------------------------------------------------------------------------
 // Ship

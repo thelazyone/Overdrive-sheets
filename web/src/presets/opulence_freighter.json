@@ -35,6 +35,7 @@
   },
   "reactor": {
     "kind": "slot",
+    "label": "Reactor",
     "options": [
       {
         "kind": "reactor",
@@ -69,6 +70,7 @@
     "left": [
       {
         "kind": "slot",
+        "label": "Bridge",
         "options": [
           {
             "kind": "generic",
@@ -102,6 +104,7 @@
       },
       {
         "kind": "slot",
+        "label": "Defense",
         "options": [
           {
             "kind": "generic",
@@ -153,6 +156,7 @@
       },
       {
         "kind": "slot",
+        "label": "Sensors",
         "options": [
           {
             "kind": "generic",
@@ -200,6 +204,7 @@
     "core": [
       {
         "kind": "slot",
+        "label": "Fore weapon",
         "options": [
           {
             "kind": "generic",
@@ -231,6 +236,7 @@
       },
       {
         "kind": "slot",
+        "label": "Aft weapon",
         "options": [
           {
             "kind": "generic",
@@ -330,6 +336,7 @@
     "right": [
       {
         "kind": "slot",
+        "label": "Defense",
         "options": [
           {
             "kind": "generic",

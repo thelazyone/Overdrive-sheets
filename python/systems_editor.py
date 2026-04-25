@@ -2,7 +2,8 @@
 Interactive system tile editor: load a JSON (library, ship, or dedicatedSystems),
 list systems and ship slots (reactor/mess/shields + section slots), edit in the form,
 and render a full 300 DPI tile (same as print/export), then downscale for on-screen
-preview. Slots use `options` (full system dicts). Presets do not store an installed
+preview. Slots use `options` (full system dicts) and an editor `label` (shown in the list as
+``{label} slot (n)``, same as the web app). Presets do not store an installed
 choice; preview uses “Option to edit”. The web app may track an install for the sheet
 separately — this editor strips any `selectedIndex` on save.
 Legacy `allowed` / `selectedId` in a file is normalized on open using the merged
@@ -99,10 +100,19 @@ def build_merged_library(data: dict) -> dict:
     return out
 
 
-EntryRow = tuple[str, str, dict, Callable[[dict], None] | None, str | None, str | None]
+EntryRow = tuple[
+    str,
+    str,
+    dict | None,
+    Callable[[dict], None] | None,
+    str | None,
+    str | None,
+]
 """
 Listbox row:
   (entry_kind, list_label, dict_ref, remover, library_key, rename_scope).
+
+entry_kind is ``"header"`` (section label, dict_ref None), ``"system"``, or ``"slot"``.
 
 library_key: JSON id for this system when it lives under library/ or
 dedicatedSystems/ (same value used when deleting, for slot cleanup).
@@ -130,12 +140,14 @@ def _strip_slot_installation(slot: dict) -> None:
 
 
 def normalize_slot_to_v01(slot: dict, lib: dict) -> None:
-    """Mutate slot to { kind, options }; migrate legacy allowed/selectedId."""
+    """Mutate slot to { kind, label?, options }; migrate legacy allowed/selectedId."""
     if not isinstance(slot, dict) or slot.get("kind") != "slot":
         return
     if isinstance(slot.get("options"), list):
-        for k in ("allowed", "selectedId", "label", "arc-start", "arc-end"):
+        for k in ("allowed", "selectedId", "arc-start", "arc-end"):
             slot.pop(k, None)
+        if not isinstance(slot.get("label"), str):
+            slot["label"] = ""
         _strip_slot_installation(slot)
         return
     allowed = [str(x).strip() for x in (slot.get("allowed") or []) if str(x).strip()]
@@ -144,7 +156,7 @@ def normalize_slot_to_v01(slot: dict, lib: dict) -> None:
         if aid in lib and isinstance(lib[aid], dict):
             options.append(copy.deepcopy(lib[aid]))
     slot.clear()
-    slot.update({"kind": "slot", "options": options})
+    slot.update({"kind": "slot", "label": "", "options": options})
 
 
 def strip_all_slot_installations_in_document(data: dict) -> None:
@@ -198,13 +210,33 @@ def _rename_library_key_in_document(d: dict, old: str, new: str, scope: str) -> 
         raise ValueError(f"unknown rename scope {scope!r}")
 
 
+def _system_card_name(s: dict) -> str:
+    """On-card name for list labels (inline systems)."""
+    n = (s.get("name") or "").strip()
+    return n if n else "Unnamed"
+
+
+def format_slot_list_label(slot: dict, row_fallback: str | None = None) -> str:
+    """Human-readable list row for a slot: ``{label} slot ({n})`` (matches web editor)."""
+    opts = slot.get("options") or []
+    n = len(opts) if isinstance(opts, list) else 0
+    raw = (slot.get("label") or "").strip() if isinstance(slot.get("label"), str) else ""
+    fb = (row_fallback or "").strip()
+    base = raw or fb or "Unlabeled"
+    return f"{base} slot ({n})"
+
+
 def collect_all_entries(data: object) -> list[EntryRow]:
     """
     Return rows for the listbox: 6-tuple per EntryRow.
-    entry_kind is 'system' or 'slot'. dict_ref is the live system or slot object.
+    entry_kind is ``header`` (non-selectable section label), ``system``, or ``slot``.
+    dict_ref is the live system or slot object, or ``None`` for headers.
     """
     out: list[EntryRow] = []
     seen_sys: set[int] = set()
+
+    def add_header(title: str) -> None:
+        out.append(("header", title, None, None, None, None))
 
     def add_system(
         list_label: str,
@@ -233,6 +265,14 @@ def collect_all_entries(data: object) -> list[EntryRow]:
     if not isinstance(data, dict):
         return out
 
+    library_header_done = False
+
+    def ensure_library_header() -> None:
+        nonlocal library_header_done
+        if not library_header_done:
+            add_header("── Library ──")
+            library_header_done = True
+
     ds = data.get("dedicatedSystems")
     if isinstance(ds, dict):
         for k, s in sorted(ds.items(), key=lambda x: x[0]):
@@ -244,6 +284,7 @@ def collect_all_entries(data: object) -> list[EntryRow]:
                     if not dd:
                         d.pop("dedicatedSystems", None)
 
+            ensure_library_header()
             add_system(f"dedicatedSystems / {k}", s, _rm_ded, k, "dedicated")
 
     for k, v in sorted(data.items(), key=lambda x: x[0]):
@@ -255,17 +296,20 @@ def collect_all_entries(data: object) -> list[EntryRow]:
                 if key in d and key not in SHIP_ROOT_KEYS:
                     del d[key]
 
+            ensure_library_header()
             add_system(f"library / {k}", v, _rm_lib, k, "library")
 
+    has_ship_core = any(isinstance(data.get(k), dict) for k in ("reactor", "mess", "shields"))
+    if has_ship_core:
+        add_header("── Core ──")
     for key in ("reactor", "mess", "shields"):
         r = data.get(key)
         if not isinstance(r, dict):
             continue
         if r.get("kind") == "slot":
-            opts = r.get("options") or []
-            n = len(opts) if isinstance(opts, list) else 0
+            fb = {"reactor": "Reactor", "mess": "Mess", "shields": "Shields"}.get(key)
             add_slot(
-                f"ship / {key} (slot) — {n} option(s)",
+                format_slot_list_label(r, fb),
                 r,
                 None,
             )
@@ -274,20 +318,24 @@ def collect_all_entries(data: object) -> list[EntryRow]:
             def _rm_ship_inline(d: dict, field: str = key) -> None:
                 d[field] = {
                     "kind": "slot",
+                    "label": "",
                     "options": [],
                 }
 
-            add_system(f"ship / {key} (inline)", r["system"], _rm_ship_inline)
+            add_system(
+                f"{_system_card_name(r['system'])} ({key})",
+                r["system"],
+                _rm_ship_inline,
+            )
 
     sec = data.get("sections")
     if isinstance(sec, dict):
-        for col in ("left", "core", "right"):
+        for col, banner in (("left", "LEFT"), ("core", "CENTER"), ("right", "RIGHT")):
+            add_header(f"── {banner} ──")
             for i, item in enumerate(sec.get(col) or []):
                 if not isinstance(item, dict):
                     continue
                 if item.get("kind") == "slot":
-                    opts = item.get("options") or []
-                    n = len(opts) if isinstance(opts, list) else 0
                     def _rm_sec_slot(d: dict, c: str = col, idx: int = i) -> None:
                         ssec = d.get("sections") or {}
                         L = ssec.get(c)
@@ -295,7 +343,7 @@ def collect_all_entries(data: object) -> list[EntryRow]:
                             L.pop(idx)
 
                     add_slot(
-                        f"ship / sections / {col} [{i}] (slot) — {n} option(s)",
+                        format_slot_list_label(item, None),
                         item,
                         _rm_sec_slot,
                     )
@@ -308,7 +356,7 @@ def collect_all_entries(data: object) -> list[EntryRow]:
                             L.pop(idx)
 
                     add_system(
-                        f"ship / sections / {col} [{i}] (inline)",
+                        f"{_system_card_name(item['system'])} ({col})",
                         item["system"],
                         _rm_sec_sys,
                     )
@@ -551,7 +599,7 @@ class SystemsEditor(tk.Tk):
 
         self._form_slot = ttk.LabelFrame(
             self._form,
-            text="Slot (preset template: option list only)",
+            text="Slot (label, then option templates — same as web presets)",
             padding=6,
         )
         self._form_slot.grid(row=0, column=0, sticky=tk.EW)
@@ -559,6 +607,22 @@ class SystemsEditor(tk.Tk):
         self._form_slot.grid_remove()
 
         rsl = 0
+        ttk.Label(self._form_slot, text="Slot label", font=("Segoe UI", 9, "bold")).grid(
+            row=rsl, column=0, sticky=tk.W, pady=2
+        )
+        self._form_vars["slot_label_e"] = ttk.Entry(
+            self._form_slot, width=52, font=("Segoe UI", 10)
+        )
+        self._form_vars["slot_label_e"].grid(row=rsl, column=1, sticky=tk.EW, pady=2)
+        self._bind_done(self._form_vars["slot_label_e"])
+        rsl += 1
+        ttk.Label(
+            self._form_slot,
+            text='List row shows “{label} slot (n)”. Tab out or Enter to apply.',
+            font=("Segoe UI", 8),
+            foreground="#555",
+        ).grid(row=rsl, column=0, columnspan=2, sticky=tk.W, pady=(0, 4))
+        rsl += 1
         ttk.Label(self._form_slot, text="Option to edit").grid(
             row=rsl, column=0, sticky=tk.W, pady=2
         )
@@ -763,6 +827,39 @@ class SystemsEditor(tk.Tk):
             self._form.grid_rowconfigure(0, weight=1)
             self._form.grid_rowconfigure(1, weight=0)
 
+    def _rebuild_listbox(self, entries: list[EntryRow]) -> None:
+        self._listbox.delete(0, tk.END)
+        for idx, (_k, lab, _, _, _, _) in enumerate(entries):
+            self._listbox.insert(tk.END, lab)
+            if _k == "header":
+                try:
+                    self._listbox.itemconfigure(
+                        idx,
+                        font=("Segoe UI", 10, "bold"),
+                        foreground="#222",
+                    )
+                except tk.TclError:
+                    pass
+
+    @staticmethod
+    def _nearest_selectable_index(entries: list[EntryRow], i: int) -> int | None:
+        if not entries:
+            return None
+        if 0 <= i < len(entries) and entries[i][0] != "header":
+            return i
+        for d in range(1, len(entries) + 1):
+            for j in (i + d, i - d):
+                if 0 <= j < len(entries) and entries[j][0] != "header":
+                    return j
+        return None
+
+    @staticmethod
+    def _first_selectable_index(entries: list[EntryRow]) -> int | None:
+        for i, row in enumerate(entries):
+            if row[0] != "header":
+                return i
+        return None
+
     def _refresh_list_preserving_selection(self) -> None:
         if self._data is None:
             return
@@ -771,13 +868,11 @@ class SystemsEditor(tk.Tk):
         self._entries = collect_all_entries(self._data)
         self._list_silent = True
         try:
-            self._listbox.delete(0, tk.END)
-            for _k, label, _, _, _, _ in self._entries:
-                self._listbox.insert(tk.END, label)
+            self._rebuild_listbox(self._entries)
             if key_id is None or not self._entries:
                 return
             for i, (_k, _l, ref, _, _, _) in enumerate(self._entries):
-                if id(ref) == key_id:
+                if ref is not None and id(ref) == key_id:
                     self._listbox.selection_clear(0, tk.END)
                     self._listbox.selection_set(i)
                     self._listbox.see(i)
@@ -839,6 +934,9 @@ class SystemsEditor(tk.Tk):
             return
         prev = self._slot_last_edit_i
         slot = self._active
+        le = self._form_vars.get("slot_label_e")
+        if le is not None and slot:
+            slot["label"] = le.get()
         if (
             prev is not None
             and slot
@@ -872,6 +970,7 @@ class SystemsEditor(tk.Tk):
         labels = self._slot_option_labels(slot)
         if labels:
             self._form_vars["slot_edit_var"].set(labels[-1])
+        self._refresh_list_preserving_selection()
         self._load_into_form()
         self._schedule_render()
 
@@ -912,6 +1011,7 @@ class SystemsEditor(tk.Tk):
         labels = self._slot_option_labels(slot)
         if labels:
             self._form_vars["slot_edit_var"].set(labels[-1])
+        self._refresh_list_preserving_selection()
         self._load_into_form()
         self._schedule_render()
 
@@ -1162,6 +1262,11 @@ class SystemsEditor(tk.Tk):
         if self._entry_kind == "slot":
             normalize_slot_to_v01(s, build_merged_library(self._data or {}))
             self._set_form_mode(True)
+            sle = self._form_vars.get("slot_label_e")
+            if sle is not None:
+                sle.delete(0, tk.END)
+                lab = s.get("label", "")
+                sle.insert(0, lab if isinstance(lab, str) else "")
             self._refresh_slot_lib_combobox()
             self._sync_slot_comboboxes_from_slot(s)
             self._slot_last_edit_i = self._parse_slot_combo_label(
@@ -1237,6 +1342,8 @@ class SystemsEditor(tk.Tk):
         self._active_library_key = None
         self._active_rename_scope = None
         self._library_id_at_load = None
+        if "slot_label_e" in self._form_vars:
+            self._form_vars["slot_label_e"].delete(0, tk.END)
         if "slot_edit_var" in self._form_vars:
             self._form_vars["slot_edit_var"].set("")
         if "slot_edit_cb" in self._form_vars:
@@ -1314,10 +1421,14 @@ class SystemsEditor(tk.Tk):
         if not s:
             return
         if self._entry_kind == "slot":
+            le = self._form_vars.get("slot_label_e")
+            if le is not None:
+                s["label"] = le.get()
             tgt = self._form_system_target()
             if tgt:
                 self._apply_system_fields_to(tgt)
             _strip_slot_installation(s)
+            self._refresh_list_preserving_selection()
             self._sync_json_panel()
             return
         self._apply_system_fields_to(s)
@@ -1370,6 +1481,8 @@ class SystemsEditor(tk.Tk):
         if i >= len(self._entries):
             return "break" if event else None
         _kind, label, _ref, remover, removed_library_id, _ = self._entries[i]
+        if _kind == "header":
+            return "break" if event else None
         if remover is None:
             messagebox.showinfo(
                 "Cannot remove",
@@ -1391,9 +1504,7 @@ class SystemsEditor(tk.Tk):
         self._entries = collect_all_entries(self._data)
         self._list_silent = True
         try:
-            self._listbox.delete(0, tk.END)
-            for _k, lab, _, _, _, _ in self._entries:
-                self._listbox.insert(tk.END, lab)
+            self._rebuild_listbox(self._entries)
         finally:
             self._list_silent = False
         if not self._entries:
@@ -1404,6 +1515,15 @@ class SystemsEditor(tk.Tk):
             self._set_preview_error("(No selection)")
             return "break" if event else None
         new_i = min(i, len(self._entries) - 1)
+        pick = self._nearest_selectable_index(self._entries, new_i)
+        if pick is None:
+            self._active = None
+            self._entry_kind = "system"
+            self._clear_form()
+            self._sync_json_panel()
+            self._set_preview_error("(No selection)")
+            return "break" if event else None
+        new_i = pick
         self._listbox.selection_set(new_i)
         self._listbox.see(new_i)
         self._list_index = new_i
@@ -1521,6 +1641,22 @@ class SystemsEditor(tk.Tk):
         target_i = int(items[0])
         if target_i >= len(self._entries):
             return
+        if self._entries[target_i][0] == "header":
+            self._list_silent = True
+            try:
+                self._listbox.selection_clear(0, tk.END)
+                j = None
+                if 0 <= self._list_index < len(self._entries):
+                    if self._entries[self._list_index][0] != "header":
+                        j = self._list_index
+                if j is None:
+                    j = self._nearest_selectable_index(self._entries, target_i)
+                if j is not None:
+                    self._listbox.selection_set(j)
+                    self._listbox.see(j)
+            finally:
+                self._list_silent = False
+            return
         target_ref = self._entries[target_i][2]
 
         self._flush_library_id_rename_if_dirty()
@@ -1538,12 +1674,15 @@ class SystemsEditor(tk.Tk):
             new_index = (
                 min(target_i, len(self._entries) - 1) if self._entries else 0
             )
+        if self._entries and 0 <= new_index < len(self._entries):
+            if self._entries[new_index][0] == "header":
+                adj = self._nearest_selectable_index(self._entries, new_index)
+                if adj is not None:
+                    new_index = adj
 
         self._list_silent = True
         try:
-            self._listbox.delete(0, tk.END)
-            for _k, lab, _, _, _, _ in self._entries:
-                self._listbox.insert(tk.END, lab)
+            self._rebuild_listbox(self._entries)
             if self._entries:
                 self._listbox.selection_set(new_index)
                 self._listbox.see(new_index)
@@ -1556,6 +1695,13 @@ class SystemsEditor(tk.Tk):
             self._active_library_key = None
             self._active_rename_scope = None
             self._library_id_at_load = None
+            self._clear_form()
+            self._sync_json_panel()
+            return
+
+        if self._entries[new_index][0] == "header":
+            self._active = None
+            self._entry_kind = "system"
             self._clear_form()
             self._sync_json_panel()
             return
@@ -1573,9 +1719,7 @@ class SystemsEditor(tk.Tk):
         self._schedule_render()
 
     def _populate_list(self) -> None:
-        self._listbox.delete(0, tk.END)
-        for _k, label, _, _, _, _ in self._entries:
-            self._listbox.insert(tk.END, label)
+        self._rebuild_listbox(self._entries)
         if not self._entries:
             self._active = None
             self._entry_kind = "system"
@@ -1585,7 +1729,14 @@ class SystemsEditor(tk.Tk):
             self._clear_form()
             self._sync_json_panel()
             return
-        self._listbox.selection_set(0)
+        first = self._first_selectable_index(self._entries)
+        if first is None:
+            self._active = None
+            self._entry_kind = "system"
+            self._clear_form()
+            self._sync_json_panel()
+            return
+        self._listbox.selection_set(first)
         (
             self._entry_kind,
             _lbl,
@@ -1593,7 +1744,8 @@ class SystemsEditor(tk.Tk):
             _,
             self._active_library_key,
             self._active_rename_scope,
-        ) = self._entries[0]
+        ) = self._entries[first]
+        self._list_index = first
         self._load_into_form()
         self._schedule_render()
 
@@ -1629,14 +1781,13 @@ class SystemsEditor(tk.Tk):
             k = _unique_key(ds, "new_system")
             ds[k] = blank
         self._entries = collect_all_entries(self._data)
-        self._listbox.delete(0, tk.END)
-        for _k, label, _, _, _, _ in self._entries:
-            self._listbox.insert(tk.END, label)
+        self._rebuild_listbox(self._entries)
         for i, (_k, _l, ref, _rm, _lk, _rs) in enumerate(self._entries):
             if ref is blank:
                 self._listbox.selection_clear(0, tk.END)
                 self._listbox.selection_set(i)
                 self._listbox.see(i)
+                self._list_index = i
                 self._entry_kind = "system"
                 self._active = blank
                 self._active_library_key = _lk

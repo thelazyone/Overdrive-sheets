@@ -6,7 +6,7 @@
  *   - Customize toggle.
  *   - In customize mode: `description`, `label`, `overdrive`, `control` also
  *     editable.
- *   - Section list (LEFT / CORE / RIGHT + reactor/mess/shields). Each slot
+ *   - Section list (CORE + LEFT / CENTER / RIGHT columns). Each slot
  *     row carries an inline `<select>` to pick which duplicated option is
  *     installed.
  *   - Inspector panel below the list — visible only in customize mode:
@@ -346,26 +346,9 @@ function SectionList(props: SectionListProps) {
 
   return (
     <>
-      <SectionGroup
-        title="LEFT"
-        refs={props.ship.sections.left}
-        section="left"
-        {...rowCommon()}
-      />
-      <SectionGroup
-        title="CORE"
-        refs={props.ship.sections.core}
-        section="core"
-        {...rowCommon()}
-      />
-      <SectionGroup
-        title="RIGHT"
-        refs={props.ship.sections.right}
-        section="right"
-        {...rowCommon()}
-      />
-      <div class="section-group">
-        <h2>CORE SYSTEMS</h2>
+      <div class="section-group section-group-divider">
+        <h2 class="section-heading">CORE</h2>
+        <p class="section-heading-hint">Reactor, mess, shields</p>
         <SystemRow
           id="ship.reactor"
           sysRef={props.ship.reactor}
@@ -388,6 +371,24 @@ function SectionList(props: SectionListProps) {
           {...rowCommon()}
         />
       </div>
+      <SectionGroup
+        title="LEFT"
+        refs={props.ship.sections.left}
+        section="left"
+        {...rowCommon()}
+      />
+      <SectionGroup
+        title="CENTER"
+        refs={props.ship.sections.core}
+        section="core"
+        {...rowCommon()}
+      />
+      <SectionGroup
+        title="RIGHT"
+        refs={props.ship.sections.right}
+        section="right"
+        {...rowCommon()}
+      />
     </>
   );
 }
@@ -402,8 +403,8 @@ function SectionGroup(props: {
   onShip: ShipUpdater;
 }) {
   return (
-    <div class="section-group">
-      <h2>{props.title}</h2>
+    <div class="section-group section-group-divider">
+      <h2 class="section-heading">{props.title}</h2>
       <For each={props.refs}>
         {(r, i) => (
           <SystemRow
@@ -430,6 +431,31 @@ function inferSlotKind(sysRef: SystemRef): System["kind"] | null {
   return first ? first.kind : null;
 }
 
+/** Left-pane title for a slot row: `{label} slot (optionCount)`. */
+function formatSlotRowLabel(
+  slot: Extract<SystemRef, { kind: "slot" }>,
+  canonicalFallback?: string,
+): string {
+  const base =
+    slot.label.trim() ||
+    (canonicalFallback?.trim() ?? "") ||
+    "Unlabeled";
+  return `${base} slot (${slot.options.length})`;
+}
+
+function canonicalRowTitleForPath(path: string): string | undefined {
+  switch (path) {
+    case "ship.reactor":
+      return "Reactor";
+    case "ship.mess":
+      return "Mess";
+    case "ship.shields":
+      return "Shields";
+    default:
+      return undefined;
+  }
+}
+
 function SystemRow(props: {
   id: string;
   sysRef: SystemRef;
@@ -437,9 +463,8 @@ function SystemRow(props: {
   selected: string | null;
   onSelect: OnSelect;
   onShip: ShipUpdater;
-  /** Canonical label (e.g. "Reactor") forced for the three core-system rows;
-   *  when set, the displayed label always starts with this, regardless of
-   *  the resolved system's name. */
+  /** Fallback for slot {@link formatSlotRowLabel} when the slot has no `label`
+   *  (e.g. "Reactor" for the reactor row). */
   canonicalLabel?: string;
   /** Canonical kind used for the badge when the slot is empty and we can't
    *  infer from listed options. */
@@ -452,26 +477,27 @@ function SystemRow(props: {
   // Inline systems are never clickable outside customize mode.
   const isClickable = () => props.customize;
 
-  // Badge shows the system KIND (reactor/mess/shields/engine/generic).
-  // Slotness is communicated by the yellow background on the row, not by
-  // the word "slot" in the badge.
+  // Badge: resolved system kind, or for empty slots a kind hint / slot label (not the word "slot").
   const badge = (): string => {
     const r = resolved();
     if (r) return r.kind;
-    return inferSlotKind(props.sysRef) ?? props.canonicalKind ?? "slot";
+    if (props.sysRef.kind === "slot") {
+      const inferred = inferSlotKind(props.sysRef) ?? props.canonicalKind;
+      if (inferred) return inferred;
+      const lab = props.sysRef.label.trim();
+      if (lab) return lab.length > 16 ? `${lab.slice(0, 14)}…` : lab;
+      return "—";
+    }
+    return inferSlotKind(props.sysRef) ?? props.canonicalKind ?? "—";
   };
 
-  // Label: prefer a canonical name (for the three core-system rows),
-  // otherwise the resolved system name or an empty-slot hint.
+  // Slots: preset/editor `label` + " slot " + option count. Inline systems: name.
   const label = (): string => {
-    const r = resolved();
-    if (props.canonicalLabel) {
-      if (isEmptySlot()) return `${props.canonicalLabel} (unselected)`;
-      if (!isSlot()) return `${props.canonicalLabel} (default)`;
-      return props.canonicalLabel;
+    if (props.sysRef.kind === "slot") {
+      return formatSlotRowLabel(props.sysRef, props.canonicalLabel);
     }
+    const r = resolved();
     if (r) return r.name;
-    if (props.sysRef.kind === "slot") return "(unselected slot)";
     return "(unnamed)";
   };
 
@@ -555,6 +581,7 @@ function Inspector(props: {
           <SlotInspector
             path={props.path}
             sysRef={slot()}
+            rowFallbackLabel={canonicalRowTitleForPath(props.path)}
             customize={props.customize}
             onShip={props.onShip}
           />
@@ -579,6 +606,8 @@ function Inspector(props: {
 function SlotInspector(props: {
   path: string;
   sysRef: Extract<SystemRef, { kind: "slot" }>;
+  /** When `sysRef.label` is empty, used in the header (e.g. core-system row). */
+  rowFallbackLabel?: string;
   customize: boolean;
   onShip: ShipUpdater;
 }) {
@@ -701,16 +730,37 @@ function SlotInspector(props: {
     return String(editIdx());
   };
 
+  const patchSlotLabel = (label: string) => {
+    props.onShip((ship) =>
+      withRefUpdate(ship, props.path, (r) =>
+        r.kind === "slot" ? { ...r, label } : r,
+      ),
+    );
+  };
+
+  const headerTitle = () =>
+    formatSlotRowLabel(props.sysRef, props.rowFallbackLabel);
+
   return (
     <div class="inspector-body">
       <div class="inspector-header">
-        <span class="tag">slot</span>
-        <span class="title">Slot</span>
+        <span class="tag">{props.sysRef.label.trim() || "Slot"}</span>
+        <span class="title">{headerTitle()}</span>
       </div>
       <div class="inspector-note">
         Pick an option below to view or edit. The row picker sets which one is
         installed on the sheet preview.
       </div>
+
+      <label class="field">
+        <span class="field-label">Slot label</span>
+        <input
+          type="text"
+          placeholder="e.g. Weapon"
+          value={props.sysRef.label}
+          onInput={(e) => patchSlotLabel(e.currentTarget.value)}
+        />
+      </label>
 
       <label class="field">
         <span class="field-label">Option</span>

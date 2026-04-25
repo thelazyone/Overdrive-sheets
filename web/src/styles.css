@@ -126,12 +126,32 @@ html, body, #root {
   margin-bottom: 18px;
 }
 
-.section-group h2 {
+.section-group-divider {
+  padding-top: 14px;
+  margin-top: 4px;
+  border-top: 2px solid #1a1a1a;
+}
+
+.section-list .section-group-divider:first-child {
+  border-top: none;
+  padding-top: 0;
+  margin-top: 0;
+}
+
+.section-heading {
   font-family: "Orbitron", "Eurostile Extended", sans-serif;
-  font-size: 11px;
-  letter-spacing: 0.1em;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
   margin: 0 0 6px;
+  color: #111;
+}
+
+.section-heading-hint {
+  font-size: 10px;
+  letter-spacing: 0.04em;
   color: #666;
+  margin: -2px 0 8px;
 }
 
 .system-row {

@@ -24,7 +24,13 @@ import {
   SHEET_WIDTH,
 } from "./constants";
 import { measureText } from "./measure";
-import { resolveRef, type Ship, type System, type SystemRef } from "../schema";
+import {
+  placeholderTextForUnresolvedRef,
+  resolveRef,
+  type Ship,
+  type System,
+  type SystemRef,
+} from "../schema";
 import { layoutSystem } from "./SystemSVG";
 import { OverdriveSVG } from "./OverdriveSVG";
 import { ShieldsSVG } from "./ShieldsSVG";
@@ -105,10 +111,10 @@ function SystemRefSVG(props: {
 }): { el: JSX.Element; height: number } {
   const resolved = resolveRef(props.ref);
   if (!resolved) {
-    // Empty slot placeholder
+    // Empty slot / unresolved ref placeholder
     const placeholderHeight = 200 * SCALE;
     const labelFont = cssFont(SHEET_LABEL_SIZE, FONT_EUROSTILE);
-    const label = "SLOT";
+    const label = placeholderTextForUnresolvedRef(props.ref);
     const el = (
       <g transform={`translate(${props.x} ${props.y})`}>
         <rect
@@ -128,7 +134,7 @@ function SystemRefSVG(props: {
           dominant-baseline="central"
           style={{ font: labelFont, fill: "rgb(150,150,150)" }}
         >
-          {label.toUpperCase()}
+          {label}
         </text>
       </g>
     );
@@ -203,7 +209,7 @@ function ShipSVGInner(ship: Ship, responsive: boolean): JSX.Element {
       };
     }
     const placeholderFont = cssFont(SHEET_LABEL_SIZE, FONT_EUROSTILE);
-    const label = ref.kind === "slot" ? "SLOT" : "EMPTY";
+    const label = placeholderTextForUnresolvedRef(ref);
     return {
       height: CORE_BOTTOM_PLACEHOLDER_HEIGHT,
       render: (y: number) => (

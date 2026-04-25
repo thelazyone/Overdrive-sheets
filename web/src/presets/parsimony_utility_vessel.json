@@ -31,6 +31,7 @@
   },
   "reactor": {
     "kind": "slot",
+    "label": "Reactor",
     "options": [
       {
         "kind": "reactor",
@@ -132,6 +133,7 @@
       },
       {
         "kind": "slot",
+        "label": "Cargo arm",
         "options": [
           {
             "kind": "generic",
@@ -262,6 +264,7 @@
       },
       {
         "kind": "slot",
+        "label": "Scanner",
         "options": [
           {
             "kind": "generic",
