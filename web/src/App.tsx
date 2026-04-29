@@ -92,7 +92,7 @@ function newTabFromPreset(presetId: string): ShipTabState {
   };
 }
 
-/** Keep display identity when swapping templates (sheet title / class / template label). */
+/** Keep the ship title (`name`) when swapping templates; class line (`description`) and template label come from the new preset. */
 function mergeShipIdentityOntoPreset(
   prev: Ship | undefined,
   presetShip: Ship,
@@ -102,8 +102,6 @@ function mergeShipIdentityOntoPreset(
     ? {
         ...presetShip,
         name: prev.name,
-        description: prev.description,
-        label: prev.label,
       }
     : presetShip;
   return { ...merged, presetId: presetKey };
