@@ -533,7 +533,7 @@ function renderTopLeftIcons(system: System, yRef: number) {
   const bgWidth = totalWidth + 2 * bgPadding;
   const bgHeight = iconSize + 2 * bgPadding;
   const bgX = 0;
-  const bgY = yRef - 2;
+  const bgY = yRef - 6;
   const slopeWidth = Math.floor(bgHeight * 0.577);
 
   return (
@@ -572,7 +572,7 @@ function renderBottomRightIcons(system: System, y: number) {
   const bgWidth = totalWidth + 2 * bgPadding;
   const bgHeight = iconSize + 2 * bgPadding;
   const bgX = TILE_WIDTH - bgWidth;
-  const bgY = y - bgHeight + 2;
+  const bgY = y - bgHeight + 6;
   const slopeWidth = Math.floor(bgHeight * 0.577);
 
   return {

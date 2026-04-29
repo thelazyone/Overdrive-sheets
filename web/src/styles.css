@@ -141,6 +141,36 @@ html, body, #root {
   border-color: #6a6a78;
 }
 
+.ship-tab-fleet-tools {
+  display: flex;
+  align-items: stretch;
+  gap: 6px;
+  flex-shrink: 0;
+  padding-left: 8px;
+  margin-left: 4px;
+  border-left: 1px solid #c8c8cd;
+}
+
+.ship-tab-fleet-btn {
+  align-self: stretch;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font: inherit;
+  font-size: 12px;
+  padding: 6px 10px;
+  border: 1px solid #b9b9b9;
+  background: #fff;
+  border-radius: 4px;
+  cursor: pointer;
+  white-space: nowrap;
+  color: #111;
+}
+
+.ship-tab-fleet-btn:hover {
+  background: #f0f0f0;
+}
+
 .pane {
   display: flex;
   flex-direction: column;
@@ -199,8 +229,9 @@ html, body, #root {
   min-width: 0;
 }
 
-.toolbar-io-row {
-  flex-wrap: wrap;
+.toolbar-ship-actions-row {
+  justify-content: center;
+  flex-wrap: nowrap;
 }
 
 .toolbar-label {

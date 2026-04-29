@@ -35,7 +35,8 @@ import {
 } from "solid-js";
 import {
   cloneSystem,
-  exportShipsDocument,
+  exportFleetDocument,
+  exportShipDocument,
   parseShipDocument,
   parseShipsFromImport,
   resolveRef,
@@ -48,8 +49,8 @@ import {
 import { baseLibrary } from "./core/library/loadBaseLibrary";
 import { ShipLibraryProvider, useShipLibrary } from "./core/shipLibraryContext";
 import { ShipSVG } from "./core/render/ShipSVG";
+import { rasterizeShipSheetToJpegBlob } from "./core/render/exportSheetImage";
 import { waitForFonts } from "./core/render/measure";
-import { SHEET_HEIGHT, SHEET_WIDTH } from "./core/render/constants";
 import { DEFAULT_PRESET_ID, PRESETS } from "./presets";
 
 interface ShipTabState {
@@ -61,6 +62,16 @@ interface ShipTabState {
 }
 
 type ShipUpdater = (fn: (s: Ship) => Ship) => void;
+
+/** Top-level `{ ships: [...] }` fleet file — use fleet load, not single-ship load. */
+function looksLikeFleetDocument(raw: unknown): boolean {
+  return (
+    raw != null &&
+    typeof raw === "object" &&
+    !Array.isArray(raw) &&
+    Array.isArray((raw as Record<string, unknown>).ships)
+  );
+}
 
 function newTabFromPreset(presetId: string): ShipTabState {
   const entry = PRESETS.find((p) => p.id === presetId) ?? PRESETS[0];
@@ -240,7 +251,44 @@ export function App(): JSX.Element {
     setError(null);
   };
 
-  const onUpload = (event: Event) => {
+  const onUploadShipJSON = (event: Event) => {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const raw = JSON.parse(reader.result as string);
+        if (looksLikeFleetDocument(raw)) {
+          throw new Error(
+            'This file is a fleet (it has a top-level "ships" array). Use “Load fleet” next to +.',
+          );
+        }
+        const ship = parseShipDocument(raw);
+        patchActiveTab({
+          ship,
+          selected: null,
+        });
+        setError(null);
+      } catch (e: any) {
+        setError(e?.message ?? String(e));
+      }
+    };
+    reader.readAsText(file);
+    input.value = "";
+  };
+
+  const onDownloadShipJSON = () => {
+    const t = activeTab();
+    if (!t) return;
+    const flat = exportShipDocument(t.ship);
+    const blob = new Blob([JSON.stringify(flat, null, 2)], {
+      type: "application/json",
+    });
+    triggerDownload(blob, slugify(t.ship.name) + ".json");
+  };
+
+  const onFleetUpload = (event: Event) => {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
     if (!file) return;
@@ -267,30 +315,33 @@ export function App(): JSX.Element {
     input.value = "";
   };
 
-  const downloadJsonFilename = (): string => {
-    const list = tabs().map((t) => t.ship);
-    if (list.length === 1) {
-      return slugify(list[0]!.name) + ".json";
-    }
-    const first = slugify(list[0]!.name || "fleet");
-    return `fleet_${first}_${list.length}_ships.json`;
+  const fleetDownloadFilename = (): string => {
+    const ships = tabs().map((t) => t.ship);
+    const first = slugify(ships[0]?.name || "fleet");
+    return `fleet_${first}_${ships.length}_ships.json`;
   };
 
-  const onDownloadJSON = () => {
-    const list = tabs().map((t) => t.ship);
-    const doc = exportShipsDocument(list);
+  const onFleetDownload = () => {
+    const ships = tabs().map((t) => t.ship);
+    const doc = exportFleetDocument(ships);
     const blob = new Blob([JSON.stringify(doc, null, 2)], {
       type: "application/json",
     });
-    triggerDownload(blob, downloadJsonFilename());
+    triggerDownload(blob, fleetDownloadFilename());
   };
 
-  const onDownloadPNG = async () => {
+  const onDownloadImage = async () => {
     const t = activeTab();
     if (!t) return;
     const svgEl = document.querySelector(".ship-preview-wrapper svg") as SVGSVGElement | null;
     if (!svgEl) return;
-    await exportSvgAsPng(svgEl, SHEET_WIDTH, SHEET_HEIGHT, slugify(t.ship.name) + ".png");
+    try {
+      const blob = await rasterizeShipSheetToJpegBlob(svgEl);
+      triggerDownload(blob, slugify(t.ship.name) + ".jpg");
+      setError(null);
+    } catch (e: any) {
+      setError(e?.message ?? String(e));
+    }
   };
 
   const selection = (): { path: string; sysRef: SystemRef } | null => {
@@ -366,6 +417,25 @@ export function App(): JSX.Element {
         >
           +
         </button>
+        <div class="ship-tab-fleet-tools">
+          <label class="btn ship-tab-fleet-btn">
+            Load fleet
+            <input
+              type="file"
+              accept="application/json,.json"
+              style={{ display: "none" }}
+              onChange={onFleetUpload}
+            />
+          </label>
+          <button
+            type="button"
+            class="ship-tab-fleet-btn"
+            onClick={onFleetDownload}
+            title="Save all ships as one fleet JSON file"
+          >
+            Save fleet
+          </button>
+        </div>
       </div>
 
       <div class="app-main">
@@ -410,18 +480,22 @@ export function App(): JSX.Element {
               Reload
             </button>
           </div>
-          <div class="toolbar-row toolbar-io-row">
+          <div class="toolbar-row toolbar-ship-actions-row">
             <label class="btn">
-              Upload JSON
+              Load ship
               <input
                 type="file"
                 accept="application/json,.json"
                 style={{ display: "none" }}
-                onChange={onUpload}
+                onChange={onUploadShipJSON}
               />
             </label>
-            <button type="button" onClick={onDownloadJSON}>Download JSON</button>
-            <button type="button" onClick={onDownloadPNG}>Download PNG</button>
+            <button type="button" onClick={onDownloadShipJSON}>
+              Save ship
+            </button>
+            <button type="button" onClick={onDownloadImage}>
+              Download Image
+            </button>
           </div>
         </div>
 
@@ -1469,53 +1543,4 @@ function triggerDownload(blob: Blob, filename: string) {
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
-}
-
-/**
- * Serialize the inline SVG, draw it onto an HTML canvas, and download as PNG.
- * Referenced raster resources (icons in /resources/) are embedded via the
- * <image href="..."> elements and must be same-origin to avoid taint.
- */
-async function exportSvgAsPng(
-  svg: SVGSVGElement,
-  width: number,
-  height: number,
-  filename: string
-): Promise<void> {
-  const clone = svg.cloneNode(true) as SVGSVGElement;
-  clone.setAttribute("width", String(width));
-  clone.setAttribute("height", String(height));
-  if (!clone.getAttribute("xmlns")) {
-    clone.setAttribute("xmlns", "http://www.w3.org/2000/svg");
-  }
-  const serialized = new XMLSerializer().serializeToString(clone);
-  const blob = new Blob([serialized], { type: "image/svg+xml;charset=utf-8" });
-  const url = URL.createObjectURL(blob);
-
-  try {
-    const img = new Image();
-    img.crossOrigin = "anonymous";
-    await new Promise<void>((resolve, reject) => {
-      img.onload = () => resolve();
-      img.onerror = (e) => reject(e);
-      img.src = url;
-    });
-
-    const canvas = document.createElement("canvas");
-    canvas.width = width;
-    canvas.height = height;
-    const ctx = canvas.getContext("2d")!;
-    ctx.fillStyle = "white";
-    ctx.fillRect(0, 0, width, height);
-    ctx.drawImage(img, 0, 0, width, height);
-
-    await new Promise<void>((resolve) => {
-      canvas.toBlob((b) => {
-        if (b) triggerDownload(b, filename);
-        resolve();
-      }, "image/png");
-    });
-  } finally {
-    URL.revokeObjectURL(url);
-  }
 }

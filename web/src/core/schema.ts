@@ -326,6 +326,20 @@ export function exportShipsDocument(ships: Ship[]): Record<string, unknown> {
 }
 
 /**
+ * Fleet editor export: always `{ format, version, ships: [...] }`, even for one ship.
+ */
+export function exportFleetDocument(ships: Ship[]): Record<string, unknown> {
+  if (ships.length === 0) {
+    throw new Error("Cannot export an empty fleet.");
+  }
+  return {
+    format: FLEET_DOCUMENT_FORMAT,
+    version: 1,
+    ships: ships.map((s) => exportShipDocument(s)),
+  };
+}
+
+/**
  * Parse uploaded JSON into one or more ships.
  * Accepts legacy flat ship JSON or `{ ships: [ … ] }` fleet documents.
  */
