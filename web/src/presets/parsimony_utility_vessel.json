@@ -124,7 +124,8 @@
               "cost": {
                 "energy": 1,
                 "crew": 0
-              }
+              },
+              "name": ""
             }
           ],
           "weapon": false,
@@ -133,7 +134,7 @@
       },
       {
         "kind": "slot",
-        "label": "Cargo arm",
+        "label": "Front",
         "options": [
           {
             "kind": "generic",
@@ -162,7 +163,8 @@
                   "arc-end": 5
                 },
                 "cost": {
-                  "energy": 2
+                  "energy": 2,
+                  "crew": 0
                 }
               }
             ],
