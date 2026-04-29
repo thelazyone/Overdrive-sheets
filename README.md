@@ -11,6 +11,9 @@ Two implementations share the same `fonts/` and `resources/` assets at the repo 
 
 Requirements: Node 18+.
 
+**GitHub Pages** (after you enable it — see repo workflow): the builder is deployed under  
+`https://<user>.github.io/<repo>/overdrive/` (e.g. `/Overdrive-sheets/overdrive/` for this repository). Pushes to `main` that touch `web/`, `resources/`, or the Web workflow run CI and publish automatically.
+
 ```
 cd web
 npm install

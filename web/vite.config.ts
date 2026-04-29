@@ -96,6 +96,8 @@ function sharedAssetsPlugin() {
 
 export default defineConfig({
   root: here,
+  /** GitHub Pages: `/owner/repo/overdrive/` via env in CI; local dev uses `/`. */
+  base: process.env.GITHUB_PAGES_BASE || "/",
   plugins: [solid(), sharedAssetsPlugin()],
   server: {
     fs: { allow: [repoRoot] },

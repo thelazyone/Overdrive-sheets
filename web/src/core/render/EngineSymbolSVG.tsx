@@ -6,6 +6,7 @@
  */
 
 import type { JSX } from "solid-js";
+import { publicAsset } from "../../publicPath";
 import { cssFont, FONT_EUROSTILE, TILE_COMBAT_NUMBER_SIZE } from "./constants";
 import { measureText } from "./measure";
 
@@ -38,7 +39,7 @@ export function EngineSymbolSVG(props: Props): JSX.Element {
   return (
     <g transform={`translate(${props.x} ${props.y})`}>
       <image
-        href="/resources/arrow_empty_symbol.png"
+        href={publicAsset("resources/arrow_empty_symbol.png")}
         x={0}
         y={0}
         width={WIDTH}

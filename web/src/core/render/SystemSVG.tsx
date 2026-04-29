@@ -19,6 +19,7 @@
 
 import { For, type JSX } from "solid-js";
 import type { Area, System } from "../schema";
+import { publicAsset } from "../../publicPath";
 import {
   cssFont,
   FONT_EUROSTILE,
@@ -162,7 +163,7 @@ function renderMess(system: Extract<System, { kind: "mess" }>, y: number) {
         />
         {Array.from({ length: count }).map((_, i) => (
           <image
-            href="/resources/med_bay_symbol.png"
+            href={publicAsset("resources/med_bay_symbol.png")}
             x={startX}
             y={startYIcons + i * (symbolWidth + gap)}
             width={symbolWidth}
@@ -209,7 +210,7 @@ function renderReactor(system: Extract<System, { kind: "reactor" }>, y: number) 
     <g>
       {Array.from({ length: count }).map((_, i) => (
         <image
-          href="/resources/energy_symbol_large.png"
+          href={publicAsset("resources/energy_symbol_large.png")}
           x={startX + i * (symbolWidth + gap)}
           y={symbolY}
           width={symbolWidth}
@@ -249,7 +250,7 @@ function renderEngine(system: Extract<System, { kind: "engine" }>, y: number) {
         return (
           <g>
             <image
-              href="/resources/engine_slot.png"
+              href={publicAsset("resources/engine_slot.png")}
               x={sx}
               y={slotY}
               width={slotSize}
@@ -414,7 +415,9 @@ function renderCostSymbols(cost: { energy?: number; crew?: number }) {
   const width = symbolSize * 2 + gap;
 
   const hrefFor = (s: "energy" | "crew") =>
-    s === "energy" ? "/resources/energy_symbol.png" : "/resources/crew_symbol.png";
+    s === "energy"
+      ? publicAsset("resources/energy_symbol.png")
+      : publicAsset("resources/crew_symbol.png");
 
   const el = (
     <g>
@@ -521,8 +524,8 @@ function iconList(system: System, flags: Array<{ key: keyof System; href: string
 
 function renderTopLeftIcons(system: System, yRef: number) {
   const icons = iconList(system, [
-    { key: "weapon", href: "/resources/weapon_icon.png" },
-    { key: "main", href: "/resources/star_icon.png" },
+    { key: "weapon", href: publicAsset("resources/weapon_icon.png") },
+    { key: "main", href: publicAsset("resources/star_icon.png") },
   ]);
   if (icons.length === 0) return null;
 
@@ -559,9 +562,9 @@ function renderTopLeftIcons(system: System, yRef: number) {
 
 function renderBottomRightIcons(system: System, y: number) {
   const icons = iconList(system, [
-    { key: "hull", href: "/resources/hull_icon.png" },
-    { key: "electronics", href: "/resources/electric_icon.png" },
-    { key: "life_support", href: "/resources/life_support_icon.png" },
+    { key: "hull", href: publicAsset("resources/hull_icon.png") },
+    { key: "electronics", href: publicAsset("resources/electric_icon.png") },
+    { key: "life_support", href: publicAsset("resources/life_support_icon.png") },
   ]);
   if (icons.length === 0) return { el: null as JSX.Element };
 

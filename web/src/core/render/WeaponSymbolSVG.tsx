@@ -5,11 +5,13 @@
  * number on the left and a range value on the right, both centered on the
  * coordinates Python used (28, 79) or (28, 103) for long.
  *
- * The arrow PNGs are served from `/resources/` via the Vite dev middleware
+ * The arrow PNGs are served from `resources/` (URL via {@link publicAsset})
+ * in dev middleware and the build-time copy in `web/vite.config.ts`.
  * and the build-time copy step in `web/vite.config.ts`.
  */
 
 import type { JSX } from "solid-js";
+import { publicAsset } from "../../publicPath";
 import { cssFont, FONT_EUROSTILE, TILE_COMBAT_NUMBER_SIZE } from "./constants";
 
 interface Props {
@@ -65,7 +67,9 @@ export function WeaponSymbolSVG(props: Props): JSX.Element {
   const longArrow = () => isLongArrow(props.range);
   const width = () => (longArrow() ? LONG_WIDTH : SHORT_WIDTH);
   const href = () =>
-    longArrow() ? "/resources/arrow_long_symbol.png" : "/resources/arrow_symbol.png";
+    longArrow()
+      ? publicAsset("resources/arrow_long_symbol.png")
+      : publicAsset("resources/arrow_symbol.png");
 
   const damageX = Math.round(DAMAGE_ANCHOR_X * WEAPON_SYMBOL_SCALE);
   const rangeX = () =>
