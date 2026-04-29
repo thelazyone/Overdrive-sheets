@@ -6,7 +6,8 @@ import { z } from "zod";
  * - {@link SystemRef}: inline `{ kind: "system", system }` or `{ kind: "slot",
  *   options }` (optional `selectedIndex` for live web preview only; preset JSON
  *   omits it so installs start empty).
- * - {@link parseShipDocument} is the only entry point for loaded JSON.
+ * - {@link parseShipDocument} is the only entry point for loaded JSON (optional
+ *   preset catalog restores slot refs from flattened exports via template match).
  * - Optional on-disk {@link SystemLibrary} is for the editor’s “clone from
  *   library” helper only, not for resolving slots at runtime.
  */
@@ -184,6 +185,8 @@ export const ShipSchema = z.object({
   description: z.string().default(""),
   /** Human-readable template name shown in the preset dropdown; optional. */
   label: z.string().default(""),
+  /** Editor preset id — saved with exports so imports can reload slot layout. */
+  presetId: z.string().optional(),
   overdrive: z.array(z.number().int()).default([]),
   control: z.number().int().default(0),
   shields: SystemRefSchema,
@@ -265,19 +268,156 @@ function coerceImportedShipShape(raw: Record<string, unknown>): Record<string, u
   return out;
 }
 
-/**
- * Parse and validate ship JSON. Unknown top-level keys (e.g. old tooling
- * fields) are stripped by Zod. Coerces out-of-range slot `selectedIndex` to
- * `null`. Accepts flattened exports ({@link exportShipDocument}) where each ref
- * is a bare {@link System}.
- */
-export function parseShipDocument(raw: unknown): Ship {
+/** Entries mapping preset ids to canonical nested ship JSON (slots + options). */
+export interface PresetCatalogEntry {
+  id: string;
+  raw: unknown;
+}
+
+function resolveTemplateShipFromCatalog(
+  label: string,
+  presetId: string,
+  catalog: PresetCatalogEntry[],
+): Ship | null {
+  let entry: PresetCatalogEntry | undefined;
+  if (presetId) {
+    entry = catalog.find((e) => e.id === presetId);
+  }
+  if (!entry && label) {
+    entry = catalog.find((e) => {
+      const raw = e.raw as Record<string, unknown>;
+      const presetLabel =
+        typeof raw.label === "string" && raw.label.trim()
+          ? raw.label.trim()
+          : "";
+      return presetLabel === label || e.id === label;
+    });
+  }
+  if (!entry) return null;
+  return parseShipDocumentBare(entry.raw);
+}
+
+/** Inner parse without catalog merge (preset files & recursion guard). */
+function parseShipDocumentBare(raw: unknown): Ship {
   const base =
     raw == null || typeof raw !== "object" || Array.isArray(raw)
       ? {}
       : (raw as Record<string, unknown>);
   const coerced = coerceImportedShipShape(base);
   return normalizeShipRefs(ShipSchema.parse(coerced));
+}
+
+function matchTrimmed(a: string, b: string): boolean {
+  return a.trim() === b.trim();
+}
+
+function resolvedImportedSystem(importedRef: SystemRef): System | null {
+  if (importedRef.kind === "system") return importedRef.system;
+  return resolveRef(importedRef);
+}
+
+function mergeSystemRefs(templateRef: SystemRef, importedRef: SystemRef | undefined): SystemRef {
+  if (!importedRef) {
+    if (templateRef.kind === "slot") {
+      return normalizeSlot({ ...templateRef, selectedIndex: null });
+    }
+    return templateRef;
+  }
+
+  const flat = resolvedImportedSystem(importedRef);
+
+  if (templateRef.kind === "slot") {
+    if (!flat) {
+      return normalizeSlot({ ...templateRef, selectedIndex: null });
+    }
+    const idx = templateRef.options.findIndex((opt) =>
+      matchTrimmed(opt.name, flat.name),
+    );
+    const selectedIndex = idx >= 0 ? idx : null;
+    return normalizeSlot({ ...templateRef, selectedIndex });
+  }
+
+  if (!flat) {
+    return templateRef;
+  }
+  return { kind: "system", system: cloneSystem(flat) };
+}
+
+function mergeSectionRefs(
+  templateRefs: SystemRef[],
+  importedRefs: SystemRef[],
+): SystemRef[] {
+  return templateRefs.map((tRef, i) =>
+    mergeSystemRefs(tRef, importedRefs[i]),
+  );
+}
+
+/**
+ * Apply exported hull fields + flattened refs onto the preset skeleton so slots
+ * and dropdown selections match what was saved.
+ */
+function mergeFlatImportedOntoTemplate(templateShip: Ship, imported: Ship): Ship {
+  return {
+    ...templateShip,
+    presetId: imported.presetId ?? templateShip.presetId,
+    name: imported.name,
+    description: imported.description,
+    label: imported.label,
+    overdrive: imported.overdrive,
+    control: imported.control,
+    shields: mergeSystemRefs(templateShip.shields, imported.shields),
+    reactor: mergeSystemRefs(templateShip.reactor, imported.reactor),
+    mess: mergeSystemRefs(templateShip.mess, imported.mess),
+    sections: {
+      left: mergeSectionRefs(templateShip.sections.left, imported.sections.left),
+      core: mergeSectionRefs(templateShip.sections.core, imported.sections.core),
+      right: mergeSectionRefs(templateShip.sections.right, imported.sections.right),
+    },
+  };
+}
+
+/**
+ * Parse and validate ship JSON. Unknown top-level keys (e.g. old tooling
+ * fields) are stripped by Zod. Coerces out-of-range slot `selectedIndex` to
+ * `null`. Accepts flattened exports ({@link exportShipDocument}) where each ref
+ * is a bare {@link System}.
+ *
+ * When {@link catalog} is provided and `presetId` / `label` identifies a preset,
+ * flattened imports are merged onto that preset's slot layout; each slot picks
+ * the option whose {@link System.name} matches the exported system name.
+ */
+export function parseShipDocument(
+  raw: unknown,
+  catalog?: PresetCatalogEntry[],
+): Ship {
+  const base =
+    raw == null || typeof raw !== "object" || Array.isArray(raw)
+      ? {}
+      : (raw as Record<string, unknown>);
+
+  const presetIdHint =
+    typeof base.presetId === "string" ? base.presetId.trim() : "";
+  const labelHint =
+    typeof base.label === "string" ? base.label.trim() : "";
+
+  let templateShip: Ship | null = null;
+  if (catalog?.length && (presetIdHint || labelHint)) {
+    templateShip = resolveTemplateShipFromCatalog(
+      labelHint,
+      presetIdHint,
+      catalog,
+    );
+  }
+
+  const coerced = coerceImportedShipShape(base);
+  const importedParsed = ShipSchema.parse(coerced);
+
+  if (!templateShip) {
+    return normalizeShipRefs(importedParsed);
+  }
+
+  const merged = mergeFlatImportedOntoTemplate(templateShip, importedParsed);
+  return normalizeShipRefs(merged);
 }
 
 // ---------------------------------------------------------------------------
@@ -340,9 +480,9 @@ export function flattenSystemRefForExport(ref: SystemRef): System {
   return cloneSystem(EMPTY_SLOT_PLACEHOLDER);
 }
 
-/** Flattened ship JSON (no slot objects). */
+/** Flattened ship JSON (no slot objects). Includes optional {@link Ship.presetId}. */
 export function exportShipDocument(ship: Ship): Record<string, unknown> {
-  return {
+  const doc: Record<string, unknown> = {
     name: ship.name,
     description: ship.description,
     label: ship.label,
@@ -357,6 +497,10 @@ export function exportShipDocument(ship: Ship): Record<string, unknown> {
       right: ship.sections.right.map((r) => flattenSystemRefForExport(r)),
     },
   };
+  if (ship.presetId != null && ship.presetId !== "") {
+    doc.presetId = ship.presetId;
+  }
+  return doc;
 }
 
 /** Fleet JSON uses this `format` value so imports can distinguish multi-ship files. */
@@ -396,7 +540,10 @@ export function exportFleetDocument(ships: Ship[]): Record<string, unknown> {
  * Parse uploaded JSON into one or more ships.
  * Accepts legacy flat ship JSON or `{ ships: [ … ] }` fleet documents.
  */
-export function parseShipsFromImport(raw: unknown): Ship[] {
+export function parseShipsFromImport(
+  raw: unknown,
+  catalog?: PresetCatalogEntry[],
+): Ship[] {
   if (raw != null && typeof raw === "object" && !Array.isArray(raw)) {
     const o = raw as Record<string, unknown>;
     if (Array.isArray(o.ships)) {
@@ -404,8 +551,8 @@ export function parseShipsFromImport(raw: unknown): Ship[] {
       if (arr.length === 0) {
         throw new Error('Fleet document has an empty "ships" array.');
       }
-      return arr.map((s) => parseShipDocument(s));
+      return arr.map((s) => parseShipDocument(s, catalog));
     }
   }
-  return [parseShipDocument(raw)];
+  return [parseShipDocument(raw, catalog)];
 }

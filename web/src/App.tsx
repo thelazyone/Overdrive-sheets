@@ -43,6 +43,7 @@ import {
   resolveRef,
   SystemSchema,
   type Area,
+  type PresetCatalogEntry,
   type Ship,
   type System,
   type SystemRef,
@@ -53,6 +54,11 @@ import { ShipSVG } from "./core/render/ShipSVG";
 import { rasterizeShipSheetToJpegBlob } from "./core/render/exportSheetImage";
 import { waitForFonts } from "./core/render/measure";
 import { DEFAULT_PRESET_ID, PRESETS } from "./presets";
+
+const PRESET_CATALOG: PresetCatalogEntry[] = PRESETS.map((p) => ({
+  id: p.id,
+  raw: p.data,
+}));
 
 interface ShipTabState {
   id: string;
@@ -76,23 +82,38 @@ function looksLikeFleetDocument(raw: unknown): boolean {
 
 function newTabFromPreset(presetId: string): ShipTabState {
   const entry = PRESETS.find((p) => p.id === presetId) ?? PRESETS[0];
+  const ship = parseShipDocument(entry.data);
   return {
     id: crypto.randomUUID(),
     presetId: entry.id,
-    ship: parseShipDocument(entry.data),
+    ship: { ...ship, presetId: entry.id },
     selected: null,
     customize: false,
   };
 }
 
 /** Keep display identity when swapping templates (sheet title / class / template label). */
-function mergeShipIdentityOntoPreset(prev: Ship | undefined, presetShip: Ship): Ship {
-  if (!prev) return presetShip;
+function mergeShipIdentityOntoPreset(
+  prev: Ship | undefined,
+  presetShip: Ship,
+  presetKey: string,
+): Ship {
+  const merged = prev
+    ? {
+        ...presetShip,
+        name: prev.name,
+        description: prev.description,
+        label: prev.label,
+      }
+    : presetShip;
+  return { ...merged, presetId: presetKey };
+}
+
+/** Ensures exported JSON carries tab preset id when the ship blob lacks it. */
+function shipWithPresetFromTab(tab: ShipTabState): Ship {
   return {
-    ...presetShip,
-    name: prev.name,
-    description: prev.description,
-    label: prev.label,
+    ...tab.ship,
+    presetId: tab.ship.presetId ?? tab.presetId,
   };
 }
 
@@ -217,7 +238,7 @@ export function App(): JSX.Element {
       const presetShip = parseShipDocument(entry.data);
       patchActiveTab({
         presetId: presetKey,
-        ship: mergeShipIdentityOntoPreset(prevShip, presetShip),
+        ship: mergeShipIdentityOntoPreset(prevShip, presetShip, presetKey),
         selected: null,
       });
       setError(null);
@@ -269,9 +290,10 @@ export function App(): JSX.Element {
             'This file is a fleet (it has a top-level "ships" array). Use “Load fleet” next to +.',
           );
         }
-        const ship = parseShipDocument(raw);
+        const ship = parseShipDocument(raw, PRESET_CATALOG);
         patchActiveTab({
           ship,
+          presetId: ship.presetId ?? DEFAULT_PRESET_ID,
           selected: null,
         });
         setError(null);
@@ -286,7 +308,7 @@ export function App(): JSX.Element {
   const onDownloadShipJSON = () => {
     const t = activeTab();
     if (!t) return;
-    const flat = exportShipDocument(t.ship);
+    const flat = exportShipDocument(shipWithPresetFromTab(t));
     const blob = new Blob([JSON.stringify(flat, null, 2)], {
       type: "application/json",
     });
@@ -301,10 +323,10 @@ export function App(): JSX.Element {
     reader.onload = () => {
       try {
         const raw = JSON.parse(reader.result as string);
-        const ships = parseShipsFromImport(raw);
+        const ships = parseShipsFromImport(raw, PRESET_CATALOG);
         const next: ShipTabState[] = ships.map((ship) => ({
           id: crypto.randomUUID(),
-          presetId: DEFAULT_PRESET_ID,
+          presetId: ship.presetId ?? DEFAULT_PRESET_ID,
           ship,
           selected: null,
           customize: false,
@@ -329,7 +351,7 @@ export function App(): JSX.Element {
   };
 
   const onFleetDownload = () => {
-    const ships = tabs().map((t) => t.ship);
+    const ships = tabs().map(shipWithPresetFromTab);
     const doc = exportFleetDocument(ships);
     const blob = new Blob([JSON.stringify(doc, null, 2)], {
       type: "application/json",
