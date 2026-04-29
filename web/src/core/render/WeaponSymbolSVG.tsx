@@ -38,6 +38,7 @@ const LONG_WIDTH = Math.round(132 * WEAPON_SYMBOL_SCALE);
  * inside the arrow without the 0.82 pass looking anemic.
  */
 const WEAPON_LABEL_FONT_PX = Math.round(TILE_COMBAT_NUMBER_SIZE * 0.92);
+const WEAPON_LABEL_FONT = cssFont(WEAPON_LABEL_FONT_PX, FONT_EUROSTILE);
 
 /**
  * Label X anchors in the pre-scale (60px-tall) coordinate system. Tuned for web
@@ -73,8 +74,6 @@ export function WeaponSymbolSVG(props: Props): JSX.Element {
         WEAPON_SYMBOL_SCALE,
     );
 
-  const font = cssFont(WEAPON_LABEL_FONT_PX, FONT_EUROSTILE);
-
   return (
     <g transform={`translate(${props.x} ${props.y})`}>
       <image
@@ -90,7 +89,7 @@ export function WeaponSymbolSVG(props: Props): JSX.Element {
         y={HEIGHT / 2}
         text-anchor="middle"
         dominant-baseline="central"
-        style={{ font, fill: "black" }}
+        style={{ font: WEAPON_LABEL_FONT, fill: "black" }}
       >
         {props.damage}
       </text>
@@ -99,7 +98,7 @@ export function WeaponSymbolSVG(props: Props): JSX.Element {
         y={HEIGHT / 2}
         text-anchor="middle"
         dominant-baseline="central"
-        style={{ font, fill: "black" }}
+        style={{ font: WEAPON_LABEL_FONT, fill: "black" }}
       >
         {props.range}
       </text>

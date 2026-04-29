@@ -34,7 +34,6 @@ export function engineSymbolHeight(steer?: string, fontSize = TILE_COMBAT_NUMBER
 
 export function EngineSymbolSVG(props: Props): JSX.Element {
   const fontSize = () => props.fontSize ?? TILE_COMBAT_NUMBER_SIZE;
-  const font = () => cssFont(fontSize(), FONT_EUROSTILE);
 
   return (
     <g transform={`translate(${props.x} ${props.y})`}>
@@ -51,7 +50,7 @@ export function EngineSymbolSVG(props: Props): JSX.Element {
         y={HEIGHT / 2}
         text-anchor="middle"
         dominant-baseline="central"
-        style={{ font: font(), fill: "black" }}
+        style={{ font: cssFont(fontSize(), FONT_EUROSTILE), fill: "black" }}
       >
         {props.speed}
       </text>
@@ -61,7 +60,7 @@ export function EngineSymbolSVG(props: Props): JSX.Element {
           y={HEIGHT + 5}
           text-anchor="middle"
           dominant-baseline="hanging"
-          style={{ font: font(), fill: "black" }}
+          style={{ font: cssFont(fontSize(), FONT_EUROSTILE), fill: "black" }}
         >
           {props.steer.replace(/\u00c2\u00b0/g, "\u00b0")}
         </text>

@@ -90,7 +90,6 @@ function Row(props: {
   x: number;
   width: number;
 }) {
-  const labelFont = cssFont(SHEET_SHIELDS_SIZE, FONT_EUROSTILE);
   const gap = 4;
   const blocks = () => blocksFor(props.values);
   const totalWidth = () =>
@@ -105,7 +104,7 @@ function Row(props: {
         y={props.y}
         text-anchor="middle"
         dominant-baseline="hanging"
-        style={{ font: labelFont, fill: "black" }}
+        style={{ font: cssFont(SHEET_SHIELDS_SIZE, FONT_EUROSTILE), fill: "black" }}
       >
         {props.label}
       </text>

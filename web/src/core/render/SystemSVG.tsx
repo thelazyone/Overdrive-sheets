@@ -132,19 +132,23 @@ function renderMess(system: Extract<System, { kind: "mess" }>, y: number) {
     const medBayRatio = 0.275;
     const medBayWidth = Math.floor(TILE_WIDTH * medBayRatio);
     const mainSectionWidth = TILE_WIDTH - medBayWidth;
-    const dividerPadding = 20;
+    const dividerPadding = 10;
     const dividerX = mainSectionWidth;
 
     const symbolWidth = ICON_SIZE_LARGE;
     const gap = 10;
     const count = system.med_bay;
-    const startX = dividerX + (medBayWidth - symbolWidth) / 2 - 50;
+    const startX = dividerX + (medBayWidth - symbolWidth) / 2 - 30;
     const totalSymbolsHeight = count * symbolWidth + gap * Math.max(0, count - 1);
     const startYIcons = (y + messHeight) / 2 - totalSymbolsHeight / 2;
 
-    const labelFont = cssFont(Math.floor(TILE_AREA_TITLE_SIZE * 0.75), FONT_EUROSTILE);
     const labelText = "MED BAY";
-    const labelWidth = measureText(labelText, labelFont).width;
+    const medBayFont = cssFont(Math.floor(TILE_AREA_TITLE_SIZE * 0.75), FONT_EUROSTILE);
+    /** Further left / lower than edge anchors; inset from tile right edge (px). */
+    const insetFromTileRight = 28;
+    const labelAnchorX = TILE_WIDTH - insetFromTileRight;
+    const labelAnchorY =
+      y + dividerPadding + Math.round(messHeight * 0.2);
 
     el = (
       <g>
@@ -165,17 +169,13 @@ function renderMess(system: Extract<System, { kind: "mess" }>, y: number) {
             height={symbolWidth}
           />
         ))}
-        <g
-          transform={`translate(${dividerX + medBayWidth - 20} ${
-            y + messHeight / 2 + labelWidth / 2
-          }) rotate(-90)`}
-        >
+        <g transform={`translate(${labelAnchorX} ${labelAnchorY}) rotate(-90)`}>
           <text
             x={0}
             y={0}
             text-anchor="start"
             dominant-baseline="hanging"
-            style={{ font: labelFont, fill: "black" }}
+            style={{ font: medBayFont, fill: "black" }}
           >
             {labelText}
           </text>

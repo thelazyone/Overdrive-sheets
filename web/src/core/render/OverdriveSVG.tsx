@@ -23,8 +23,6 @@ interface Props {
 }
 
 export function OverdriveSVG(props: Props): JSX.Element {
-  const labelFont = cssFont(SHEET_LABEL_SIZE, FONT_EUROSTILE);
-  const numberFont = cssFont(SHEET_STATS_SIZE, FONT_EUROSTILE);
   const borderWidth = 6;
   const radius = Math.round(OVERDRIVE_SQUARE_SIZE * 0.15);
 
@@ -34,7 +32,7 @@ export function OverdriveSVG(props: Props): JSX.Element {
         x={props.x}
         y={props.y}
         dominant-baseline="hanging"
-        style={{ font: labelFont, fill: "black" }}
+        style={{ font: cssFont(SHEET_LABEL_SIZE, FONT_EUROSTILE), fill: "black" }}
       >
         OVERDRIVE
       </text>
@@ -60,7 +58,7 @@ export function OverdriveSVG(props: Props): JSX.Element {
                 y={sy + OVERDRIVE_SQUARE_SIZE / 2}
                 text-anchor="middle"
                 dominant-baseline="central"
-                style={{ font: numberFont, fill: "black" }}
+                style={{ font: cssFont(SHEET_STATS_SIZE, FONT_EUROSTILE), fill: "black" }}
               >
                 {token}
               </text>

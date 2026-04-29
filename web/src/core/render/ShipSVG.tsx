@@ -37,7 +37,7 @@ import { ShieldsSVG } from "./ShieldsSVG";
 
 const SCALE = 0.75; // SYSTEM_SCALE from python/src/ship_profile.py line 12
 const BOX_MARGIN = 20;
-const COLUMN_MARGIN = 8;
+const COLUMN_MARGIN = 12;
 const SIDE_MARGIN = 16;
 
 function renderHeader(ship: Ship): { el: JSX.Element; bottomY: number } {
@@ -169,7 +169,6 @@ function ShipSVGInner(ship: Ship, responsive: boolean): JSX.Element {
   const header = renderHeader(ship);
 
   // Columns layout
-  const columnLabelFont = cssFont(SHEET_LABEL_SIZE, FONT_EUROSTILE);
   const availableWidth = SHEET_WIDTH - 2 * SIDE_MARGIN - 2 * COLUMN_MARGIN;
   const columnWidth = Math.floor(availableWidth / 3);
   const totalColumnsWidth = 3 * columnWidth + 2 * COLUMN_MARGIN;
@@ -189,7 +188,7 @@ function ShipSVGInner(ship: Ship, responsive: boolean): JSX.Element {
   // show a dashed placeholder in the missing one. This mirrors the behaviour
   // of the column sections above, so the sheet layout is stable.
   const CORE_BOTTOM_PLACEHOLDER_HEIGHT = 240;
-  const CORE_BOTTOM_GAP = 20;
+  const CORE_BOTTOM_GAP = 24;
 
   function bottomCoreBlock(
     ref: SystemRef,
@@ -237,6 +236,8 @@ function ShipSVGInner(ship: Ship, responsive: boolean): JSX.Element {
       ),
     };
   }
+
+  const columnLabelFont = cssFont(SHEET_LABEL_SIZE, FONT_EUROSTILE);
 
   const reactorBlock = bottomCoreBlock(ship.reactor);
   const messBlock = bottomCoreBlock(ship.mess);

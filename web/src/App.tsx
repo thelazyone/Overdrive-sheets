@@ -333,10 +333,10 @@ export function App(): JSX.Element {
   const onDownloadImage = async () => {
     const t = activeTab();
     if (!t) return;
-    const svgEl = document.querySelector(".ship-preview-wrapper svg") as SVGSVGElement | null;
-    if (!svgEl) return;
+    const wrap = document.querySelector(".ship-preview-wrapper") as HTMLElement | null;
+    if (!wrap?.querySelector("svg")) return;
     try {
-      const blob = await rasterizeShipSheetToJpegBlob(svgEl);
+      const blob = await rasterizeShipSheetToJpegBlob();
       triggerDownload(blob, slugify(t.ship.name) + ".jpg");
       setError(null);
     } catch (e: any) {
