@@ -27,6 +27,7 @@
 import {
   For,
   Show,
+  batch,
   createEffect,
   createMemo,
   createResource,
@@ -233,9 +234,11 @@ export function App(): JSX.Element {
 
   const addShipTab = () => {
     const t = newTabFromPreset(DEFAULT_PRESET_ID);
-    setTabs((ts) => [...ts, t]);
-    setActiveTabId(t.id);
-    setError(null);
+    batch(() => {
+      setTabs((ts) => [...ts, t]);
+      setActiveTabId(t.id);
+      setError(null);
+    });
   };
 
   const closeShipTab = (tabId: string) => {
@@ -243,12 +246,14 @@ export function App(): JSX.Element {
     if (ts.length <= 1) return;
     const idx = ts.findIndex((t) => t.id === tabId);
     const nextTabs = ts.filter((t) => t.id !== tabId);
-    setTabs(nextTabs);
-    if (activeTabId() === tabId) {
-      const adj = ts[idx - 1] ?? ts[idx + 1];
-      if (adj) setActiveTabId(adj.id);
-    }
-    setError(null);
+    batch(() => {
+      setTabs(nextTabs);
+      if (activeTabId() === tabId) {
+        const adj = ts[idx - 1] ?? ts[idx + 1];
+        if (adj) setActiveTabId(adj.id);
+      }
+      setError(null);
+    });
   };
 
   const onUploadShipJSON = (event: Event) => {
@@ -304,9 +309,11 @@ export function App(): JSX.Element {
           selected: null,
           customize: false,
         }));
-        setTabs(next);
-        setActiveTabId(next[0]!.id);
-        setError(null);
+        batch(() => {
+          setTabs(next);
+          setActiveTabId(next[0]!.id);
+          setError(null);
+        });
       } catch (e: any) {
         setError(e?.message ?? String(e));
       }

@@ -217,14 +217,67 @@ function normalizeShipRefs(ship: Ship): Ship {
   };
 }
 
+/** Values of {@link System.kind} — distinct from {@link SystemRef.kind}. */
+const BARE_SYSTEM_KINDS = new Set<string>([
+  "generic",
+  "mess",
+  "reactor",
+  "engine",
+  "shields",
+]);
+
+function isSystemRefDiscriminator(kind: unknown): boolean {
+  return kind === "system" || kind === "slot";
+}
+
+/**
+ * {@link exportShipDocument} flattens each {@link SystemRef} to a bare
+ * {@link System} (`kind: "mess"` …). Parsed ships in the editor must be
+ * `{ kind: "system", system }` or `{ kind: "slot", … }`; wrap legacy flat blobs.
+ */
+function coerceSystemRefFromImport(val: unknown): unknown {
+  if (val == null || typeof val !== "object" || Array.isArray(val)) return val;
+  const o = val as Record<string, unknown>;
+  if (isSystemRefDiscriminator(o.kind)) return val;
+  if (typeof o.kind === "string" && BARE_SYSTEM_KINDS.has(o.kind)) {
+    return { kind: "system", system: val };
+  }
+  return val;
+}
+
+function coerceImportedShipShape(raw: Record<string, unknown>): Record<string, unknown> {
+  const out: Record<string, unknown> = { ...raw };
+  for (const key of ["shields", "reactor", "mess"] as const) {
+    if (key in out) out[key] = coerceSystemRefFromImport(out[key]);
+  }
+  const sections = out.sections;
+  if (sections != null && typeof sections === "object" && !Array.isArray(sections)) {
+    const sec = sections as Record<string, unknown>;
+    const nextSec: Record<string, unknown> = { ...sec };
+    for (const side of ["left", "core", "right"] as const) {
+      const arr = nextSec[side];
+      if (Array.isArray(arr)) {
+        nextSec[side] = arr.map((item) => coerceSystemRefFromImport(item));
+      }
+    }
+    out.sections = nextSec;
+  }
+  return out;
+}
+
 /**
  * Parse and validate ship JSON. Unknown top-level keys (e.g. old tooling
  * fields) are stripped by Zod. Coerces out-of-range slot `selectedIndex` to
- * `null`.
+ * `null`. Accepts flattened exports ({@link exportShipDocument}) where each ref
+ * is a bare {@link System}.
  */
 export function parseShipDocument(raw: unknown): Ship {
-  const base = raw == null || typeof raw !== "object" ? {} : raw;
-  return normalizeShipRefs(ShipSchema.parse(base));
+  const base =
+    raw == null || typeof raw !== "object" || Array.isArray(raw)
+      ? {}
+      : (raw as Record<string, unknown>);
+  const coerced = coerceImportedShipShape(base);
+  return normalizeShipRefs(ShipSchema.parse(coerced));
 }
 
 // ---------------------------------------------------------------------------
