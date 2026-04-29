@@ -17,10 +17,128 @@ html, body, #root {
 }
 
 .app {
-  display: grid;
-  grid-template-columns: 400px 1fr;
+  display: flex;
+  flex-direction: column;
   height: 100%;
   min-height: 100vh;
+}
+
+.app-main {
+  display: grid;
+  grid-template-columns: 400px 1fr;
+  flex: 1;
+  min-height: 0;
+}
+
+/* --- Ship tabs ---------------------------------------------------------- */
+
+.ship-tabs-bar {
+  display: flex;
+  align-items: stretch;
+  gap: 6px;
+  flex-shrink: 0;
+  padding: 6px 8px 0;
+  background: #e4e4e7;
+  border-bottom: 1px solid #c8c8cd;
+}
+
+.ship-tabs-scroll {
+  display: flex;
+  align-items: stretch;
+  gap: 4px;
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: thin;
+}
+
+.ship-tab {
+  display: flex;
+  align-items: stretch;
+  flex-shrink: 0;
+  max-width: 220px;
+  border-radius: 6px 6px 0 0;
+  border: 1px solid #c8c8cd;
+  border-bottom: none;
+  background: #ececef;
+  overflow: hidden;
+}
+
+.ship-tab.active {
+  background: #ffffff;
+  border-color: #b9b9c4;
+  box-shadow: 0 -1px 0 #fff inset;
+  margin-bottom: -1px;
+  padding-bottom: 1px;
+  z-index: 1;
+}
+
+.ship-tab-main {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  padding: 8px 10px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+  font-size: 12px;
+  text-align: left;
+}
+
+.ship-tab-main:hover {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.ship-tab.active .ship-tab-main:hover {
+  background: transparent;
+}
+
+.ship-tab-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ship-tab-close {
+  flex: 0 0 auto;
+  width: 28px;
+  padding: 0;
+  border: none;
+  border-left: 1px solid #d8d8dd;
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+  font-size: 16px;
+  line-height: 1;
+  color: #666;
+}
+
+.ship-tab-close:hover {
+  background: rgba(180, 0, 0, 0.08);
+  color: #a00;
+}
+
+.ship-tab-add {
+  flex: 0 0 auto;
+  width: 34px;
+  padding: 0;
+  align-self: stretch;
+  border: 1px dashed #9898a3;
+  border-radius: 6px;
+  background: #f6f6f8;
+  cursor: pointer;
+  font: inherit;
+  font-size: 18px;
+  line-height: 1;
+  color: #444;
+}
+
+.ship-tab-add:hover {
+  background: #eaeaf0;
+  border-color: #6a6a78;
 }
 
 .pane {

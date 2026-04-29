@@ -305,3 +305,40 @@ export function exportShipDocument(ship: Ship): Record<string, unknown> {
     },
   };
 }
+
+/** Fleet JSON uses this `format` value so imports can distinguish multi-ship files. */
+export const FLEET_DOCUMENT_FORMAT = "overdrive-sheets-fleet" as const;
+
+/**
+ * Export one or more ships for download.
+ * Single ship stays the legacy flat document for compatibility with older tooling.
+ * Multiple ships wrap flattened ships in `{ format, version, ships }`.
+ */
+export function exportShipsDocument(ships: Ship[]): Record<string, unknown> {
+  if (ships.length === 1) {
+    return exportShipDocument(ships[0]!);
+  }
+  return {
+    format: FLEET_DOCUMENT_FORMAT,
+    version: 1,
+    ships: ships.map((s) => exportShipDocument(s)),
+  };
+}
+
+/**
+ * Parse uploaded JSON into one or more ships.
+ * Accepts legacy flat ship JSON or `{ ships: [ … ] }` fleet documents.
+ */
+export function parseShipsFromImport(raw: unknown): Ship[] {
+  if (raw != null && typeof raw === "object" && !Array.isArray(raw)) {
+    const o = raw as Record<string, unknown>;
+    if (Array.isArray(o.ships)) {
+      const arr = o.ships as unknown[];
+      if (arr.length === 0) {
+        throw new Error('Fleet document has an empty "ships" array.');
+      }
+      return arr.map((s) => parseShipDocument(s));
+    }
+  }
+  return [parseShipDocument(raw)];
+}

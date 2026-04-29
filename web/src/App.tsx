@@ -15,8 +15,9 @@
  *
  * Right pane: live <ShipSVG /> preview.
  *
- * All state is driven by a single `ship` signal; both panes read it via the
- * same {@link resolveRef}, so the preview and list can never get out of sync.
+ * Each tab remembers the last Template choice (`presetId`). Session state is
+ * written to localStorage (debounced) so names, descriptions, labels, slot
+ * picks, inspector selection, and customize mode survive a full page reload.
  *
  * Important Solid gotcha: do NOT name any prop `ref` on a component - Solid
  * treats `ref={}` as its DOM-ref-forwarding special attribute. Every
@@ -34,8 +35,9 @@ import {
 } from "solid-js";
 import {
   cloneSystem,
-  exportShipDocument,
+  exportShipsDocument,
   parseShipDocument,
+  parseShipsFromImport,
   resolveRef,
   SystemSchema,
   type Area,
@@ -50,38 +52,193 @@ import { waitForFonts } from "./core/render/measure";
 import { SHEET_HEIGHT, SHEET_WIDTH } from "./core/render/constants";
 import { DEFAULT_PRESET_ID, PRESETS } from "./presets";
 
+interface ShipTabState {
+  id: string;
+  presetId: string;
+  ship: Ship;
+  selected: string | null;
+  customize: boolean;
+}
+
+type ShipUpdater = (fn: (s: Ship) => Ship) => void;
+
+function newTabFromPreset(presetId: string): ShipTabState {
+  const entry = PRESETS.find((p) => p.id === presetId) ?? PRESETS[0];
+  return {
+    id: crypto.randomUUID(),
+    presetId: entry.id,
+    ship: parseShipDocument(entry.data),
+    selected: null,
+    customize: false,
+  };
+}
+
+/** Keep display identity when swapping templates (sheet title / class / template label). */
+function mergeShipIdentityOntoPreset(prev: Ship | undefined, presetShip: Ship): Ship {
+  if (!prev) return presetShip;
+  return {
+    ...presetShip,
+    name: prev.name,
+    description: prev.description,
+    label: prev.label,
+  };
+}
+
+const EDITOR_STORAGE_KEY = "overdrive-sheets-editor-v1";
+const EDITOR_STORAGE_VERSION = 1;
+
+interface PersistedEditorPayload {
+  version: number;
+  tabs: ShipTabState[];
+  activeTabId: string;
+}
+
+function canUseLocalStorage(): boolean {
+  return typeof localStorage !== "undefined";
+}
+
+function loadPersistedEditorState(): PersistedEditorPayload | null {
+  if (!canUseLocalStorage()) return null;
+  try {
+    const raw = localStorage.getItem(EDITOR_STORAGE_KEY);
+    if (!raw) return null;
+    const data = JSON.parse(raw) as Partial<PersistedEditorPayload>;
+    if (data.version !== EDITOR_STORAGE_VERSION || !Array.isArray(data.tabs)) return null;
+
+    const tabs: ShipTabState[] = [];
+    for (const tab of data.tabs) {
+      if (!tab || typeof tab !== "object") continue;
+      const t = tab as Partial<ShipTabState>;
+      if (t.ship == null || typeof t.presetId !== "string") continue;
+      tabs.push({
+        id:
+          typeof t.id === "string" && t.id.length > 0 ? t.id : crypto.randomUUID(),
+        presetId: t.presetId.trim() !== "" ? t.presetId : DEFAULT_PRESET_ID,
+        ship: parseShipDocument(t.ship),
+        selected:
+          typeof t.selected === "string"
+            ? t.selected
+            : t.selected === null
+              ? null
+              : null,
+        customize: !!t.customize,
+      });
+    }
+    if (tabs.length === 0) return null;
+
+    const activeTabId =
+      typeof data.activeTabId === "string" &&
+      tabs.some((x) => x.id === data.activeTabId)
+        ? data.activeTabId
+        : tabs[0]!.id;
+
+    return { version: EDITOR_STORAGE_VERSION, tabs, activeTabId };
+  } catch {
+    return null;
+  }
+}
+
+function persistEditorState(tabs: ShipTabState[], activeTabId: string): void {
+  if (!canUseLocalStorage()) return;
+  try {
+    const payload: PersistedEditorPayload = {
+      version: EDITOR_STORAGE_VERSION,
+      tabs,
+      activeTabId,
+    };
+    localStorage.setItem(EDITOR_STORAGE_KEY, JSON.stringify(payload));
+  } catch {
+    /* quota / private mode */
+  }
+}
+
 export function App(): JSX.Element {
   const [fontsReady] = createResource(async () => {
     await waitForFonts();
     return true;
   });
 
-  const [ship, setShip] = createSignal<Ship>(
-    parseShipDocument(
-      (PRESETS.find((p) => p.id === DEFAULT_PRESET_ID) ?? PRESETS[0]).data,
-    ),
-  );
-  const [presetId, setPresetId] = createSignal<string>(DEFAULT_PRESET_ID);
-  const [selected, setSelected] = createSignal<string | null>(null);
-  const [customize, setCustomize] = createSignal<boolean>(false);
+  const persisted = loadPersistedEditorState();
+  const initialTabs =
+    persisted?.tabs ?? [newTabFromPreset(DEFAULT_PRESET_ID)];
+  const initialActive =
+    persisted?.activeTabId &&
+    initialTabs.some((x) => x.id === persisted.activeTabId)
+      ? persisted.activeTabId
+      : initialTabs[0]!.id;
+
+  const [tabs, setTabs] = createSignal<ShipTabState[]>(initialTabs);
+  const [activeTabId, setActiveTabId] = createSignal(initialActive);
   const [error, setError] = createSignal<string | null>(null);
 
-  const applyPreset = (id: string) => {
+  let persistTimer: ReturnType<typeof setTimeout> | undefined;
+  createEffect(() => {
+    const t = tabs();
+    const id = activeTabId();
+    if (persistTimer !== undefined) clearTimeout(persistTimer);
+    persistTimer = setTimeout(() => {
+      persistTimer = undefined;
+      persistEditorState(t, id);
+    }, 300);
+  });
+
+  const activeTab = createMemo(() => tabs().find((t) => t.id === activeTabId()));
+
+  const patchActiveTab = (patch: Partial<ShipTabState>) => {
+    const id = activeTabId();
+    setTabs((ts) =>
+      ts.map((t) => (t.id === id ? { ...t, ...patch } : t)),
+    );
+  };
+
+  const setShip = (fn: (s: Ship) => Ship) => {
+    const id = activeTabId();
+    setTabs((ts) =>
+      ts.map((t) => (t.id === id ? { ...t, ship: fn(t.ship) } : t)),
+    );
+  };
+
+  const applyPresetToActive = (presetKey: string) => {
     try {
-      const entry = PRESETS.find((p) => p.id === id) ?? PRESETS[0];
-      setShip(parseShipDocument(entry.data));
-      setSelected(null);
+      const entry = PRESETS.find((p) => p.id === presetKey) ?? PRESETS[0];
+      const prevShip = activeTab()?.ship;
+      const presetShip = parseShipDocument(entry.data);
+      patchActiveTab({
+        presetId: presetKey,
+        ship: mergeShipIdentityOntoPreset(prevShip, presetShip),
+        selected: null,
+      });
       setError(null);
     } catch (e: any) {
       setError(e?.message ?? String(e));
     }
   };
 
-  createEffect(() => {
-    applyPreset(presetId());
-  });
+  const onReloadPreset = () => {
+    const t = activeTab();
+    if (!t) return;
+    applyPresetToActive(t.presetId);
+  };
 
-  const onReloadPreset = () => applyPreset(presetId());
+  const addShipTab = () => {
+    const t = newTabFromPreset(DEFAULT_PRESET_ID);
+    setTabs((ts) => [...ts, t]);
+    setActiveTabId(t.id);
+    setError(null);
+  };
+
+  const closeShipTab = (tabId: string) => {
+    const ts = tabs();
+    if (ts.length <= 1) return;
+    const idx = ts.findIndex((t) => t.id === tabId);
+    const nextTabs = ts.filter((t) => t.id !== tabId);
+    setTabs(nextTabs);
+    if (activeTabId() === tabId) {
+      const adj = ts[idx - 1] ?? ts[idx + 1];
+      if (adj) setActiveTabId(adj.id);
+    }
+    setError(null);
+  };
 
   const onUpload = (event: Event) => {
     const input = event.target as HTMLInputElement;
@@ -91,8 +248,16 @@ export function App(): JSX.Element {
     reader.onload = () => {
       try {
         const raw = JSON.parse(reader.result as string);
-        setShip(parseShipDocument(raw));
-        setSelected(null);
+        const ships = parseShipsFromImport(raw);
+        const next: ShipTabState[] = ships.map((ship) => ({
+          id: crypto.randomUUID(),
+          presetId: DEFAULT_PRESET_ID,
+          ship,
+          selected: null,
+          customize: false,
+        }));
+        setTabs(next);
+        setActiveTabId(next[0]!.id);
         setError(null);
       } catch (e: any) {
         setError(e?.message ?? String(e));
@@ -102,26 +267,37 @@ export function App(): JSX.Element {
     input.value = "";
   };
 
+  const downloadJsonFilename = (): string => {
+    const list = tabs().map((t) => t.ship);
+    if (list.length === 1) {
+      return slugify(list[0]!.name) + ".json";
+    }
+    const first = slugify(list[0]!.name || "fleet");
+    return `fleet_${first}_${list.length}_ships.json`;
+  };
+
   const onDownloadJSON = () => {
-    const s = ship();
-    const flat = exportShipDocument(s);
-    const blob = new Blob([JSON.stringify(flat, null, 2)], {
+    const list = tabs().map((t) => t.ship);
+    const doc = exportShipsDocument(list);
+    const blob = new Blob([JSON.stringify(doc, null, 2)], {
       type: "application/json",
     });
-    triggerDownload(blob, slugify(s.name) + ".json");
+    triggerDownload(blob, downloadJsonFilename());
   };
 
   const onDownloadPNG = async () => {
-    const s = ship();
+    const t = activeTab();
+    if (!t) return;
     const svgEl = document.querySelector(".ship-preview-wrapper svg") as SVGSVGElement | null;
     if (!svgEl) return;
-    await exportSvgAsPng(svgEl, SHEET_WIDTH, SHEET_HEIGHT, slugify(s.name) + ".png");
+    await exportSvgAsPng(svgEl, SHEET_WIDTH, SHEET_HEIGHT, slugify(t.ship.name) + ".png");
   };
 
   const selection = (): { path: string; sysRef: SystemRef } | null => {
-    const path = selected();
-    if (!path) return null;
-    const sysRef = getRefByPath(ship(), path);
+    const t = activeTab();
+    const path = t?.selected ?? null;
+    if (!t || !path) return null;
+    const sysRef = getRefByPath(t.ship, path);
     return sysRef ? { path, sysRef } : null;
   };
 
@@ -129,32 +305,98 @@ export function App(): JSX.Element {
   // default mode, slots are picked directly via the inline dropdown in the
   // row and inline systems are not interactive.
   const onRowClick = (path: string, _sysRef: SystemRef) => {
-    if (!customize()) return;
-    setSelected((cur) => (cur === path ? null : path));
+    const t = activeTab();
+    if (!t || !t.customize) return;
+    const id = activeTabId();
+    setTabs((ts) =>
+      ts.map((tab) => {
+        if (tab.id !== id) return tab;
+        const next = tab.selected === path ? null : path;
+        return { ...tab, selected: next };
+      }),
+    );
   };
 
   return (
     <ShipLibraryProvider value={() => baseLibrary}>
     <div class="app">
+      <div class="ship-tabs-bar">
+        <div class="ship-tabs-scroll" role="tablist" aria-label="Ships">
+          <For each={tabs()}>
+            {(t) => (
+              <div
+                class="ship-tab"
+                classList={{
+                  active: t.id === activeTabId(),
+                }}
+                role="presentation"
+              >
+                <button
+                  type="button"
+                  class="ship-tab-main"
+                  role="tab"
+                  aria-selected={t.id === activeTabId()}
+                  onClick={() => setActiveTabId(t.id)}
+                  title={t.ship.name}
+                >
+                  <span class="ship-tab-label">{t.ship.name.trim() || "Untitled ship"}</span>
+                </button>
+                <Show when={tabs().length > 1}>
+                  <button
+                    type="button"
+                    class="ship-tab-close"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      closeShipTab(t.id);
+                    }}
+                    title="Close this ship"
+                  >
+                    ×
+                  </button>
+                </Show>
+              </div>
+            )}
+          </For>
+        </div>
+        <button
+          type="button"
+          class="ship-tab-add"
+          onClick={addShipTab}
+          title="New ship tab"
+        >
+          +
+        </button>
+      </div>
+
+      <div class="app-main">
       <div class="pane left-pane">
         <div class="toolbar">
           <div class="toolbar-row toolbar-title-row">
             <h1>Overdrive Sheets</h1>
             <button
               type="button"
-              classList={{ "mode-toggle": true, active: customize() }}
-              onClick={() => setCustomize((c) => !c)}
+              classList={{ "mode-toggle": true, active: activeTab()?.customize }}
+              onClick={() => {
+                const id = activeTabId();
+                setTabs((ts) =>
+                  ts.map((tab) =>
+                    tab.id === id
+                      ? { ...tab, customize: !tab.customize }
+                      : tab,
+                  ),
+                );
+              }}
               title="Toggle customize mode"
             >
-              {customize() ? "Customize: ON" : "Customize: off"}
+              {activeTab()?.customize ? "Customize: ON" : "Customize: off"}
             </button>
           </div>
           <div class="toolbar-row toolbar-template-row">
             <label for="preset-select" class="toolbar-label">Template</label>
             <select
               id="preset-select"
-              value={presetId()}
-              onChange={(e) => setPresetId(e.currentTarget.value)}
+              value={activeTab()?.presetId ?? DEFAULT_PRESET_ID}
+              onChange={(e) => applyPresetToActive(e.currentTarget.value)}
               title="Load preset"
             >
               <For each={PRESETS}>{(p) => <option value={p.id}>{p.name}</option>}</For>
@@ -188,25 +430,25 @@ export function App(): JSX.Element {
         </Show>
 
         <ShipHeaderEditor
-          ship={ship()}
-          customize={customize()}
+          ship={activeTab()!.ship}
+          customize={!!activeTab()?.customize}
           onChange={(patch) => setShip((s) => ({ ...s, ...patch }))}
         />
 
         <div
           class="section-list"
-          classList={{ "section-list-expanded": !customize() }}
+          classList={{ "section-list-expanded": !activeTab()?.customize }}
         >
           <SectionList
-            ship={ship()}
-            customize={customize()}
-            selected={selected()}
+            ship={activeTab()!.ship}
+            customize={!!activeTab()?.customize}
+            selected={activeTab()?.selected ?? null}
             onSelect={onRowClick}
             onShip={(fn) => setShip(fn)}
           />
         </div>
 
-        <Show when={customize()}>
+        <Show when={activeTab()?.customize}>
           <div class="inspector">
             <Show
               when={selection()}
@@ -220,7 +462,7 @@ export function App(): JSX.Element {
                 <Inspector
                   path={sel().path}
                   sysRef={sel().sysRef}
-                  customize={customize()}
+                  customize={!!activeTab()?.customize}
                   onShip={(fn) => setShip(fn)}
                 />
               )}
@@ -232,9 +474,10 @@ export function App(): JSX.Element {
       <div class="pane right-pane">
         <div class="ship-preview-wrapper">
           <Show when={fontsReady()}>
-            <ShipSVG ship={ship()} responsive />
+            <ShipSVG ship={activeTab()!.ship} responsive />
           </Show>
         </div>
+      </div>
       </div>
     </div>
     </ShipLibraryProvider>
@@ -565,8 +808,6 @@ function SystemRow(props: {
 // Using function-child `<Show>` forms so only the matching branch's component
 // is invoked (avoids the eager-fallback trap we hit earlier).
 // ---------------------------------------------------------------------------
-
-type ShipUpdater = (fn: (s: Ship) => Ship) => void;
 
 function Inspector(props: {
   path: string;
