@@ -32,6 +32,7 @@ import {
   createMemo,
   createResource,
   createSignal,
+  onCleanup,
   type JSX,
 } from "solid-js";
 import {
@@ -51,7 +52,14 @@ import {
 import { baseLibrary } from "./core/library/loadBaseLibrary";
 import { ShipLibraryProvider, useShipLibrary } from "./core/shipLibraryContext";
 import { ShipSVG } from "./core/render/ShipSVG";
-import { rasterizeShipSheetToJpegBlob } from "./core/render/exportSheetImage";
+import {
+  buildFleetPdfFromJpegs,
+  type FleetPdfPageFormat,
+} from "./core/render/exportFleetPdf";
+import {
+  rasterizeShipSheetToJpegBlob,
+  rasterizeShipSheetToJpegBlobOffscreen,
+} from "./core/render/exportSheetImage";
 import { waitForFonts } from "./core/render/measure";
 import { DEFAULT_PRESET_ID, PRESETS } from "./presets";
 
@@ -201,6 +209,26 @@ export function App(): JSX.Element {
   const [tabs, setTabs] = createSignal<ShipTabState[]>(initialTabs);
   const [activeTabId, setActiveTabId] = createSignal(initialActive);
   const [error, setError] = createSignal<string | null>(null);
+
+  const [fleetPrintOpen, setFleetPrintOpen] = createSignal(false);
+  const [fleetPrintBusy, setFleetPrintBusy] = createSignal(false);
+  /** Tab id → include in PDF (all true when dialog opens). */
+  const [fleetPrintInclude, setFleetPrintInclude] = createSignal<
+    Record<string, boolean>
+  >({});
+  const [fleetPrintFormat, setFleetPrintFormat] =
+    createSignal<FleetPdfPageFormat>("a4");
+
+  createEffect(() => {
+    if (!fleetPrintOpen()) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && !fleetPrintBusy()) {
+        setFleetPrintOpen(false);
+      }
+    };
+    document.addEventListener("keydown", onKey);
+    onCleanup(() => document.removeEventListener("keydown", onKey));
+  });
 
   let persistTimer: ReturnType<typeof setTimeout> | undefined;
   createEffect(() => {
@@ -371,6 +399,58 @@ export function App(): JSX.Element {
     }
   };
 
+  const openFleetPrintDialog = () => {
+    const next: Record<string, boolean> = {};
+    for (const t of tabs()) next[t.id] = true;
+    setFleetPrintInclude(next);
+    setFleetPrintFormat("a4");
+    setFleetPrintOpen(true);
+    setError(null);
+  };
+
+  const toggleFleetPrintInclude = (tabId: string) => {
+    setFleetPrintInclude((m) => ({ ...m, [tabId]: !m[tabId] }));
+  };
+
+  const onGenerateFleetPdf = async () => {
+    const sel = tabs().filter((t) => fleetPrintInclude()[t.id]);
+    if (sel.length === 0) {
+      setError("Select at least one ship for the PDF.");
+      return;
+    }
+    setFleetPrintBusy(true);
+    setError(null);
+    try {
+      const blobs: Blob[] = [];
+      for (const t of sel) {
+        blobs.push(
+          await rasterizeShipSheetToJpegBlobOffscreen(t.ship, {
+            containerWidthPx: 1200,
+          }),
+        );
+      }
+      const pdf = await buildFleetPdfFromJpegs(blobs, fleetPrintFormat());
+      const filename =
+        sel.length === 1
+          ? `${slugify(sel[0]!.ship.name)}_sheet.pdf`
+          : `fleet_${slugify(sel[0]!.ship.name)}_${sel.length}_ships.pdf`;
+
+      const outcome = await saveBlobWithSaveAsDialog(pdf, filename);
+      if (outcome === "saved" || outcome === "fallback") {
+        setFleetPrintOpen(false);
+      }
+      if (outcome === "fallback") {
+        setError(
+          "PDF was saved to your default downloads folder. Use Chrome or Edge for a “Save as” dialog where you pick the folder and file name.",
+        );
+      }
+    } catch (e: any) {
+      setError(e?.message ?? String(e));
+    } finally {
+      setFleetPrintBusy(false);
+    }
+  };
+
   const selection = (): { path: string; sysRef: SystemRef } | null => {
     const t = activeTab();
     const path = t?.selected ?? null;
@@ -461,6 +541,19 @@ export function App(): JSX.Element {
             title="Save all ships as one fleet JSON file"
           >
             Save fleet
+          </button>
+          <button
+            type="button"
+            class="ship-tab-fleet-btn"
+            onClick={openFleetPrintDialog}
+            disabled={!fontsReady()}
+            title={
+              !fontsReady()
+                ? "Loading fonts…"
+                : "Export selected ships as a multi-page PDF"
+            }
+          >
+            Print fleet
           </button>
         </div>
       </div>
@@ -580,6 +673,81 @@ export function App(): JSX.Element {
         </div>
       </div>
       </div>
+
+      <Show when={fleetPrintOpen()}>
+        <div
+          class="modal-backdrop"
+          role="presentation"
+          onClick={() => {
+            if (!fleetPrintBusy()) setFleetPrintOpen(false);
+          }}
+        >
+          <div
+            class="fleet-print-dialog"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="fleet-print-title"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 id="fleet-print-title" class="fleet-print-title">
+              Print fleet
+            </h2>
+            <div class="fleet-print-body">
+              <div class="fleet-print-list-wrap">
+                <ul class="fleet-print-list" role="listbox" aria-multiselectable>
+                  <For each={tabs()}>
+                    {(t) => (
+                      <li class="fleet-print-row">
+                        <label class="fleet-print-check-label">
+                          <input
+                            type="checkbox"
+                            checked={fleetPrintInclude()[t.id] !== false}
+                            disabled={fleetPrintBusy()}
+                            onChange={() => toggleFleetPrintInclude(t.id)}
+                          />
+                          <span>{t.ship.name.trim() || "Untitled ship"}</span>
+                        </label>
+                      </li>
+                    )}
+                  </For>
+                </ul>
+              </div>
+              <div class="fleet-print-side">
+                <label class="fleet-print-format-label">
+                  <span>Page format</span>
+                  <select
+                    value={fleetPrintFormat()}
+                    disabled={fleetPrintBusy()}
+                    onChange={(e) =>
+                      setFleetPrintFormat(e.currentTarget.value as FleetPdfPageFormat)
+                    }
+                  >
+                    <option value="a4">A4 (210 × 297 mm)</option>
+                    <option value="letter">US Letter (8.5 × 11 in)</option>
+                  </select>
+                </label>
+                <div class="fleet-print-buttons">
+                  <button
+                    type="button"
+                    class="fleet-print-primary"
+                    disabled={fleetPrintBusy()}
+                    onClick={onGenerateFleetPdf}
+                  >
+                    {fleetPrintBusy() ? "Generating…" : "Generate PDF"}
+                  </button>
+                  <button
+                    type="button"
+                    disabled={fleetPrintBusy()}
+                    onClick={() => setFleetPrintOpen(false)}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Show>
     </div>
     </ShipLibraryProvider>
   );
@@ -1559,6 +1727,65 @@ function withSlotSelectedIndex(
 
 function slugify(s: string): string {
   return s.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "");
+}
+
+type SaveAsOutcome = "saved" | "cancelled" | "fallback";
+
+/**
+ * Native “Save as” when {@link window.showSaveFilePicker} exists (Chromium);
+ * otherwise falls back to a normal download. User cancel → `"cancelled"`.
+ */
+async function saveBlobWithSaveAsDialog(
+  blob: Blob,
+  suggestedName: string,
+): Promise<SaveAsOutcome> {
+  const w = window as Window &
+    Partial<{
+      showSaveFilePicker: (options?: {
+        suggestedName?: string;
+        types?: Array<{
+          description: string;
+          accept: Record<string, string[]>;
+        }>;
+      }) => Promise<FileSystemFileHandle>;
+    }>;
+
+  if (typeof w.showSaveFilePicker === "function") {
+    try {
+      const handle = await w.showSaveFilePicker({
+        suggestedName,
+        types: [
+          {
+            description: "PDF document",
+            accept: { "application/pdf": [".pdf"] },
+          },
+        ],
+      });
+      const writable = await handle.createWritable();
+      await writable.write(blob);
+      await writable.close();
+      return "saved";
+    } catch (e: unknown) {
+      if (
+        e instanceof DOMException &&
+        e.name === "AbortError"
+      ) {
+        return "cancelled";
+      }
+      if (
+        e &&
+        typeof e === "object" &&
+        "name" in e &&
+        (e as { name: string }).name === "AbortError"
+      ) {
+        return "cancelled";
+      }
+      console.warn("showSaveFilePicker failed", e);
+    }
+  }
+
+  triggerDownload(blob, suggestedName);
+  return "fallback";
 }
 
 function triggerDownload(blob: Blob, filename: string) {

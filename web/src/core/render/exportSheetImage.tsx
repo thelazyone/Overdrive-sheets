@@ -15,7 +15,9 @@
  */
 
 import { getFontEmbedCSS, toBlob } from "html-to-image";
+import { render } from "solid-js/web";
 
+import type { Ship } from "../schema";
 import {
   SHEET_LABEL_SIZE,
   SHEET_SHIELDS_SIZE,
@@ -32,6 +34,7 @@ import {
   FONT_EUROSTILE,
 } from "./constants";
 import { waitForFonts } from "./measure";
+import { ShipSVG } from "./ShipSVG";
 
 const PREVIEW_SELECTOR = ".ship-preview-wrapper";
 
@@ -195,22 +198,13 @@ async function fontEmbedCSSForShipRaster(): Promise<string> {
   }
 }
 
-export async function rasterizeShipSheetToJpegBlob(
+export async function rasterizePreviewElementToJpegBlob(
+  el: HTMLElement,
+  pixelRatio: number,
   jpegQuality = 0.94,
 ): Promise<Blob> {
-  await waitForFonts();
-
-  const el = document.querySelector(PREVIEW_SELECTOR) as HTMLElement | null;
-  if (!el) {
-    throw new Error("Ship preview element not found.");
-  }
   if (!el.querySelector("svg")) {
     throw new Error("Ship preview SVG is not ready yet.");
-  }
-
-  const w = el.offsetWidth;
-  if (w <= 0) {
-    throw new Error("Ship preview has no layout width.");
   }
 
   const fontEmbedCSS = await fontEmbedCSSForShipRaster();
@@ -218,8 +212,6 @@ export async function rasterizeShipSheetToJpegBlob(
   await new Promise<void>((resolve) =>
     requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
   );
-
-  const pixelRatio = SHEET_WIDTH / w;
 
   const blob = await toBlob(el, {
     type: "image/jpeg",
@@ -236,4 +228,65 @@ export async function rasterizeShipSheetToJpegBlob(
   }
 
   return blob;
+}
+
+export async function rasterizeShipSheetToJpegBlob(
+  jpegQuality = 0.94,
+): Promise<Blob> {
+  await waitForFonts();
+
+  const el = document.querySelector(PREVIEW_SELECTOR) as HTMLElement | null;
+  if (!el) {
+    throw new Error("Ship preview element not found.");
+  }
+
+  const w = el.offsetWidth;
+  if (w <= 0) {
+    throw new Error("Ship preview has no layout width.");
+  }
+
+  return rasterizePreviewElementToJpegBlob(el, SHEET_WIDTH / w, jpegQuality);
+}
+
+/**
+ * Rasterize a ship sheet without touching the live preview (e.g. fleet PDF).
+ */
+export async function rasterizeShipSheetToJpegBlobOffscreen(
+  ship: Ship,
+  options: { containerWidthPx?: number; jpegQuality?: number } = {},
+): Promise<Blob> {
+  await waitForFonts();
+
+  const widthPx = options.containerWidthPx ?? 1200;
+  const outer = document.createElement("div");
+  outer.setAttribute("aria-hidden", "true");
+  outer.style.cssText = `position:fixed;left:-9999px;top:0;width:${widthPx}px;opacity:0;pointer-events:none;z-index:-1`;
+
+  const wrap = document.createElement("div");
+  wrap.className = "ship-preview-wrapper";
+  wrap.style.cssText =
+    "width:100%;max-width:none;aspect-ratio:21 / 14.8;background:#ffffff;box-shadow:none";
+
+  outer.appendChild(wrap);
+  document.body.appendChild(outer);
+
+  const dispose = render(() => <ShipSVG ship={ship} responsive />, wrap);
+
+  try {
+    await new Promise<void>((resolve) =>
+      requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+    );
+    if (wrap.offsetWidth <= 0) {
+      throw new Error("Off-screen ship preview has no layout width.");
+    }
+    const pixelRatio = SHEET_WIDTH / wrap.offsetWidth;
+    return await rasterizePreviewElementToJpegBlob(
+      wrap,
+      pixelRatio,
+      options.jpegQuality ?? 0.94,
+    );
+  } finally {
+    dispose();
+    outer.remove();
+  }
 }
