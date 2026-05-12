@@ -39,3 +39,14 @@ python python/ship_creator.py -s python/ships/starliner.json
 ```
 
 Ship JSONs live in `python/ships/`. Output `.jpg` sheets are written next to them.
+
+## Combinator (designer tool)
+
+Tiny tkinter UI for visualising which ships/systems are available for every
+2-trait player build. Pure stdlib, no extra deps.
+
+```
+python combinator/main.py
+```
+
+See `combinator/README.md` for details.

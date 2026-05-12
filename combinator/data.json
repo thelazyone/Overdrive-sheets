@@ -1,0 +1,59 @@
+{
+  "ships": [
+    {
+      "name": "Opulence class Freighter",
+      "traits": [
+        "Trade",
+        "Exploration",
+        "Diplomacy"
+      ],
+      "systems": [
+        {
+          "name": "System1",
+          "traits": [
+            "Trade"
+          ]
+        },
+        {
+          "name": "System2",
+          "traits": [
+            "Military",
+            "Exploration"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Parsimony class Salvager",
+      "traits": [
+        "Trade",
+        "Science"
+      ],
+      "systems": []
+    },
+    {
+      "name": "Vigilance class Support Vessel",
+      "traits": [
+        "Military",
+        "Exploration"
+      ],
+      "systems": []
+    },
+    {
+      "name": "Presumption class Battlecruiser",
+      "traits": [
+        "Military",
+        "Diplomacy"
+      ],
+      "systems": []
+    },
+    {
+      "name": "Contemplation class Support vessel",
+      "traits": [
+        "Exploration",
+        "Science"
+      ],
+      "systems": []
+    }
+  ]
+}
