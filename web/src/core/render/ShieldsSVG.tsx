@@ -5,15 +5,20 @@
  * FRONT SHIELDS and REAR SHIELDS. Each row is:
  *   - one "no shields" block (white with black X)
  *   - then, for each shield value `n`: `n` blue blocks then one yellow block.
+ *
+ * Shields are a damageable system like any other, so the box also carries the
+ * bottom-right damage-type chevron drawn by `SystemSVG::renderBottomRightIcons`.
  */
 
 import { For, type JSX } from "solid-js";
 import {
   cssFont,
   FONT_EUROSTILE,
+  ICON_SIZE,
   SHEET_SHIELDS_SIZE,
   SHIELD_ICON_SIZE,
 } from "./constants";
+import { publicAsset } from "../../publicPath";
 
 type BlockType = "none" | "slot" | "energy";
 
@@ -24,6 +29,68 @@ interface Props {
   height: number;
   front: number[];
   rear: number[];
+  hull?: boolean;
+  electronics?: boolean;
+  life_support?: boolean;
+}
+
+/**
+ * Bottom-right damage-type chevron. Mirrors the geometry in
+ * `SystemSVG::renderBottomRightIcons` so shields match the system tiles.
+ */
+function DamageTypeChevron(props: {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  hull?: boolean;
+  electronics?: boolean;
+  life_support?: boolean;
+}): JSX.Element {
+  const icons = () =>
+    [
+      props.hull ? publicAsset("resources/hull_icon.png") : null,
+      props.electronics ? publicAsset("resources/electric_icon.png") : null,
+      props.life_support
+        ? publicAsset("resources/life_support_icon.png")
+        : null,
+    ].filter((h): h is string => h !== null);
+
+  const spacing = 10;
+  const bgPadding = 10;
+  const bgHeight = ICON_SIZE + 2 * bgPadding;
+  const totalWidth = () =>
+    icons().length * ICON_SIZE + (icons().length - 1) * spacing;
+  const bgWidth = () => totalWidth() + 2 * bgPadding;
+  const bgX = () => props.x + props.width - bgWidth();
+  const bgY = () => props.y + props.height - bgHeight;
+  const slopeWidth = Math.floor(bgHeight * 0.577);
+
+  return (
+    <>
+      {icons().length > 0 && (
+        <g>
+          <polygon
+            points={`${bgX()},${bgY()} ${bgX() + bgWidth()},${bgY()} ${
+              bgX() + bgWidth()
+            },${bgY() + bgHeight} ${bgX() - slopeWidth},${bgY() + bgHeight}`}
+            fill="black"
+          />
+          <For each={icons()}>
+            {(href, i) => (
+              <image
+                href={href}
+                x={bgX() + bgPadding + i() * (ICON_SIZE + spacing)}
+                y={bgY() + bgPadding}
+                width={ICON_SIZE}
+                height={ICON_SIZE}
+              />
+            )}
+          </For>
+        </g>
+      )}
+    </>
+  );
 }
 
 function ShieldBlock(props: { type: BlockType; x: number; y: number; size: number }) {
@@ -152,6 +219,15 @@ export function ShieldsSVG(props: Props): JSX.Element {
         y={startY() + groupHeight + 10}
         x={props.x}
         width={props.width}
+      />
+      <DamageTypeChevron
+        x={props.x}
+        y={props.y}
+        width={props.width}
+        height={props.height}
+        hull={props.hull}
+        electronics={props.electronics}
+        life_support={props.life_support}
       />
     </g>
   );

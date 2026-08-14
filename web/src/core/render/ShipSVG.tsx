@@ -75,12 +75,30 @@ function renderHeader(ship: Ship): { el: JSX.Element; bottomY: number } {
   return { el, bottomY };
 }
 
-function resolveShields(ship: Ship): { front: number[]; rear: number[] } {
+function resolveShields(ship: Ship): {
+  front: number[];
+  rear: number[];
+  hull: boolean;
+  electronics: boolean;
+  life_support: boolean;
+} {
   const sys = resolveRef(ship.shields);
   if (sys && sys.kind === "shields") {
-    return { front: sys.front, rear: sys.rear };
+    return {
+      front: sys.front,
+      rear: sys.rear,
+      hull: sys.hull,
+      electronics: sys.electronics,
+      life_support: sys.life_support,
+    };
   }
-  return { front: [], rear: [] };
+  return {
+    front: [],
+    rear: [],
+    hull: false,
+    electronics: false,
+    life_support: false,
+  };
 }
 
 /**
@@ -346,6 +364,9 @@ function ShipSVGInner(ship: Ship, responsive: boolean): JSX.Element {
         height={bottomBoxHeight}
         front={resolveShields(ship).front}
         rear={resolveShields(ship).rear}
+        hull={resolveShields(ship).hull}
+        electronics={resolveShields(ship).electronics}
+        life_support={resolveShields(ship).life_support}
       />
 
     </svg>
