@@ -2,8 +2,7 @@
  * Ported from `python/src/ship_profile.py::create_ship_sheet`.
  *
  * Top-level ship sheet layout:
- *   - Header row: OVERDRIVE label + squares on the left, name + description
- *     centered, CONTROL value on the right.
+ *   - Header row: name + description, centered.
  *   - Three columns of systems with LEFT / CENTER / RIGHT labels. The core
  *     column has Mess + Reactor pinned at the bottom with a CORE label.
  *   - Right-bottom box with Front/Rear shields.
@@ -18,7 +17,6 @@ import {
   FONT_TITILLIUM,
   SHEET_HEIGHT,
   SHEET_LABEL_SIZE,
-  SHEET_STATS_SIZE,
   SHEET_SUBTITLE_SIZE,
   SHEET_TITLE_SIZE,
   SHEET_WIDTH,
@@ -32,7 +30,6 @@ import {
   type SystemRef,
 } from "../schema";
 import { layoutSystem } from "./SystemSVG";
-import { OverdriveSVG } from "./OverdriveSVG";
 import { ShieldsSVG } from "./ShieldsSVG";
 
 const SCALE = 0.75; // SYSTEM_SCALE from python/src/ship_profile.py line 12
@@ -43,7 +40,6 @@ const SIDE_MARGIN = 16;
 function renderHeader(ship: Ship): { el: JSX.Element; bottomY: number } {
   const titleFont = cssFont(SHEET_TITLE_SIZE, FONT_EUROSTILE);
   const subtitleFont = cssFont(SHEET_SUBTITLE_SIZE, FONT_TITILLIUM);
-  const statsFont = cssFont(SHEET_STATS_SIZE, FONT_EUROSTILE);
 
   const titleText = ship.name.toUpperCase();
   const titleMetrics = measureText(titleText, titleFont);
@@ -51,9 +47,6 @@ function renderHeader(ship: Ship): { el: JSX.Element; bottomY: number } {
 
   const titleY = 50;
   const subtitleY = titleY + titleMetrics.height + 20;
-
-  const controlText = `CONTROL ${ship.control}`;
-  const controlMetrics = measureText(controlText, statsFont);
 
   const el = (
     <g>
@@ -75,15 +68,6 @@ function renderHeader(ship: Ship): { el: JSX.Element; bottomY: number } {
       >
         {ship.description}
       </text>
-      <text
-        x={SHEET_WIDTH - controlMetrics.width - BOX_MARGIN}
-        y={titleY}
-        dominant-baseline="hanging"
-        style={{ font: statsFont, fill: "black" }}
-      >
-        {controlText}
-      </text>
-      <OverdriveSVG tokens={ship.overdrive} x={BOX_MARGIN} y={titleY} />
     </g>
   );
 

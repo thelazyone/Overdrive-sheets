@@ -1,0 +1,353 @@
+{
+  "name": "Unnamed Ship",
+  "description": "Salvation Class Utility Vessel",
+  "label": "Salvation Utility Vessel",
+  "shields": {
+    "kind": "system",
+    "system": {
+      "kind": "shields",
+      "name": "Deflector Shields",
+      "rules": "",
+      "electronics": true,
+      "hull": false,
+      "life_support": false,
+      "areas": [],
+      "front": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "rear": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "weapon": false,
+      "main": false
+    }
+  },
+  "reactor": {
+    "kind": "slot",
+    "label": "Reactor",
+    "options": [
+      {
+        "kind": "reactor",
+        "name": "Industrial Reactor",
+        "rules": "Energy Production: 4",
+        "circles": 5,
+        "electronics": true,
+        "hull": false,
+        "life_support": false,
+        "areas": [],
+        "weapon": false,
+        "main": false
+      }
+    ]
+  },
+  "mess": {
+    "kind": "system",
+    "system": {
+      "kind": "mess",
+      "name": "Mess",
+      "rules": "Crew: 5",
+      "med_bay": 1,
+      "electronics": false,
+      "hull": false,
+      "life_support": true,
+      "areas": [],
+      "weapon": false,
+      "main": false
+    }
+  },
+  "sections": {
+    "left": [
+      {
+        "kind": "slot",
+        "label": "Loading Bay",
+        "options": [
+          {
+            "kind": "generic",
+            "name": "Docking Bay",
+            "rules": "",
+            "weapon": false,
+            "main": false,
+            "hull": true,
+            "electronics": true,
+            "life_support": false,
+            "areas": [
+              {
+                "name": "",
+                "description": "Salvage x3 within 1 DU",
+                "cost": {
+                  "energy": 1,
+                  "crew": 0
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "kind": "slot",
+        "label": "Hangar",
+        "options": [
+          {
+            "kind": "generic",
+            "name": "Skiffs Hangar",
+            "rules": "",
+            "weapon": false,
+            "main": false,
+            "hull": true,
+            "electronics": false,
+            "life_support": true,
+            "areas": [
+              {
+                "name": "",
+                "description": "Board 1 up to 3 DU",
+                "cost": {
+                  "energy": 1,
+                  "crew": 1
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "core": [
+      {
+        "kind": "system",
+        "system": {
+          "kind": "generic",
+          "name": "North Bridge",
+          "rules": "",
+          "weapon": false,
+          "main": false,
+          "hull": false,
+          "electronics": true,
+          "life_support": true,
+          "areas": [
+            {
+              "name": "",
+              "description": "Control 4 for this Round",
+              "cost": {
+                "energy": 0,
+                "crew": 1
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "slot",
+        "label": "Main cannon",
+        "options": [
+          {
+            "kind": "generic",
+            "name": "Asteroid Buster",
+            "rules": "",
+            "weapon": true,
+            "electronics": false,
+            "hull": true,
+            "life_support": false,
+            "areas": [
+              {
+                "name": "Shoot",
+                "description": "Mining",
+                "shoot": {
+                  "damage": 5,
+                  "range": "2-4",
+                  "arc-start": 0,
+                  "arc-end": 8
+                },
+                "cost": {
+                  "energy": 1,
+                  "crew": 1
+                }
+              }
+            ],
+            "main": false
+          },
+          {
+            "kind": "generic",
+            "name": "Double Cannon",
+            "rules": "",
+            "weapon": true,
+            "electronics": false,
+            "hull": true,
+            "life_support": false,
+            "areas": [
+              {
+                "name": "Shoot",
+                "description": "",
+                "shoot": {
+                  "damage": 4,
+                  "range": "1-3",
+                  "arc-start": 0,
+                  "arc-end": 8
+                },
+                "cost": {
+                  "energy": 0,
+                  "crew": 1
+                }
+              }
+            ],
+            "main": false
+          }
+        ]
+      },
+      {
+        "kind": "system",
+        "system": {
+          "kind": "generic",
+          "name": "Central Bridge",
+          "rules": "",
+          "weapon": false,
+          "main": false,
+          "hull": false,
+          "electronics": true,
+          "life_support": true,
+          "areas": [
+            {
+              "name": "",
+              "description": "Move the ship backwards in its Movement Phase",
+              "cost": {
+                "energy": 0,
+                "crew": 1
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "system",
+        "system": {
+          "kind": "generic",
+          "name": "South Bridge",
+          "rules": "",
+          "weapon": false,
+          "main": false,
+          "hull": false,
+          "electronics": true,
+          "life_support": true,
+          "areas": [
+            {
+              "name": "",
+              "description": "Scan one Object",
+              "cost": {
+                "energy": 0,
+                "crew": 1
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "system",
+        "system": {
+          "kind": "engine",
+          "name": "Engine",
+          "rules": "",
+          "weapon": false,
+          "main": false,
+          "hull": false,
+          "electronics": true,
+          "life_support": false,
+          "areas": [
+            {
+              "name": "",
+              "description": "Change Speed",
+              "cost": {
+                "energy": 1,
+                "crew": 1
+              }
+            }
+          ],
+          "speed_slots": [
+            {
+              "speed": "0",
+              "rotation": "180°"
+            },
+            {
+              "speed": "0-2",
+              "rotation": "0°"
+            }
+          ]
+        }
+      }
+    ],
+    "right": [
+      {
+        "kind": "system",
+        "system": {
+          "kind": "generic",
+          "name": "Dual Flak Cannon",
+          "rules": "",
+          "weapon": true,
+          "main": false,
+          "hull": true,
+          "electronics": false,
+          "life_support": true,
+          "areas": [
+            {
+              "name": "AA Burst",
+              "description": "Anti-Light",
+              "shoot": {
+                "damage": 7,
+                "range": "0-2",
+                "arc-start": 4,
+                "arc-end": 0
+              },
+              "cost": {
+                "energy": 1,
+                "crew": 0
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "system",
+        "system": {
+          "kind": "generic",
+          "name": "Displacer Array",
+          "rules": "",
+          "weapon": false,
+          "main": false,
+          "hull": false,
+          "electronics": true,
+          "life_support": false,
+          "areas": [
+            {
+              "name": "",
+              "description": "Displace (M) 3 DU",
+              "cost": {
+                "energy": 1,
+                "crew": 1
+              }
+            }
+          ]
+        }
+      },
+      {
+        "kind": "slot",
+        "label": "Cargo Storage",
+        "options": [
+          {
+            "kind": "generic",
+            "name": "Cargo Storage",
+            "rules": "",
+            "weapon": false,
+            "main": false,
+            "hull": true,
+            "electronics": false,
+            "life_support": false,
+            "areas": []
+          }
+        ]
+      }
+    ]
+  }
+}

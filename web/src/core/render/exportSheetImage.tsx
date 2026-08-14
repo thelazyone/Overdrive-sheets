@@ -14,7 +14,7 @@
  * live preview width.
  */
 
-import { getFontEmbedCSS, toBlob } from "html-to-image";
+import { getFontEmbedCSS, toCanvas } from "html-to-image";
 import { render } from "solid-js/web";
 
 import type { Ship } from "../schema";
@@ -198,10 +198,35 @@ async function fontEmbedCSSForShipRaster(): Promise<string> {
   }
 }
 
+/**
+ * `html-to-image`'s `toBlob` drops the caller's `type`/`quality` on the floor —
+ * it calls `canvasToBlob(canvas)` with no options, so it always hands back a
+ * **PNG at quality 1** no matter what we ask for. Feeding that to
+ * `jsPDF.addImage(..., "JPEG", ...)` made jsPDF fall back to storing a raw
+ * bitmap, which is where the ~50 MB two-page PDFs came from.
+ *
+ * So we rasterize with `toCanvas` and encode the JPEG ourselves.
+ */
+function canvasToJpegBlob(
+  canvas: HTMLCanvasElement,
+  quality: number,
+): Promise<Blob> {
+  return new Promise((resolve, reject) => {
+    canvas.toBlob(
+      (blob) => {
+        if (blob) resolve(blob);
+        else reject(new Error("JPEG encoding produced an empty image."));
+      },
+      "image/jpeg",
+      quality,
+    );
+  });
+}
+
 export async function rasterizePreviewElementToJpegBlob(
   el: HTMLElement,
   pixelRatio: number,
-  jpegQuality = 0.94,
+  jpegQuality = 0.9,
 ): Promise<Blob> {
   if (!el.querySelector("svg")) {
     throw new Error("Ship preview SVG is not ready yet.");
@@ -213,9 +238,7 @@ export async function rasterizePreviewElementToJpegBlob(
     requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
   );
 
-  const blob = await toBlob(el, {
-    type: "image/jpeg",
-    quality: jpegQuality,
+  const canvas = await toCanvas(el, {
     pixelRatio,
     backgroundColor: "#ffffff",
     cacheBust: true,
@@ -223,11 +246,7 @@ export async function rasterizePreviewElementToJpegBlob(
     preferredFontFormat: "woff2",
   });
 
-  if (!blob) {
-    throw new Error("JPEG export produced an empty image.");
-  }
-
-  return blob;
+  return canvasToJpegBlob(canvas, jpegQuality);
 }
 
 export async function rasterizeShipSheetToJpegBlob(
@@ -253,7 +272,14 @@ export async function rasterizeShipSheetToJpegBlob(
  */
 export async function rasterizeShipSheetToJpegBlobOffscreen(
   ship: Ship,
-  options: { containerWidthPx?: number; jpegQuality?: number } = {},
+  options: {
+    containerWidthPx?: number;
+    jpegQuality?: number;
+    /** Raster width in pixels. Defaults to {@link SHEET_WIDTH} (full A5 at 300
+     *  DPI). The fleet PDF passes the width its print box actually needs, so
+     *  the embedded image lands at 300 DPI instead of well above it. */
+    targetWidthPx?: number;
+  } = {},
 ): Promise<Blob> {
   await waitForFonts();
 
@@ -279,11 +305,12 @@ export async function rasterizeShipSheetToJpegBlobOffscreen(
     if (wrap.offsetWidth <= 0) {
       throw new Error("Off-screen ship preview has no layout width.");
     }
-    const pixelRatio = SHEET_WIDTH / wrap.offsetWidth;
+    const targetWidthPx = options.targetWidthPx ?? SHEET_WIDTH;
+    const pixelRatio = targetWidthPx / wrap.offsetWidth;
     return await rasterizePreviewElementToJpegBlob(
       wrap,
       pixelRatio,
-      options.jpegQuality ?? 0.94,
+      options.jpegQuality ?? 0.9,
     );
   } finally {
     dispose();

@@ -14,6 +14,35 @@ function shipsPerPageForFormat(format: FleetPdfPageFormat): number {
   return format === "a4" ? 2 : 1;
 }
 
+/** Print resolution for embedded sheet images. */
+export const PDF_IMAGE_DPI = 300;
+
+const MM_PER_INCH = 25.4;
+
+/**
+ * Pixel width a sheet raster needs to hit {@link PDF_IMAGE_DPI} once placed in
+ * this format's print box. Rasterizing larger just inflates the file: the extra
+ * pixels are thrown away by the printer.
+ *
+ * Must mirror the geometry in {@link buildFleetPdfFromJpegs}.
+ */
+export function sheetRasterWidthPxForFormat(
+  format: FleetPdfPageFormat,
+  marginMm = 12,
+  gapBetweenShipsMm = 6,
+  dpi = PDF_IMAGE_DPI,
+): number {
+  const [pageW, pageH] = FORMAT_MM[format];
+  const maxW = pageW - 2 * marginMm;
+  const maxH = pageH - 2 * marginMm;
+  const boxH =
+    shipsPerPageForFormat(format) === 2
+      ? (maxH - gapBetweenShipsMm) / 2
+      : maxH;
+  const { drawW } = fitSizeInBox(maxW, boxH);
+  return Math.round((drawW / MM_PER_INCH) * dpi);
+}
+
 function blobToDataUrl(blob: Blob): Promise<string> {
   return new Promise((resolve, reject) => {
     const r = new FileReader();
@@ -70,6 +99,7 @@ export async function buildFleetPdfFromJpegs(
     unit: "mm",
     format: [pageW, pageH],
     orientation: "portrait",
+    compress: true,
   });
 
   const maxW = pageW - 2 * marginMm;

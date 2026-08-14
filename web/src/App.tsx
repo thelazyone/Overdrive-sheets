@@ -4,8 +4,7 @@
  * Left pane:
  *   - Ship `name` (always editable — templates are meant to be renamed).
  *   - Customize toggle.
- *   - In customize mode: `description`, `label`, `overdrive`, `control` also
- *     editable.
+ *   - In customize mode: `description` and `label` also editable.
  *   - Section list (CORE + LEFT / CENTER / RIGHT columns). Each slot
  *     row carries an inline `<select>` to pick which duplicated option is
  *     installed.
@@ -54,6 +53,7 @@ import { ShipLibraryProvider, useShipLibrary } from "./core/shipLibraryContext";
 import { ShipSVG } from "./core/render/ShipSVG";
 import {
   buildFleetPdfFromJpegs,
+  sheetRasterWidthPxForFormat,
   type FleetPdfPageFormat,
 } from "./core/render/exportFleetPdf";
 import {
@@ -421,15 +421,18 @@ export function App(): JSX.Element {
     setFleetPrintBusy(true);
     setError(null);
     try {
+      const format = fleetPrintFormat();
+      const targetWidthPx = sheetRasterWidthPxForFormat(format);
       const blobs: Blob[] = [];
       for (const t of sel) {
         blobs.push(
           await rasterizeShipSheetToJpegBlobOffscreen(t.ship, {
             containerWidthPx: 1200,
+            targetWidthPx,
           }),
         );
       }
-      const pdf = await buildFleetPdfFromJpegs(blobs, fleetPrintFormat());
+      const pdf = await buildFleetPdfFromJpegs(blobs, format);
       const filename =
         sel.length === 1
           ? `${slugify(sel[0]!.ship.name)}_sheet.pdf`
@@ -793,45 +796,9 @@ function ShipHeaderEditor(props: {
             onInput={(e) => props.onChange({ label: e.currentTarget.value })}
           />
         </label>
-
-        <div class="field-row">
-          <label class="field">
-            <span class="field-label">Control</span>
-            <input
-              type="number"
-              min="0"
-              value={props.ship.control}
-              onInput={(e) =>
-                props.onChange({ control: Number(e.currentTarget.value) || 0 })
-              }
-            />
-          </label>
-
-          <label class="field field-grow">
-            <span class="field-label">Overdrive (comma-separated)</span>
-            <input
-              type="text"
-              value={props.ship.overdrive.join(", ")}
-              onChange={(e) =>
-                props.onChange({
-                  overdrive: parseNumberList(e.currentTarget.value),
-                })
-              }
-            />
-          </label>
-        </div>
       </Show>
     </div>
   );
-}
-
-function parseNumberList(s: string): number[] {
-  return s
-    .split(",")
-    .map((t) => t.trim())
-    .filter((t) => t !== "")
-    .map((t) => Number(t))
-    .filter((n) => Number.isFinite(n));
 }
 
 // ---------------------------------------------------------------------------

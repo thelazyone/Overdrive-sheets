@@ -1,12 +1,7 @@
 {
   "name": "Unnamed Ship",
-  "description": "Parsimony Class Utility Vessel",
-  "label": "Parsimony Utility Vessel",
-  "overdrive": [
-    2,
-    2
-  ],
-  "control": 2,
+  "description": "Providence Class Salvager",
+  "label": "Providence Salvager",
   "shields": {
     "kind": "system",
     "system": {
@@ -98,9 +93,9 @@
         "system": {
           "kind": "generic",
           "name": "Crew Quarters",
-          "rules": "",
+          "rules": "Remove one Crew if destroyed",
           "electronics": false,
-          "hull": true,
+          "hull": false,
           "life_support": true,
           "areas": [],
           "weapon": false,
@@ -120,12 +115,12 @@
           "life_support": true,
           "areas": [
             {
-              "description": "Scan Objective",
+              "name": "",
+              "description": "Scan one Object",
               "cost": {
                 "energy": 1,
                 "crew": 0
-              },
-              "name": ""
+              }
             }
           ],
           "weapon": false,
@@ -138,21 +133,14 @@
         "options": [
           {
             "kind": "generic",
-            "name": "Prehensile Cranes",
+            "name": "Front Welders",
             "rules": "",
             "weapon": true,
-            "electronics": true,
+            "main": false,
             "hull": true,
+            "electronics": false,
             "life_support": false,
             "areas": [
-              {
-                "name": "Assemble",
-                "description": "Repair up to 2 damage points from a Capital Ship within Control range.",
-                "cost": {
-                  "energy": 1,
-                  "crew": 2
-                }
-              },
               {
                 "name": "Disassemble",
                 "description": "Mining",
@@ -167,24 +155,55 @@
                   "crew": 0
                 }
               }
-            ],
-            "main": false
+            ]
+          },
+          {
+            "kind": "generic",
+            "name": "Prehensile Cranes",
+            "rules": "",
+            "weapon": false,
+            "main": false,
+            "hull": true,
+            "electronics": true,
+            "life_support": false,
+            "areas": [
+              {
+                "name": "",
+                "description": "Attach (S/M)",
+                "cost": {
+                  "energy": 1,
+                  "crew": 0
+                }
+              }
+            ]
           }
         ]
       },
       {
-        "kind": "system",
-        "system": {
-          "kind": "generic",
-          "name": "Docking Bay",
-          "rules": "",
-          "electronics": true,
-          "hull": true,
-          "life_support": false,
-          "areas": [],
-          "weapon": false,
-          "main": false
-        }
+        "kind": "slot",
+        "label": "Docking Bay",
+        "options": [
+          {
+            "kind": "generic",
+            "name": "Docking Bay",
+            "rules": "",
+            "electronics": true,
+            "hull": true,
+            "life_support": false,
+            "areas": [
+              {
+                "name": "",
+                "description": "Salvage within 1 DU",
+                "cost": {
+                  "energy": 0,
+                  "crew": 1
+                }
+              }
+            ],
+            "weapon": false,
+            "main": false
+          }
+        ]
       },
       {
         "kind": "system",
@@ -201,7 +220,7 @@
               "description": "Change Speed",
               "cost": {
                 "energy": 1,
-                "crew": 1
+                "crew": 0
               }
             }
           ],
@@ -255,9 +274,9 @@
         "system": {
           "kind": "generic",
           "name": "Crew Quarters",
-          "rules": "",
+          "rules": "Remove one Crew if destroyed",
           "electronics": false,
-          "hull": true,
+          "hull": false,
           "life_support": true,
           "areas": [],
           "weapon": false,
@@ -266,11 +285,11 @@
       },
       {
         "kind": "slot",
-        "label": "Scanner",
+        "label": "Effectors",
         "options": [
           {
             "kind": "generic",
-            "name": "Long Range Scanner",
+            "name": "Long Range Effectors",
             "rules": "",
             "electronics": true,
             "hull": false,
@@ -278,7 +297,7 @@
             "areas": [
               {
                 "name": "",
-                "description": "Increase Control to 3",
+                "description": "Displace (S) 3 DU",
                 "cost": {
                   "energy": 1,
                   "crew": 0

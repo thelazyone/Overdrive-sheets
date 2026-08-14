@@ -7,7 +7,8 @@
 
 import contemplation from "./contemplation_escort_vessel.json";
 import opulence from "./opulence_freighter.json";
-import parsimony from "./parsimony_utility_vessel.json";
+import providence from "./providence_salvager.json";
+import salvation from "./salvation_utility_vessel.json";
 
 export interface PresetEntry {
   id: string;
@@ -26,14 +27,19 @@ function labelOf(raw: any, fallback: string): string {
 export const PRESETS: PresetEntry[] = [
   { id: "opulence_freighter", name: labelOf(opulence, "Opulence Freighter"), data: opulence },
   {
-    id: "parsimony_utility_vessel",
-    name: labelOf(parsimony, "Parsimony Utility Vessel"),
-    data: parsimony,
+    id: "providence_salvager",
+    name: labelOf(providence, "Providence Salvager"),
+    data: providence,
   },
   {
     id: "contemplation_escort_vessel",
     name: labelOf(contemplation, "Contemplation Escort Vessel"),
     data: contemplation,
+  },
+  {
+    id: "salvation_utility_vessel",
+    name: labelOf(salvation, "Salvation Utility Vessel"),
+    data: salvation,
   },
 ];
 

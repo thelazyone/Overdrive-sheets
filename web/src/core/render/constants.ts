@@ -9,7 +9,6 @@
  *   python/src/ship_profile.py  - A5 page layout
  *   python/src/system.py        - tile dimensions, margins, icon sizes, fonts
  *   python/src/shields.py       - shield icon size
- *   python/src/overdrive.py     - overdrive square size
  */
 
 const DPI = 300;
@@ -58,10 +57,6 @@ export const ICON_SIZE_LARGE = 120;
 
 /** Shield block size (python/src/shields.py line 74). */
 export const SHIELD_ICON_SIZE = 80;
-
-/** Overdrive token square size (python/src/overdrive.py line 13). */
-export const OVERDRIVE_SQUARE_SIZE = 100;
-export const OVERDRIVE_SQUARE_MARGIN = 8;
 
 /** Misc. */
 export const ENGINE_SLOT_SIZE = 200;
