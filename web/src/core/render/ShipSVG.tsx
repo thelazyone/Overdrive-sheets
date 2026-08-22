@@ -31,11 +31,28 @@ import {
 } from "../schema";
 import { layoutSystem } from "./SystemSVG";
 import { ShieldsSVG } from "./ShieldsSVG";
+import {
+  BOTTOM_BOX_HEIGHT,
+  BOTTOM_BOX_WIDTH,
+  BOX_MARGIN,
+  COLUMN_MARGIN,
+  COLUMN_WIDTH,
+  COLUMNS_START_X,
+  CORE_BOTTOM_GAP,
+  MODULAR_CORE_TILE_HEIGHT,
+  MODULAR_ENGINE_TILE_HEIGHT,
+  MODULAR_SECTION_TILE_HEIGHT,
+  SCALE,
+} from "./sheetLayout";
+import { isEngineSlot } from "./modularMetrics";
 
-const SCALE = 0.75; // SYSTEM_SCALE from python/src/ship_profile.py line 12
-const BOX_MARGIN = 20;
-const COLUMN_MARGIN = 12;
-const SIDE_MARGIN = 16;
+/**
+ * `"custom"` — today's sheet: every installed system is printed in place.
+ * `"modular"` — "print class": slots become uniform blank spaces sized to match
+ * the cut-out tiles from {@link ModularTilesSVG}; fixed (inline) systems are
+ * still printed normally.
+ */
+export type SheetMode = "custom" | "modular";
 
 function renderHeader(ship: Ship): { el: JSX.Element; bottomY: number } {
   const titleFont = cssFont(SHEET_TITLE_SIZE, FONT_EUROSTILE);
@@ -102,45 +119,79 @@ function resolveShields(ship: Ship): {
 }
 
 /**
+ * Dashed outline with a centred label — used both for "nothing installed" in
+ * custom mode and for the uniform placement targets in modular mode.
+ */
+function blankBox(
+  label: string,
+  width: number,
+  height: number,
+  x: number,
+  y: number,
+): JSX.Element {
+  const labelFont = cssFont(SHEET_LABEL_SIZE, FONT_EUROSTILE);
+  return (
+    <g transform={`translate(${x} ${y})`}>
+      <rect
+        x={0}
+        y={0}
+        width={width}
+        height={height}
+        fill="none"
+        stroke="rgb(150,150,150)"
+        stroke-dasharray="10 8"
+        stroke-width={4}
+      />
+      <text
+        x={width / 2}
+        y={height / 2}
+        text-anchor="middle"
+        dominant-baseline="central"
+        style={{ font: labelFont, fill: "rgb(150,150,150)" }}
+      >
+        {label}
+      </text>
+    </g>
+  );
+}
+
+/**
  * Render a SystemRef. For empty slots, returns a dashed placeholder at the
  * column width.
+ *
+ * In modular mode a **slot** always becomes a uniform blank space regardless of
+ * what is selected — that space is where a cut-out tile gets placed — while an
+ * inline (fixed) system still prints normally.
  */
 function SystemRefSVG(props: {
   ref: SystemRef;
   x: number;
   y: number;
   columnWidth: number;
+  mode: SheetMode;
+  uniformHeight: number;
 }): { el: JSX.Element; height: number } {
+  if (props.mode === "modular" && props.ref.kind === "slot") {
+    const label = placeholderTextForUnresolvedRef(props.ref);
+    // Engines have their own standard size — see MODULAR_ENGINE_TILE_HEIGHT.
+    const h = isEngineSlot(props.ref)
+      ? MODULAR_ENGINE_TILE_HEIGHT
+      : props.uniformHeight;
+    return {
+      el: blankBox(label, props.columnWidth, h, props.x, props.y),
+      height: h,
+    };
+  }
+
   const resolved = resolveRef(props.ref);
   if (!resolved) {
     // Empty slot / unresolved ref placeholder
     const placeholderHeight = 200 * SCALE;
-    const labelFont = cssFont(SHEET_LABEL_SIZE, FONT_EUROSTILE);
     const label = placeholderTextForUnresolvedRef(props.ref);
-    const el = (
-      <g transform={`translate(${props.x} ${props.y})`}>
-        <rect
-          x={0}
-          y={0}
-          width={props.columnWidth}
-          height={placeholderHeight}
-          fill="none"
-          stroke="rgb(150,150,150)"
-          stroke-dasharray="10 8"
-          stroke-width={4}
-        />
-        <text
-          x={props.columnWidth / 2}
-          y={placeholderHeight / 2}
-          text-anchor="middle"
-          dominant-baseline="central"
-          style={{ font: labelFont, fill: "rgb(150,150,150)" }}
-        >
-          {label}
-        </text>
-      </g>
-    );
-    return { el, height: placeholderHeight };
+    return {
+      el: blankBox(label, props.columnWidth, placeholderHeight, props.x, props.y),
+      height: placeholderHeight,
+    };
   }
 
   return renderSystemAt(resolved, props.x, props.y, props.columnWidth);
@@ -165,36 +216,56 @@ export interface ShipSVGProps {
   /** If true, renders without explicit width/height attributes so the parent
    *  can control scaling via CSS. Defaults to false (fixed A5 dimensions). */
   responsive?: boolean;
+  /** Defaults to `"custom"` (today's behaviour). */
+  mode?: SheetMode;
 }
 
-function ShipSVGInner(ship: Ship, responsive: boolean): JSX.Element {
+function ShipSVGInner(
+  ship: Ship,
+  responsive: boolean,
+  mode: SheetMode,
+): JSX.Element {
   const header = renderHeader(ship);
 
   // Columns layout
-  const availableWidth = SHEET_WIDTH - 2 * SIDE_MARGIN - 2 * COLUMN_MARGIN;
-  const columnWidth = Math.floor(availableWidth / 3);
-  const totalColumnsWidth = 3 * columnWidth + 2 * COLUMN_MARGIN;
-  const columnsStartX = Math.floor((SHEET_WIDTH - totalColumnsWidth) / 2);
+  const columnWidth = COLUMN_WIDTH;
+  const columnsStartX = COLUMNS_START_X;
 
   const labelY = header.bottomY + 50;
   const labelHeight = SHEET_LABEL_SIZE;
   const columnsTopY = labelY + labelHeight + 20;
 
   // Bottom boxes
-  const bottomBoxHeight = 300;
+  const bottomBoxHeight = BOTTOM_BOX_HEIGHT;
   const bottomBoxY = SHEET_HEIGHT - bottomBoxHeight - BOX_MARGIN;
-  const bottomBoxWidth = SHEET_WIDTH / 3 - BOX_MARGIN;
+  const bottomBoxWidth = BOTTOM_BOX_WIDTH;
 
   // Reactor and Mess each occupy a fixed-width bottom slot, independent of
   // each other: if one is unresolved (empty slot) we still draw the other and
   // show a dashed placeholder in the missing one. This mirrors the behaviour
   // of the column sections above, so the sheet layout is stable.
   const CORE_BOTTOM_PLACEHOLDER_HEIGHT = 240;
-  const CORE_BOTTOM_GAP = 24;
 
   function bottomCoreBlock(
     ref: SystemRef,
   ): { height: number; render: (y: number) => JSX.Element } {
+    // Modular: a reactor/mess slot is always a blank placement target sized to
+    // match its cut-out tile, whatever happens to be selected in the editor.
+    if (mode === "modular" && ref.kind === "slot") {
+      const label = placeholderTextForUnresolvedRef(ref);
+      return {
+        height: MODULAR_CORE_TILE_HEIGHT,
+        render: (y: number) =>
+          blankBox(
+            label,
+            bottomBoxWidth,
+            MODULAR_CORE_TILE_HEIGHT,
+            BOX_MARGIN,
+            y,
+          ),
+      };
+    }
+
     const sys = resolveRef(ref);
     if (sys) {
       const layout = layoutSystem(sys);
@@ -209,33 +280,17 @@ function ShipSVGInner(ship: Ship, responsive: boolean): JSX.Element {
         ),
       };
     }
-    const placeholderFont = cssFont(SHEET_LABEL_SIZE, FONT_EUROSTILE);
     const label = placeholderTextForUnresolvedRef(ref);
     return {
       height: CORE_BOTTOM_PLACEHOLDER_HEIGHT,
-      render: (y: number) => (
-        <g transform={`translate(${BOX_MARGIN} ${y})`}>
-          <rect
-            x={0}
-            y={0}
-            width={bottomBoxWidth}
-            height={CORE_BOTTOM_PLACEHOLDER_HEIGHT}
-            fill="none"
-            stroke="rgb(150,150,150)"
-            stroke-dasharray="10 8"
-            stroke-width={4}
-          />
-          <text
-            x={bottomBoxWidth / 2}
-            y={CORE_BOTTOM_PLACEHOLDER_HEIGHT / 2}
-            text-anchor="middle"
-            dominant-baseline="central"
-            style={{ font: placeholderFont, fill: "rgb(150,150,150)" }}
-          >
-            {label}
-          </text>
-        </g>
-      ),
+      render: (y: number) =>
+        blankBox(
+          label,
+          bottomBoxWidth,
+          CORE_BOTTOM_PLACEHOLDER_HEIGHT,
+          BOX_MARGIN,
+          y,
+        ),
     };
   }
 
@@ -273,6 +328,8 @@ function ShipSVGInner(ship: Ship, responsive: boolean): JSX.Element {
         x: 0,
         y: 0,
         columnWidth: scaledSystemWidth,
+        mode,
+        uniformHeight: MODULAR_SECTION_TILE_HEIGHT,
       });
       const h = layoutBase.height;
       nodes.push(
@@ -284,21 +341,35 @@ function ShipSVGInner(ship: Ship, responsive: boolean): JSX.Element {
   };
 
   // Core column: only section.core systems (mess/reactor handled separately at bottom).
-  const coreSectionElements: JSX.Element[] = [];
-  {
-    let currentY = columnsTopY;
-    ship.sections.core.forEach((ref) => {
-      const base = SystemRefSVG({
-        ref,
-        x: 0,
-        y: 0,
-        columnWidth: scaledSystemWidth,
-      });
-      coreSectionElements.push(
-        <g transform={`translate(0 ${currentY})`}>{base.el}</g>
-      );
-      currentY += base.height + COLUMN_MARGIN;
-    });
+  const coreSectionElements: JSX.Element[] = columnSystems(ship.sections.core);
+
+  // Shields: a modular shields slot becomes a blank target the same size as the
+  // existing shields box, so a shields cut-out drops straight onto it.
+  const shieldsX = SHEET_WIDTH - bottomBoxWidth - BOX_MARGIN;
+  let shieldsEl: JSX.Element;
+  if (mode === "modular" && ship.shields.kind === "slot") {
+    shieldsEl = blankBox(
+      placeholderTextForUnresolvedRef(ship.shields),
+      bottomBoxWidth,
+      bottomBoxHeight,
+      shieldsX,
+      bottomBoxY,
+    );
+  } else {
+    const sh = resolveShields(ship);
+    shieldsEl = (
+      <ShieldsSVG
+        x={shieldsX}
+        y={bottomBoxY}
+        width={bottomBoxWidth}
+        height={bottomBoxHeight}
+        front={sh.front}
+        rear={sh.rear}
+        hull={sh.hull}
+        electronics={sh.electronics}
+        life_support={sh.life_support}
+      />
+    );
   }
 
   const svgProps: Record<string, any> = {
@@ -357,17 +428,7 @@ function ShipSVGInner(ship: Ship, responsive: boolean): JSX.Element {
       {reactorEl}
 
       {/* Shields box */}
-      <ShieldsSVG
-        x={SHEET_WIDTH - bottomBoxWidth - BOX_MARGIN}
-        y={bottomBoxY}
-        width={bottomBoxWidth}
-        height={bottomBoxHeight}
-        front={resolveShields(ship).front}
-        rear={resolveShields(ship).rear}
-        hull={resolveShields(ship).hull}
-        electronics={resolveShields(ship).electronics}
-        life_support={resolveShields(ship).life_support}
-      />
+      {shieldsEl}
 
     </svg>
   );
@@ -381,7 +442,7 @@ function ShipSVGInner(ship: Ship, responsive: boolean): JSX.Element {
  */
 export function ShipSVG(props: ShipSVGProps): JSX.Element {
   const rendered = createMemo(() =>
-    ShipSVGInner(props.ship, !!props.responsive),
+    ShipSVGInner(props.ship, !!props.responsive, props.mode ?? "custom"),
   );
   return <>{rendered()}</>;
 }

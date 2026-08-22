@@ -611,7 +611,17 @@ export interface SystemLayout {
   height: number;
 }
 
-export function layoutSystem(system: System): SystemLayout {
+/**
+ * @param targetHeight Optional minimum tile height in tile-space units. Modular
+ * cut-outs pass their standard box height so the tile's own border fills the
+ * box instead of floating at its natural height inside it: the flow content is
+ * centred in the extra space and the bottom-right damage chevron re-anchors to
+ * the new bottom edge, so a short system still prints as a full-size module.
+ */
+export function layoutSystem(
+  system: System,
+  targetHeight?: number,
+): SystemLayout {
   const effectiveWidth =
     system.kind === "mess" && system.med_bay > 0
       ? Math.floor(TILE_WIDTH * 0.7)
@@ -655,17 +665,17 @@ export function layoutSystem(system: System): SystemLayout {
     y += 100; // minimum system height padding (matches Python)
   }
 
-  // Bottom-right icons (anchored at current y)
-  const br = renderBottomRightIcons(system, y);
-  if (br.el) parts.push(br.el);
+  const naturalHeight = y + VERTICAL_MARGIN;
+  const height = Math.max(naturalHeight, targetHeight ?? 0);
+  // Spare room when the tile is being stretched to a standard box: the flow
+  // content is centred in it, while both chevrons stay in their corners.
+  const slack = height - naturalHeight;
+
+  // Bottom-right icons (anchored to the tile's bottom edge)
+  const br = renderBottomRightIcons(system, y + slack);
 
   // Top-left icons (at the top, after title)
   const tl = renderTopLeftIcons(system, VERTICAL_MARGIN);
-  if (tl) parts.push(tl);
-
-  y += VERTICAL_MARGIN;
-
-  const height = y;
 
   const el = (
     <g>
@@ -678,7 +688,11 @@ export function layoutSystem(system: System): SystemLayout {
         stroke="black"
         stroke-width={BORDER_WIDTH}
       />
-      {parts}
+      <g transform={slack > 0 ? `translate(0 ${slack / 2})` : undefined}>
+        {parts}
+      </g>
+      {br.el}
+      {tl}
     </g>
   );
 

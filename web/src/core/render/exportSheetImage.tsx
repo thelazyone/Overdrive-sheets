@@ -16,6 +16,7 @@
 
 import { getFontEmbedCSS, toCanvas } from "html-to-image";
 import { render } from "solid-js/web";
+import type { JSX } from "solid-js";
 
 import type { Ship } from "../schema";
 import {
@@ -34,7 +35,7 @@ import {
   FONT_EUROSTILE,
 } from "./constants";
 import { waitForFonts } from "./measure";
-import { ShipSVG } from "./ShipSVG";
+import { ShipSVG, type SheetMode } from "./ShipSVG";
 
 const PREVIEW_SELECTOR = ".ship-preview-wrapper";
 
@@ -267,19 +268,27 @@ export async function rasterizeShipSheetToJpegBlob(
   return rasterizePreviewElementToJpegBlob(el, SHEET_WIDTH / w, jpegQuality);
 }
 
+export interface OffscreenRasterOptions {
+  containerWidthPx?: number;
+  jpegQuality?: number;
+  /** Raster width in pixels. Defaults to {@link SHEET_WIDTH} (full A5 at 300
+   *  DPI). The fleet PDF passes the width its print box actually needs, so
+   *  the embedded image lands at 300 DPI instead of well above it. */
+  targetWidthPx?: number;
+}
+
 /**
- * Rasterize a ship sheet without touching the live preview (e.g. fleet PDF).
+ * Rasterize an arbitrary A5 sheet — a ship console or a modular tile page —
+ * without touching the live preview.
+ *
+ * Every sheet takes this same path at the same container width and the same
+ * `targetWidthPx`, so all pages share one units→pixels scale. That is exactly
+ * what makes a printed module tile physically match the blank space it covers
+ * on the console.
  */
-export async function rasterizeShipSheetToJpegBlobOffscreen(
-  ship: Ship,
-  options: {
-    containerWidthPx?: number;
-    jpegQuality?: number;
-    /** Raster width in pixels. Defaults to {@link SHEET_WIDTH} (full A5 at 300
-     *  DPI). The fleet PDF passes the width its print box actually needs, so
-     *  the embedded image lands at 300 DPI instead of well above it. */
-    targetWidthPx?: number;
-  } = {},
+export async function rasterizeSheetToJpegBlobOffscreen(
+  renderSheet: () => JSX.Element,
+  options: OffscreenRasterOptions = {},
 ): Promise<Blob> {
   await waitForFonts();
 
@@ -296,14 +305,14 @@ export async function rasterizeShipSheetToJpegBlobOffscreen(
   outer.appendChild(wrap);
   document.body.appendChild(outer);
 
-  const dispose = render(() => <ShipSVG ship={ship} responsive />, wrap);
+  const dispose = render(renderSheet, wrap);
 
   try {
     await new Promise<void>((resolve) =>
       requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
     );
     if (wrap.offsetWidth <= 0) {
-      throw new Error("Off-screen ship preview has no layout width.");
+      throw new Error("Off-screen sheet has no layout width.");
     }
     const targetWidthPx = options.targetWidthPx ?? SHEET_WIDTH;
     const pixelRatio = targetWidthPx / wrap.offsetWidth;
@@ -316,4 +325,18 @@ export async function rasterizeShipSheetToJpegBlobOffscreen(
     dispose();
     outer.remove();
   }
+}
+
+/**
+ * Rasterize a ship sheet without touching the live preview (e.g. fleet PDF).
+ */
+export async function rasterizeShipSheetToJpegBlobOffscreen(
+  ship: Ship,
+  options: OffscreenRasterOptions & { mode?: SheetMode } = {},
+): Promise<Blob> {
+  const mode = options.mode ?? "custom";
+  return rasterizeSheetToJpegBlobOffscreen(
+    () => <ShipSVG ship={ship} responsive mode={mode} />,
+    options,
+  );
 }

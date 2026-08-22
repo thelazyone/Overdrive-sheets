@@ -50,16 +50,25 @@ import {
 } from "./core/schema";
 import { baseLibrary } from "./core/library/loadBaseLibrary";
 import { ShipLibraryProvider, useShipLibrary } from "./core/shipLibraryContext";
-import { ShipSVG } from "./core/render/ShipSVG";
+import { ShipSVG, type SheetMode } from "./core/render/ShipSVG";
+import {
+  buildPrintSheetJpegs,
+  sheetCountForShip,
+} from "./core/render/printJobs";
+import { ModularTilesSVG } from "./core/render/ModularTilesSVG";
+import { modularPagesFor } from "./core/render/modularTiles";
+import {
+  columnsOverSlotCap,
+  modularOversizedSystems,
+  overflowingColumns,
+} from "./core/render/modularMetrics";
+import { MODULAR_MAX_SLOTS_PER_COLUMN } from "./core/render/sheetLayout";
 import {
   buildFleetPdfFromJpegs,
   sheetRasterWidthPxForFormat,
   type FleetPdfPageFormat,
 } from "./core/render/exportFleetPdf";
-import {
-  rasterizeShipSheetToJpegBlob,
-  rasterizeShipSheetToJpegBlobOffscreen,
-} from "./core/render/exportSheetImage";
+import { rasterizeShipSheetToJpegBlob } from "./core/render/exportSheetImage";
 import { waitForFonts } from "./core/render/measure";
 import { DEFAULT_PRESET_ID, PRESETS } from "./presets";
 
@@ -218,6 +227,12 @@ export function App(): JSX.Element {
   >({});
   const [fleetPrintFormat, setFleetPrintFormat] =
     createSignal<FleetPdfPageFormat>("a4");
+  const [fleetPrintMode, setFleetPrintMode] = createSignal<SheetMode>("custom");
+  /** Right-pane preview: finished sheet, or the modular console + cut-outs. */
+  const [previewMode, setPreviewMode] = createSignal<SheetMode>("custom");
+  const [fleetPrintProgress, setFleetPrintProgress] = createSignal<
+    { done: number; total: number } | null
+  >(null);
 
   createEffect(() => {
     if (!fleetPrintOpen()) return;
@@ -404,12 +419,65 @@ export function App(): JSX.Element {
     for (const t of tabs()) next[t.id] = true;
     setFleetPrintInclude(next);
     setFleetPrintFormat("a4");
+    setFleetPrintMode("custom");
+    setFleetPrintProgress(null);
     setFleetPrintOpen(true);
     setError(null);
   };
 
   const toggleFleetPrintInclude = (tabId: string) => {
     setFleetPrintInclude((m) => ({ ...m, [tabId]: !m[tabId] }));
+  };
+
+  /** Cut-out pages for the active ship, only computed while previewing them. */
+  const modularPreviewPages = createMemo(() => {
+    const t = activeTab();
+    if (!t || previewMode() !== "modular" || !fontsReady()) return [];
+    return modularPagesFor(t.ship);
+  });
+
+  /** Warns when the fixed tile size no longer suits this ship's layout. */
+  const modularPreviewNote = createMemo(() => {
+    const t = activeTab();
+    if (!t || previewMode() !== "modular" || !fontsReady()) return null;
+    const notes: string[] = [];
+
+    const oversized = modularOversizedSystems(t.ship);
+    if (oversized.length > 0) {
+      const worst = oversized.reduce((a, b) => (b.needed > a.needed ? b : a));
+      notes.push(
+        `${oversized.length} system${oversized.length > 1 ? "s are" : " is"} taller than the tile box (worst: “${worst.name}” needs ${worst.needed} vs ${worst.box}) — raise MODULAR_SECTION_TILE_HEIGHT.`,
+      );
+    }
+
+    const overflowing = overflowingColumns(t.ship);
+    if (overflowing.length > 0) {
+      notes.push(
+        overflowing
+          .map(
+            (f) =>
+              `${f.column} column runs ${f.overflow} units past the space below it`,
+          )
+          .join("; ") + ".",
+      );
+    }
+
+    const overCap = columnsOverSlotCap(t.ship);
+    if (overCap.length > 0) {
+      notes.push(
+        `${overCap.join(" / ")} column${overCap.length > 1 ? "s have" : " has"} more than ${MODULAR_MAX_SLOTS_PER_COLUMN} slots.`,
+      );
+    }
+
+    return notes.length > 0 ? notes.join(" ") : null;
+  });
+
+  /** Total A5 sheets the current selection + mode will produce. */
+  const fleetPrintSheetCount = (): number => {
+    const mode = fleetPrintMode();
+    return tabs()
+      .filter((t) => fleetPrintInclude()[t.id] !== false)
+      .reduce((n, t) => n + sheetCountForShip(t.ship, mode), 0);
   };
 
   const onGenerateFleetPdf = async () => {
@@ -419,24 +487,26 @@ export function App(): JSX.Element {
       return;
     }
     setFleetPrintBusy(true);
+    setFleetPrintProgress(null);
     setError(null);
     try {
       const format = fleetPrintFormat();
-      const targetWidthPx = sheetRasterWidthPxForFormat(format);
-      const blobs: Blob[] = [];
-      for (const t of sel) {
-        blobs.push(
-          await rasterizeShipSheetToJpegBlobOffscreen(t.ship, {
-            containerWidthPx: 1200,
-            targetWidthPx,
-          }),
-        );
-      }
+      const mode = fleetPrintMode();
+      const blobs = await buildPrintSheetJpegs(
+        sel.map((t) => t.ship),
+        mode,
+        {
+          containerWidthPx: 1200,
+          targetWidthPx: sheetRasterWidthPxForFormat(format),
+          onProgress: (done, total) => setFleetPrintProgress({ done, total }),
+        },
+      );
       const pdf = await buildFleetPdfFromJpegs(blobs, format);
+      const suffix = mode === "modular" ? "_modular" : "";
       const filename =
         sel.length === 1
-          ? `${slugify(sel[0]!.ship.name)}_sheet.pdf`
-          : `fleet_${slugify(sel[0]!.ship.name)}_${sel.length}_ships.pdf`;
+          ? `${slugify(sel[0]!.ship.name)}_sheet${suffix}.pdf`
+          : `fleet_${slugify(sel[0]!.ship.name)}_${sel.length}_ships${suffix}.pdf`;
 
       const outcome = await saveBlobWithSaveAsDialog(pdf, filename);
       if (outcome === "saved" || outcome === "fallback") {
@@ -451,6 +521,7 @@ export function App(): JSX.Element {
       setError(e?.message ?? String(e));
     } finally {
       setFleetPrintBusy(false);
+      setFleetPrintProgress(null);
     }
   };
 
@@ -583,6 +654,19 @@ export function App(): JSX.Element {
             >
               {activeTab()?.customize ? "Customize: ON" : "Customize: off"}
             </button>
+            <button
+              type="button"
+              classList={{
+                "mode-toggle": true,
+                active: previewMode() === "modular",
+              }}
+              onClick={() =>
+                setPreviewMode((m) => (m === "modular" ? "custom" : "modular"))
+              }
+              title="Preview the modular class sheet: blank console + cut-out tiles"
+            >
+              {previewMode() === "modular" ? "Modular: ON" : "Modular: off"}
+            </button>
           </div>
           <div class="toolbar-row toolbar-template-row">
             <label for="preset-select" class="toolbar-label">Template</label>
@@ -668,12 +752,39 @@ export function App(): JSX.Element {
         </Show>
       </div>
 
-      <div class="pane right-pane">
+      <div
+        class="pane right-pane"
+        classList={{ "right-pane-modular": previewMode() === "modular" }}
+      >
+        {/* Keep this the FIRST .ship-preview-wrapper — "Download Image"
+            rasterizes whatever that selector finds. */}
         <div class="ship-preview-wrapper">
           <Show when={fontsReady()}>
-            <ShipSVG ship={activeTab()!.ship} responsive />
+            <ShipSVG
+              ship={activeTab()!.ship}
+              responsive
+              mode={previewMode()}
+            />
           </Show>
         </div>
+        <Show when={fontsReady() && previewMode() === "modular"}>
+          <For each={modularPreviewPages()}>
+            {(page, i) => (
+              <div class="modular-tiles-preview">
+                <ModularTilesSVG
+                  page={page}
+                  shipName={activeTab()!.ship.name}
+                  pageIndex={i()}
+                  pageCount={modularPreviewPages().length}
+                  responsive
+                />
+              </div>
+            )}
+          </For>
+          <Show when={modularPreviewNote()}>
+            <p class="modular-preview-note">{modularPreviewNote()}</p>
+          </Show>
+        </Show>
       </div>
       </div>
 
@@ -717,6 +828,24 @@ export function App(): JSX.Element {
               </div>
               <div class="fleet-print-side">
                 <label class="fleet-print-format-label">
+                  <span>Print mode</span>
+                  <select
+                    value={fleetPrintMode()}
+                    disabled={fleetPrintBusy()}
+                    onChange={(e) =>
+                      setFleetPrintMode(e.currentTarget.value as SheetMode)
+                    }
+                  >
+                    <option value="custom">Custom loadout (one sheet per ship)</option>
+                    <option value="modular">Modular class (blank console + tiles)</option>
+                  </select>
+                </label>
+                <p class="fleet-print-mode-hint">
+                  {fleetPrintMode() === "modular"
+                    ? "Slots print as uniform blank spaces; every slot option prints as a cut-out tile sized to fit any of them. Fixed systems stay printed on the console."
+                    : "Each ship prints as one finished sheet with its current loadout."}
+                </p>
+                <label class="fleet-print-format-label">
                   <span>Page format</span>
                   <select
                     value={fleetPrintFormat()}
@@ -729,6 +858,10 @@ export function App(): JSX.Element {
                     <option value="letter">US Letter (8.5 × 11 in)</option>
                   </select>
                 </label>
+                <div class="fleet-print-sheet-count">
+                  {fleetPrintSheetCount()} sheet
+                  {fleetPrintSheetCount() === 1 ? "" : "s"} to print
+                </div>
                 <div class="fleet-print-buttons">
                   <button
                     type="button"
@@ -736,7 +869,11 @@ export function App(): JSX.Element {
                     disabled={fleetPrintBusy()}
                     onClick={onGenerateFleetPdf}
                   >
-                    {fleetPrintBusy() ? "Generating…" : "Generate PDF"}
+                    {fleetPrintBusy()
+                      ? fleetPrintProgress()
+                        ? `Rendering ${fleetPrintProgress()!.done}/${fleetPrintProgress()!.total}…`
+                        : "Generating…"
+                      : "Generate PDF"}
                   </button>
                   <button
                     type="button"

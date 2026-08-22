@@ -25,6 +25,29 @@ npx tsx scripts/verify-ships.ts     # validate presets + legacy ships + library
 
 Web-specific presets live in `web/src/presets/*.json` and are selected via the toolbar dropdown. Reusable systems live in `web/src/core/library/systems.json` and are referenced by slot allow-lists.
 
+### Print modes
+
+“Print fleet” offers two ways to get a sheet onto paper:
+
+- **Custom loadout** — the original output: each ship prints as one finished A5
+  console with its currently installed systems. Changing a loadout means
+  reprinting the sheet.
+- **Modular class** — print once, re-loadout forever. The console prints with
+  every *slot* left as a uniform blank space, and each slot option prints as a
+  cut-out tile sized to drop onto any of those spaces. Fixed (inline) systems
+  stay printed on the console, since they can't be swapped anyway. Cut the tiles
+  out once; after that you rearrange the ship by moving cardboard instead of
+  reprinting.
+
+  On A4 two A5 sheets stack per page, so a class whose tiles fit one tile page
+  comes out as a single sheet of paper: console on top, modules below.
+
+All cut-outs of a class are one fixed size — section tiles, engine tiles and
+reactor/mess tiles each have their own standard box, and a tile always prints at
+its full box size so it matches the blank space it covers. The `Modular` toolbar
+toggle previews the same thing live and warns if a system outgrows its box.
+Sizes are the `MODULAR_*` constants in `web/src/core/render/sheetLayout.ts`.
+
 ### Fonts
 
 The web app uses Google Fonts (`Titillium Web` + `Orbitron` as an Eurostile Extended stand-in). The shared `fonts/` folder is only consumed by the Python tool — see `TODO.md` for why and how to swap in a real Eurostile later.
