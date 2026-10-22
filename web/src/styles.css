@@ -187,13 +187,26 @@ html, body, #root {
   background: #e9e9ec;
   padding: 16px;
   align-items: center;
+  /* The preview's height comes from its width via `aspect-ratio`, so on a wide
+     but short window it is taller than this pane. Plain `center` then overflows
+     BOTH edges and the top — the ship name — is clipped away with no way to
+     reach it. `safe center` centres only while it fits and falls back to
+     flex-start otherwise; `auto` lets the rest be scrolled to. The fallback
+     line keeps older engines on plain centring. */
   justify-content: center;
+  justify-content: safe center;
+  overflow: auto;
 }
 
 .ship-preview-wrapper {
   width: 100%;
   max-width: 1400px;
   aspect-ratio: 21 / 14.8;
+  /* Never let flex shrink the height: that keeps the box's real aspect ratio
+     instead of squashing it, and makes Firefox and Chrome agree (Chrome's
+     default flex-shrink was quietly squashing this, which is why the clipping
+     only showed up in Firefox). */
+  flex: 0 0 auto;
   background: white;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
 }
@@ -208,12 +221,7 @@ html, body, #root {
    scrolls from the top instead of centring a single sheet. */
 .right-pane-modular {
   justify-content: flex-start;
-  overflow-y: auto;
   gap: 16px;
-}
-
-.right-pane-modular .ship-preview-wrapper {
-  flex: 0 0 auto;
 }
 
 .modular-tiles-preview {
@@ -1017,3 +1025,14 @@ html, body, #root {
     margin-top: 0;
   }
 }
+
+/* Fit the complete card to both dimensions of the preview pane. Export wrappers
+   live outside this pane and retain their full rasterisation dimensions. */
+.right-pane { container-type: size; min-width: 0; }
+.right-pane > .ship-preview-wrapper,
+.right-pane > .modular-tiles-preview {
+  width: min(100%, calc(100cqh * 21 / 14.8));
+}
+
+.toolbar-modes-row { flex-wrap: nowrap; }
+.toolbar-modes-row .mode-toggle { flex: 1; padding-inline: 6px; white-space: nowrap; }

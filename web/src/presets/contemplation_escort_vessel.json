@@ -3,60 +3,22 @@
   "description": "Contemplation Class Escort Vessel",
   "label": "Contemplation Escort Vessel",
   "shields": {
-    "kind": "system",
-    "system": {
-      "kind": "shields",
-      "name": "Deflector Shields",
-      "rules": "",
-      "electronics": true,
-      "hull": false,
-      "life_support": false,
-      "areas": [],
-      "front": [
-        2,
-        2,
-        1
-      ],
-      "rear": [
-        2,
-        2
-      ],
-      "weapon": false,
-      "main": false
-    }
-  },
-  "reactor": {
-    "kind": "slot",
-    "label": "Reactor",
-    "options": [
-      {
-        "kind": "reactor",
-        "name": "Reactor",
-        "rules": "Energy Production: 2",
-        "circles": 6,
-        "electronics": true,
-        "hull": false,
-        "life_support": false,
-        "areas": [],
-        "weapon": false,
-        "main": false
-      }
+    "name": "Deflector Shields",
+    "rules": "",
+    "front": [
+      2,
+      2,
+      1
+    ],
+    "rear": [
+      2,
+      2
     ]
   },
-  "mess": {
-    "kind": "system",
-    "system": {
-      "kind": "mess",
-      "name": "Mess",
-      "rules": "Crew: 3",
-      "med_bay": 1,
-      "electronics": false,
-      "hull": false,
-      "life_support": true,
-      "areas": [],
-      "weapon": false,
-      "main": false
-    }
+  "reactor": {
+    "name": "Reactor",
+    "rules": "Energy Production: 2",
+    "circles": 6
   },
   "sections": {
     "left": [
@@ -211,15 +173,15 @@
             "speed_slots": [
               {
                 "speed": "0-1",
-                "rotation": "90°"
+                "rotation": "90\u00b0"
               },
               {
                 "speed": "1-2",
-                "rotation": "45°"
+                "rotation": "45\u00b0"
               },
               {
                 "speed": "2-3",
-                "rotation": "0°"
+                "rotation": "0\u00b0"
               }
             ],
             "weapon": false,
@@ -262,5 +224,10 @@
         ]
       }
     ]
+  },
+  "quarters": {
+    "name": "Quarters",
+    "rules": "Crew: 3",
+    "med_bay": 1
   }
 }

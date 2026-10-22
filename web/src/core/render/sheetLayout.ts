@@ -12,18 +12,21 @@
  * equal user-space units guarantee equal millimetres on paper.
  */
 
-import {
-  cssFont,
-  FONT_EUROSTILE,
-  FONT_TITILLIUM,
-  SHEET_HEIGHT,
-  SHEET_LABEL_SIZE,
-  SHEET_SUBTITLE_SIZE,
-  SHEET_TITLE_SIZE,
-  SHEET_WIDTH,
-  TILE_WIDTH,
-} from "./constants";
-import { measureText } from "./measure";
+import { SHIELD_WIDTH, SHIELD_HEIGHT } from "./shieldGeometry";
+import { REACTOR_WIDTH, REACTOR_HEIGHT } from "./reactorGeometry";
+import { QUARTERS_WIDTH, QUARTERS_HEIGHT } from "./quartersGeometry";
+import { mm } from "./featureGeometry";
+import { SHEET_HEIGHT, SHEET_WIDTH, TILE_WIDTH } from "./constants";
+
+/** Physical mask geometry: never derived from ship capacity or content. */
+export const FEATURE_LAYOUT = {
+  front: { x: 80, y: 70, width: SHIELD_WIDTH, height: SHIELD_HEIGHT },
+  reactor: { x: 45, y: 650, width: REACTOR_WIDTH, height: REACTOR_HEIGHT },
+  rear: { x: 80, y: 1130, width: SHIELD_WIDTH, height: SHIELD_HEIGHT },
+  quarters: { x: 310, y: 1480, width: QUARTERS_WIDTH, height: QUARTERS_HEIGHT },
+} as const;
+export const COLUMN_TOP = { left: 490, core: 400, right: 580 } as const;
+export const COLUMN_BOTTOM = { left: 1360, core: 1600, right: 1600 } as const;
 
 // ---------------------------------------------------------------------------
 // Console geometry (was inline in ShipSVG)
@@ -36,51 +39,18 @@ export const COLUMN_MARGIN = 12;
 export const SIDE_MARGIN = 16;
 
 /** Width of each of the three system columns (LEFT / CENTER / RIGHT). */
-export const COLUMN_WIDTH = Math.floor(
-  (SHEET_WIDTH - 2 * SIDE_MARGIN - 2 * COLUMN_MARGIN) / 3,
-);
-
+export const CHARACTERS_X = 2370;
+export const LEFT_FEATURE_BAND_RIGHT = FEATURE_LAYOUT.quarters.x - 25 + mm(3);
+export const SYSTEM_SIDE_CLEARANCE = mm(3);
+export const COLUMNS_START_X = LEFT_FEATURE_BAND_RIGHT + SYSTEM_SIDE_CLEARANCE;
+export const COLUMN_WIDTH = (CHARACTERS_X - mm(2.5) - COLUMNS_START_X - 2*COLUMN_MARGIN)/3;
 export const TOTAL_COLUMNS_WIDTH = 3 * COLUMN_WIDTH + 2 * COLUMN_MARGIN;
-export const COLUMNS_START_X = Math.floor(
-  (SHEET_WIDTH - TOTAL_COLUMNS_WIDTH) / 2,
-);
-
-/** Bottom-row boxes: reactor, mess (left) and shields (right). */
-export const BOTTOM_BOX_WIDTH = SHEET_WIDTH / 3 - BOX_MARGIN;
-export const BOTTOM_BOX_HEIGHT = 300;
-export const CORE_BOTTOM_GAP = 24;
 
 /**
  * Scale applied to a {@link layoutSystem} tile (drawn in TILE_WIDTH-wide tile
  * space) when it is placed into a console column.
  */
 export const COLUMN_TILE_SCALE = COLUMN_WIDTH / TILE_WIDTH;
-
-/** Same, for the narrower bottom boxes (reactor / mess). */
-export const BOTTOM_TILE_SCALE = BOTTOM_BOX_WIDTH / TILE_WIDTH;
-
-// ---------------------------------------------------------------------------
-// Header / column origin
-// ---------------------------------------------------------------------------
-
-/**
- * Y where the header text ends. Shared with `ShipSVG::renderHeader` so the
- * modular sizing maths sees the same column origin the console actually draws
- * at (a longer ship name pushes the columns down and leaves less room).
- */
-export function headerBottomY(name: string, description: string): number {
-  const titleFont = cssFont(SHEET_TITLE_SIZE, FONT_EUROSTILE);
-  const subtitleFont = cssFont(SHEET_SUBTITLE_SIZE, FONT_TITILLIUM);
-  const titleY = 50;
-  const titleHeight = measureText(name.toUpperCase(), titleFont).height;
-  const subtitleY = titleY + titleHeight + 20;
-  return subtitleY + measureText(description, subtitleFont).height;
-}
-
-/** Y where the three system columns start. */
-export function columnsTopY(name: string, description: string): number {
-  return headerBottomY(name, description) + 50 + SHEET_LABEL_SIZE + 20;
-}
 
 // ---------------------------------------------------------------------------
 // Modular ("print class") sizing
@@ -93,13 +63,9 @@ export function columnsTopY(name: string, description: string): number {
  * exactly this height and at {@link COLUMN_WIDTH} wide — one fixed size, so any
  * tile fits any slot on any class.
  *
- * Only the left column (under Reactor/Mess) and the right column (under
- * Shields) are height-limited; the centre column runs to the bottom of the
- * sheet. There is plenty of slack, so this is a plain constant — raise it if
- * a system's text needs more room. `modularOversizedSystems` reports anything
- * whose natural layout no longer fits.
+ * Column limits reserve room for quarters and cargo.
  */
-export const MODULAR_SECTION_TILE_HEIGHT = 240;
+export const MODULAR_SECTION_TILE_HEIGHT = 210 * COLUMN_WIDTH / 580;
 
 /**
  * Engines get their own standard size. They are much taller than any other
@@ -108,7 +74,7 @@ export const MODULAR_SECTION_TILE_HEIGHT = 240;
  * of the page. Engine slots take engine-sized cut-outs; everything else shares
  * the section size.
  */
-export const MODULAR_ENGINE_TILE_HEIGHT = 380;
+export const MODULAR_ENGINE_TILE_HEIGHT = 300 * COLUMN_WIDTH / 580;
 
 /**
  * Design cap on section slots per console column. Uniform slots are taller than
@@ -123,17 +89,53 @@ export const MODULAR_MAX_SLOTS_PER_COLUMN = 4;
 export const MODULAR_COLUMN_BOTTOM_PADDING = 16;
 
 /**
- * Uniform height for reactor / mess cut-outs, in sheet units. These sit in the
- * narrower bottom-left boxes, so they get their own standard size (per design:
- * "exactly the size that current shields-mess-reactor use").
+ * Which console column a modular tile belongs to. Left and right tiles get a
+ * cut corner so a pile of loose cardboard can be sorted at a glance; centre
+ * tiles stay square.
  */
-export const MODULAR_CORE_TILE_HEIGHT = 260;
+export type ModularColumn = "left" | "core" | "right";
 
-/** Shields cut-outs match the existing shields box exactly. */
-export const MODULAR_SHIELDS_TILE_HEIGHT = BOTTOM_BOX_HEIGHT;
+/** Corner chamfer for a column, as a {@link layoutSystem} corner. */
+export type TileCorner = "none" | "left" | "right";
 
-/** Which standard box a given ship position uses. */
-export type ModularTileSize = "section" | "engine" | "core" | "shields";
+export function cornerForColumn(column: ModularColumn): TileCorner {
+  if (column === "left") return "left";
+  if (column === "right") return "right";
+  return "none";
+}
+
+/**
+ * Size of the diagonal cut across a tile's top corner, in **tile-space** units
+ * (the space {@link layoutSystem} draws in). ~50 units lands near 3.5 mm
+ * printed — readable across a table without biting into the title.
+ *
+ * Applied to every system, fixed ones included, so a console column reads the
+ * same whether a position is a swappable slot or welded in place.
+ */
+export const TILE_CORNER_CUT = 50;
+
+/**
+ * Outline of a tile `width` x `height` with an optional cut top corner.
+ * Shared by the printed tile border and the console's blank placement target,
+ * so a cut-out and the space it drops into are the same shape.
+ */
+export function tileOutlinePath(
+  width: number,
+  height: number,
+  corner: TileCorner,
+  cut: number,
+): string {
+  if (corner === "left") {
+    return `M ${cut} 0 L ${width} 0 L ${width} ${height} L 0 ${height} L 0 ${cut} Z`;
+  }
+  if (corner === "right") {
+    return `M 0 0 L ${width - cut} 0 L ${width} ${cut} L ${width} ${height} L 0 ${height} Z`;
+  }
+  return `M 0 0 L ${width} 0 L ${width} ${height} L 0 ${height} Z`;
+}
+
+/** Only configurable systems produce modular cut-outs. */
+export type ModularTileSize = "section" | "engine";
 
 export interface TileBox {
   width: number;
@@ -147,10 +149,6 @@ export function tileBoxFor(size: ModularTileSize): TileBox {
       return { width: COLUMN_WIDTH, height: MODULAR_SECTION_TILE_HEIGHT };
     case "engine":
       return { width: COLUMN_WIDTH, height: MODULAR_ENGINE_TILE_HEIGHT };
-    case "core":
-      return { width: BOTTOM_BOX_WIDTH, height: MODULAR_CORE_TILE_HEIGHT };
-    case "shields":
-      return { width: BOTTOM_BOX_WIDTH, height: MODULAR_SHIELDS_TILE_HEIGHT };
   }
 }
 

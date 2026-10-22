@@ -28,8 +28,8 @@ const MM_PER_INCH = 25.4;
  */
 export function sheetRasterWidthPxForFormat(
   format: FleetPdfPageFormat,
-  marginMm = 12,
-  gapBetweenShipsMm = 6,
+  marginMm = 0,
+  gapBetweenShipsMm = 1,
   dpi = PDF_IMAGE_DPI,
 ): number {
   const [pageW, pageH] = FORMAT_MM[format];
@@ -52,14 +52,12 @@ function blobToDataUrl(blob: Blob): Promise<string> {
   });
 }
 
-const SHEET_ASPECT = SHEET_WIDTH / SHEET_HEIGHT;
-
-function fitSizeInBox(boxW: number, boxH: number): { drawW: number; drawH: number } {
-  let drawW = boxW;
-  let drawH = boxW / SHEET_ASPECT;
-  if (drawH > boxH) {
-    drawH = boxH;
-    drawW = boxH * SHEET_ASPECT;
+/** Keep the physical mask dimensions at 300 DPI; never shrink to fit. */
+export function fitSizeInBox(boxW: number, boxH: number): { drawW: number; drawH: number } {
+  const drawW = SHEET_WIDTH / PDF_IMAGE_DPI * MM_PER_INCH;
+  const drawH = SHEET_HEIGHT / PDF_IMAGE_DPI * MM_PER_INCH;
+  if (drawW > boxW + 0.001 || drawH > boxH + 0.001) {
+    throw new Error("The sheet does not fit at actual size. Reduce page margins or use larger paper.");
   }
   return { drawW, drawH };
 }
@@ -85,8 +83,8 @@ function addImageCentered(
 export async function buildFleetPdfFromJpegs(
   jpegBlobs: Blob[],
   format: FleetPdfPageFormat,
-  marginMm = 12,
-  gapBetweenShipsMm = 6,
+  marginMm = 0,
+  gapBetweenShipsMm = 1,
 ): Promise<Blob> {
   if (jpegBlobs.length === 0) {
     throw new Error("No ship images to put in the PDF.");

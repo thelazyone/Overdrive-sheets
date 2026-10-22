@@ -27,6 +27,7 @@ export function sheetCountForShip(ship: Ship, mode: SheetMode): number {
 
 export interface BuildPrintSheetsOptions extends OffscreenRasterOptions {
   /** Called after each sheet is rasterised, for progress reporting. */
+  matchModularHeight?: boolean;
   onProgress?: (done: number, total: number) => void;
 }
 
@@ -35,7 +36,7 @@ export async function buildPrintSheetJpegs(
   mode: SheetMode,
   options: BuildPrintSheetsOptions = {},
 ): Promise<Blob[]> {
-  const { onProgress, ...rasterOptions } = options;
+  const { onProgress, matchModularHeight, ...rasterOptions } = options;
 
   const total = ships.reduce((n, s) => n + sheetCountForShip(s, mode), 0);
   const blobs: Blob[] = [];
@@ -46,7 +47,7 @@ export async function buildPrintSheetJpegs(
   };
 
   for (const ship of ships) {
-    await push(() => ShipSVG({ ship, responsive: true, mode }));
+    await push(() => ShipSVG({ ship, responsive: true, mode, matchModularHeight }));
 
     if (mode !== "modular") continue;
 

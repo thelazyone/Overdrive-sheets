@@ -332,11 +332,11 @@ export async function rasterizeSheetToJpegBlobOffscreen(
  */
 export async function rasterizeShipSheetToJpegBlobOffscreen(
   ship: Ship,
-  options: OffscreenRasterOptions & { mode?: SheetMode } = {},
+  options: OffscreenRasterOptions & { mode?: SheetMode; matchModularHeight?: boolean } = {},
 ): Promise<Blob> {
   const mode = options.mode ?? "custom";
   return rasterizeSheetToJpegBlobOffscreen(
-    () => <ShipSVG ship={ship} responsive mode={mode} />,
+    () => <ShipSVG ship={ship} responsive mode={mode} matchModularHeight={options.matchModularHeight} />,
     options,
   );
 }

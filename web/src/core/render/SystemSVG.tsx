@@ -9,7 +9,7 @@
  * Key structural pieces (top to bottom):
  *   1. Title (ALL CAPS, Eurostile Extended Bold, centered)
  *   2. Rules (Titillium SemiBold, centered, optional)
- *   3. Special content for `mess` / `reactor` / `engine` kinds
+ *   3. Special content for `engine` kinds
  *   4. Areas: cost column (energy/crew icons) + content column
  *      (weapon/engine symbol + optional firing arc + description)
  *   5. Bottom-right chevron with hull/electronics/life-support icons
@@ -25,9 +25,7 @@ import {
   FONT_EUROSTILE,
   FONT_TITILLIUM,
   ICON_SIZE,
-  ICON_SIZE_LARGE,
   ENGINE_SLOT_SIZE,
-  TILE_AREA_TITLE_SIZE,
   TILE_COMBAT_NUMBER_SIZE,
   TILE_DESCRIPTION_SIZE,
   TILE_HEIGHT,
@@ -37,6 +35,11 @@ import {
 } from "./constants";
 import { measureText } from "./measure";
 import { wrapText } from "./wrap";
+import {
+  TILE_CORNER_CUT,
+  tileOutlinePath,
+  type TileCorner,
+} from "./sheetLayout";
 import {
   WeaponSymbolSVG,
   weaponSymbolHeight,
@@ -124,104 +127,6 @@ function renderRules(system: System, effectiveWidth: number, y: number) {
 // ---------------------------------------------------------------------------
 // Special-kind content blocks
 // ---------------------------------------------------------------------------
-
-function renderMess(system: Extract<System, { kind: "mess" }>, y: number) {
-  const messHeight = 200;
-  let el: JSX.Element = null;
-
-  if (system.med_bay > 0) {
-    const medBayRatio = 0.275;
-    const medBayWidth = Math.floor(TILE_WIDTH * medBayRatio);
-    const mainSectionWidth = TILE_WIDTH - medBayWidth;
-    const dividerPadding = 10;
-    const dividerX = mainSectionWidth;
-
-    const symbolWidth = ICON_SIZE_LARGE;
-    const gap = 10;
-    const count = system.med_bay;
-    const startX = dividerX + (medBayWidth - symbolWidth) / 2 - 30;
-    const totalSymbolsHeight = count * symbolWidth + gap * Math.max(0, count - 1);
-    const startYIcons = (y + messHeight) / 2 - totalSymbolsHeight / 2;
-
-    const labelText = "MED BAY";
-    const medBayFont = cssFont(Math.floor(TILE_AREA_TITLE_SIZE * 0.75), FONT_EUROSTILE);
-    /** Further left / lower than edge anchors; inset from tile right edge (px). */
-    const insetFromTileRight = 28;
-    const labelAnchorX = TILE_WIDTH - insetFromTileRight;
-    const labelAnchorY =
-      y + dividerPadding + Math.round(messHeight * 0.2);
-
-    el = (
-      <g>
-        <line
-          x1={dividerX}
-          y1={dividerPadding}
-          x2={dividerX}
-          y2={y + messHeight - dividerPadding}
-          stroke="black"
-          stroke-width={2}
-        />
-        {Array.from({ length: count }).map((_, i) => (
-          <image
-            href={publicAsset("resources/med_bay_symbol.png")}
-            x={startX}
-            y={startYIcons + i * (symbolWidth + gap)}
-            width={symbolWidth}
-            height={symbolWidth}
-          />
-        ))}
-        <g transform={`translate(${labelAnchorX} ${labelAnchorY}) rotate(-90)`}>
-          <text
-            x={0}
-            y={0}
-            text-anchor="start"
-            dominant-baseline="hanging"
-            style={{ font: medBayFont, fill: "black" }}
-          >
-            {labelText}
-          </text>
-        </g>
-      </g>
-    );
-  }
-
-  return { el, height: messHeight };
-}
-
-function renderReactor(system: Extract<System, { kind: "reactor" }>, y: number) {
-  const emptySpaceHeight = 150;
-  const count = system.circles;
-  if (count <= 0) return { el: null as JSX.Element, height: emptySpaceHeight };
-
-  let symbolWidth = ICON_SIZE_LARGE;
-  let gap = 20;
-  let totalWidth = count * symbolWidth + (count - 1) * gap;
-  for (let attempt = 0; attempt < 6; attempt++) {
-    if (totalWidth <= TILE_WIDTH - 20) break;
-    symbolWidth -= 10;
-    gap -= 3;
-    totalWidth = count * symbolWidth + (count - 1) * gap;
-  }
-
-  const startX = (TILE_WIDTH - totalWidth) / 2;
-  const symbolY = y + (emptySpaceHeight - symbolWidth) / 2;
-
-  const el = (
-    <g>
-      {Array.from({ length: count }).map((_, i) => (
-        <image
-          href={publicAsset("resources/energy_symbol_large.png")}
-          x={startX + i * (symbolWidth + gap)}
-          y={symbolY}
-          width={symbolWidth}
-          height={symbolWidth}
-        />
-      ))}
-    </g>
-  );
-
-  return { el, height: emptySpaceHeight };
-}
 
 function renderEngine(system: Extract<System, { kind: "engine" }>, y: number) {
   const slots =
@@ -522,7 +427,7 @@ function iconList(system: System, flags: Array<{ key: keyof System; href: string
   return flags.filter((f) => (system as any)[f.key]);
 }
 
-function renderTopLeftIcons(system: System, yRef: number) {
+function renderTopLeftIcons(system: System, yRef: number, xOffset = 0) {
   const icons = iconList(system, [
     { key: "weapon", href: publicAsset("resources/weapon_icon.png") },
     { key: "main", href: publicAsset("resources/star_icon.png") },
@@ -535,7 +440,7 @@ function renderTopLeftIcons(system: System, yRef: number) {
   const bgPadding = 10;
   const bgWidth = totalWidth + 2 * bgPadding;
   const bgHeight = iconSize + 2 * bgPadding;
-  const bgX = 0;
+  const bgX = xOffset;
   const bgY = yRef - 6;
   const slopeWidth = Math.floor(bgHeight * 0.577);
 
@@ -617,15 +522,17 @@ export interface SystemLayout {
  * box instead of floating at its natural height inside it: the flow content is
  * centred in the extra space and the bottom-right damage chevron re-anchors to
  * the new bottom edge, so a short system still prints as a full-size module.
+ *
+ * @param corner Cuts a diagonal across the tile's top-left or top-right corner,
+ * marking which console column the tile belongs to. The top-left weapon/main
+ * chevron shifts inward when that corner is cut so the icons survive.
  */
 export function layoutSystem(
   system: System,
   targetHeight?: number,
+  corner: TileCorner = "none",
 ): SystemLayout {
-  const effectiveWidth =
-    system.kind === "mess" && system.med_bay > 0
-      ? Math.floor(TILE_WIDTH * 0.7)
-      : TILE_WIDTH;
+  const effectiveWidth = TILE_WIDTH;
 
   let y = VERTICAL_MARGIN;
   const parts: JSX.Element[] = [];
@@ -641,15 +548,7 @@ export function layoutSystem(
   y += rules.height;
 
   // Special content
-  if (system.kind === "mess") {
-    const m = renderMess(system, y);
-    if (m.el) parts.push(m.el);
-    y += m.height;
-  } else if (system.kind === "reactor") {
-    const r = renderReactor(system, y);
-    if (r.el) parts.push(r.el);
-    y += r.height + VERTICAL_SPACING;
-  } else if (system.kind === "engine") {
+  if (system.kind === "engine") {
     y += Math.floor(TILE_HEIGHT * 0.03);
     const e = renderEngine(system, y);
     if (e.el) parts.push(e.el);
@@ -674,16 +573,20 @@ export function layoutSystem(
   // Bottom-right icons (anchored to the tile's bottom edge)
   const br = renderBottomRightIcons(system, y + slack);
 
-  // Top-left icons (at the top, after title)
-  const tl = renderTopLeftIcons(system, VERTICAL_MARGIN);
+  // Top-left icons (at the top, after title). A cut left corner would slice
+  // through them, so push them clear of the diagonal.
+  const tl = renderTopLeftIcons(
+    system,
+    VERTICAL_MARGIN,
+    corner === "left" ? TILE_CORNER_CUT : 0,
+  );
+
+  const outline = tileOutlinePath(TILE_WIDTH, height, corner, TILE_CORNER_CUT);
 
   const el = (
     <g>
-      <rect
-        x={0}
-        y={0}
-        width={TILE_WIDTH}
-        height={height}
+      <path
+        d={outline}
         fill="white"
         stroke="black"
         stroke-width={BORDER_WIDTH}

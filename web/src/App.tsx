@@ -230,6 +230,7 @@ export function App(): JSX.Element {
   const [fleetPrintMode, setFleetPrintMode] = createSignal<SheetMode>("custom");
   /** Right-pane preview: finished sheet, or the modular console + cut-outs. */
   const [previewMode, setPreviewMode] = createSignal<SheetMode>("custom");
+  const [matchModularHeight, setMatchModularHeight] = createSignal(true);
   const [fleetPrintProgress, setFleetPrintProgress] = createSignal<
     { done: number; total: number } | null
   >(null);
@@ -450,7 +451,7 @@ export function App(): JSX.Element {
       );
     }
 
-    const overflowing = overflowingColumns(t.ship);
+    const overflowing = overflowingColumns(t.ship, matchModularHeight());
     if (overflowing.length > 0) {
       notes.push(
         overflowing
@@ -498,6 +499,7 @@ export function App(): JSX.Element {
         {
           containerWidthPx: 1200,
           targetWidthPx: sheetRasterWidthPxForFormat(format),
+          matchModularHeight: matchModularHeight(),
           onProgress: (done, total) => setFleetPrintProgress({ done, total }),
         },
       );
@@ -637,6 +639,8 @@ export function App(): JSX.Element {
         <div class="toolbar">
           <div class="toolbar-row toolbar-title-row">
             <h1>Overdrive Sheets</h1>
+          </div>
+          <div class="toolbar-row toolbar-modes-row">
             <button
               type="button"
               classList={{ "mode-toggle": true, active: activeTab()?.customize }}
@@ -666,6 +670,12 @@ export function App(): JSX.Element {
               title="Preview the modular class sheet: blank console + cut-out tiles"
             >
               {previewMode() === "modular" ? "Modular: ON" : "Modular: off"}
+            </button>
+            <button type="button" classList={{ "mode-toggle": true, active: !matchModularHeight() }}
+              aria-pressed={!matchModularHeight()}
+              title="Fit systems to their contents; when off, keep standard modular tile sizes"
+              onClick={() => setMatchModularHeight(value => !value)}>
+              {matchModularHeight() ? "Fit systems: off" : "Fit systems: ON"}
             </button>
           </div>
           <div class="toolbar-row toolbar-template-row">
@@ -764,6 +774,7 @@ export function App(): JSX.Element {
               ship={activeTab()!.ship}
               responsive
               mode={previewMode()}
+              matchModularHeight={matchModularHeight()}
             />
           </Show>
         </div>
@@ -963,29 +974,10 @@ function SectionList(props: SectionListProps) {
   return (
     <>
       <div class="section-group section-group-divider">
-        <h2 class="section-heading">CORE</h2>
-        <p class="section-heading-hint">Reactor, mess, shields</p>
-        <SystemRow
-          id="ship.reactor"
-          sysRef={props.ship.reactor}
-          canonicalLabel="Reactor"
-          canonicalKind="reactor"
-          {...rowCommon()}
-        />
-        <SystemRow
-          id="ship.mess"
-          sysRef={props.ship.mess}
-          canonicalLabel="Mess"
-          canonicalKind="mess"
-          {...rowCommon()}
-        />
-        <SystemRow
-          id="ship.shields"
-          sysRef={props.ship.shields}
-          canonicalLabel="Shields"
-          canonicalKind="shields"
-          {...rowCommon()}
-        />
+        <h2 class="section-heading">SHIP FEATURES</h2>
+        <p><strong>Reactor</strong> — {props.ship.reactor.rules}</p>
+        <p><strong>Quarters</strong> — {props.ship.quarters.rules} · Med bay: {props.ship.quarters.med_bay}</p>
+        <p><strong>Shields</strong> — Front: {props.ship.shields.front.join(", ")} · Rear: {props.ship.shields.rear.join(", ")}</p>
       </div>
       <SectionGroup
         title="LEFT"
@@ -1059,18 +1051,6 @@ function formatSlotRowLabel(
   return `${base} slot (${slot.options.length})`;
 }
 
-function canonicalRowTitleForPath(path: string): string | undefined {
-  switch (path) {
-    case "ship.reactor":
-      return "Reactor";
-    case "ship.mess":
-      return "Mess";
-    case "ship.shields":
-      return "Shields";
-    default:
-      return undefined;
-  }
-}
 
 function SystemRow(props: {
   id: string;
@@ -1080,7 +1060,7 @@ function SystemRow(props: {
   onSelect: OnSelect;
   onShip: ShipUpdater;
   /** Fallback for slot {@link formatSlotRowLabel} when the slot has no `label`
-   *  (e.g. "Reactor" for the reactor row). */
+   *  when a section slot has no label. */
   canonicalLabel?: string;
   /** Canonical kind used for the badge when the slot is empty and we can't
    *  infer from listed options. */
@@ -1195,7 +1175,6 @@ function Inspector(props: {
           <SlotInspector
             path={props.path}
             sysRef={slot()}
-            rowFallbackLabel={canonicalRowTitleForPath(props.path)}
             customize={props.customize}
             onShip={props.onShip}
           />
@@ -1629,36 +1608,7 @@ function SystemEditor(props: {
         />
       </div>
 
-      <Show when={props.system.kind === "shields" ? props.system : null}>
-        {(sh) => (
-          <div class="shields-editor">
-            <label class="field">
-              <span class="field-label">Front shields (comma-separated)</span>
-              <input
-                type="text"
-                value={sh().front.join(", ")}
-                onInput={(e) =>
-                  patch({
-                    front: parseIntList(e.currentTarget.value),
-                  } as Partial<System>)
-                }
-              />
-            </label>
-            <label class="field">
-              <span class="field-label">Rear shields (comma-separated)</span>
-              <input
-                type="text"
-                value={sh().rear.join(", ")}
-                onInput={(e) =>
-                  patch({
-                    rear: parseIntList(e.currentTarget.value),
-                  } as Partial<System>)
-                }
-              />
-            </label>
-          </div>
-        )}
-      </Show>
+
 
       <div class="areas-editor">
         <div class="areas-header">
@@ -1681,12 +1631,7 @@ function SystemEditor(props: {
   );
 }
 
-function parseIntList(s: string): number[] {
-  return s
-    .split(",")
-    .map((t) => Number(t.trim()))
-    .filter((n) => Number.isFinite(n) && n >= 0);
-}
+
 
 function Flag(props: {
   label: string;
@@ -1777,9 +1722,6 @@ function AreaEditor(props: {
 const SECTION_PATH_RE = /^sections\.(left|core|right)\[(\d+)\]$/;
 
 function getRefByPath(ship: Ship, path: string): SystemRef | null {
-  if (path === "ship.reactor") return ship.reactor;
-  if (path === "ship.mess") return ship.mess;
-  if (path === "ship.shields") return ship.shields;
   const m = path.match(SECTION_PATH_RE);
   if (!m) return null;
   const section = m[1] as "left" | "core" | "right";
@@ -1793,9 +1735,6 @@ function withRefUpdate(
   path: string,
   update: (r: SystemRef) => SystemRef
 ): Ship {
-  if (path === "ship.reactor") return { ...ship, reactor: update(ship.reactor) };
-  if (path === "ship.mess") return { ...ship, mess: update(ship.mess) };
-  if (path === "ship.shields") return { ...ship, shields: update(ship.shields) };
 
   const m = path.match(SECTION_PATH_RE);
   if (!m) return ship;

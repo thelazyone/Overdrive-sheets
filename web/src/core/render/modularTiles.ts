@@ -15,6 +15,7 @@ import {
   TILE_PAGE_HEIGHT,
   TILE_PAGE_MARGIN,
   TILE_PAGE_WIDTH,
+  type ModularColumn,
   type ModularTileSize,
   type TileBox,
 } from "./sheetLayout";
@@ -24,6 +25,8 @@ export interface ModularTile {
   system: System;
   /** Which standard box this tile is cut to. */
   size: ModularTileSize;
+  /** Console column it belongs to — drives the cut-corner marking. */
+  column: ModularColumn;
   /** Slot label, e.g. "Weapon" — printed as a small caption for sorting. */
   slotLabel: string;
   /** 1-based index within its slot, for captions like "Weapon 2/3". */
@@ -39,6 +42,7 @@ function slotLabelFor(ref: Extract<SystemRef, { kind: "slot" }>, fallback: strin
 function tilesForRef(
   ref: SystemRef,
   size: ModularTileSize,
+  column: ModularColumn,
   fallbackLabel: string,
 ): ModularTile[] {
   if (ref.kind !== "slot") return [];
@@ -46,6 +50,7 @@ function tilesForRef(
   return ref.options.map((system, i) => ({
     system,
     size,
+    column,
     slotLabel: label,
     optionIndex: i + 1,
     optionCount: ref.options.length,
@@ -58,26 +63,25 @@ function tilesForRef(
  * pack three across; only their heights differ).
  */
 export function collectModularTiles(ship: Ship): ModularTile[] {
-  const sectionRefs: Array<[SystemRef, string]> = [
-    ...ship.sections.left.map((r) => [r, "Left"] as [SystemRef, string]),
-    ...ship.sections.core.map((r) => [r, "Center"] as [SystemRef, string]),
-    ...ship.sections.right.map((r) => [r, "Right"] as [SystemRef, string]),
+  const sectionRefs: Array<[SystemRef, ModularColumn, string]> = [
+    ...ship.sections.left.map(
+      (r) => [r, "left", "Left"] as [SystemRef, ModularColumn, string],
+    ),
+    ...ship.sections.core.map(
+      (r) => [r, "core", "Center"] as [SystemRef, ModularColumn, string],
+    ),
+    ...ship.sections.right.map(
+      (r) => [r, "right", "Right"] as [SystemRef, ModularColumn, string],
+    ),
   ];
 
-  const all = sectionRefs.flatMap(([r, fallback]) =>
-    tilesForRef(r, sectionSlotSize(r), fallback),
+  const all = sectionRefs.flatMap(([r, column, fallback]) =>
+    tilesForRef(r, sectionSlotSize(r), column, fallback),
   );
 
   const section = all.filter((t) => t.size === "section");
   const engine = all.filter((t) => t.size === "engine");
-  const core: ModularTile[] = [
-    ...tilesForRef(ship.reactor, "core", "Reactor"),
-    ...tilesForRef(ship.mess, "core", "Mess"),
-  ];
-  const shields: ModularTile[] = tilesForRef(ship.shields, "shields", "Shields");
-
-  // Grouped by size: keeps each packed row a single height.
-  return [...section, ...engine, ...core, ...shields];
+  return [...section, ...engine];
 }
 
 // ---------------------------------------------------------------------------

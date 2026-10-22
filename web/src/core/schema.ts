@@ -81,46 +81,23 @@ export const GenericSystemSchema = SystemBaseSchema.extend({
 });
 export type GenericSystem = z.infer<typeof GenericSystemSchema>;
 
-export const MessSystemSchema = SystemBaseSchema.extend({
-  kind: z.literal("mess"),
-  med_bay: z.number().int().nonnegative().default(0),
-});
-export type MessSystem = z.infer<typeof MessSystemSchema>;
-
-export const ReactorSystemSchema = SystemBaseSchema.extend({
-  kind: z.literal("reactor"),
-  circles: z.number().int().nonnegative().default(0),
-});
-export type ReactorSystem = z.infer<typeof ReactorSystemSchema>;
-
 export const EngineSystemSchema = SystemBaseSchema.extend({
   kind: z.literal("engine"),
   speed_slots: z.array(SpeedSlotSchema).default([]),
 });
 export type EngineSystem = z.infer<typeof EngineSystemSchema>;
 
-/**
- * Shields are treated as a first-class system so they can live in a slot
- * (as duplicated options) or inline, and edited through the same inspector as
- * any other system.
- *
- * `front` / `rear` store the shield "column" values (see shields.py): each
- * number N produces a row of N blue slot icons followed by one energy icon.
- */
-export const ShieldsSystemSchema = SystemBaseSchema.extend({
-  kind: z.literal("shields"),
-  front: z.array(z.number().int().nonnegative()).default([]),
-  rear: z.array(z.number().int().nonnegative()).default([]),
-});
-export type ShieldsSystem = z.infer<typeof ShieldsSystemSchema>;
-
-export const SystemSchema = z.discriminatedUnion("kind", [
-  GenericSystemSchema,
-  MessSystemSchema,
-  ReactorSystemSchema,
-  EngineSystemSchema,
-  ShieldsSystemSchema,
-]);
+/** Fixed features cannot be selected, removed, or damaged as systems. */
+const FeatureSchema = z.object({ name: z.string(), rules: z.string().default("") });
+export const QuartersSchema = FeatureSchema.extend({ med_bay: z.number().int().nonnegative().default(0) });
+// Reactors remain vulnerable to energy damage; the hit threshold is deliberately unspecified.
+export const ReactorSchema = FeatureSchema.extend({ circles: z.number().int().nonnegative().default(0) });
+const ShieldTrackSchema = z.array(z.number().int().nonnegative()).default([]).refine(
+  values => values.reduce((sum, n) => sum + n + 1, 0) <= 8,
+  "A shield track has eight charge positions plus off.",
+);
+export const ShieldsSchema = FeatureSchema.extend({ front: ShieldTrackSchema, rear: ShieldTrackSchema });
+export const SystemSchema = z.discriminatedUnion("kind", [GenericSystemSchema, EngineSystemSchema]);
 export type System = z.infer<typeof SystemSchema>;
 
 // ---------------------------------------------------------------------------
@@ -187,9 +164,9 @@ export const ShipSchema = z.object({
   label: z.string().default(""),
   /** Editor preset id — saved with exports so imports can reload slot layout. */
   presetId: z.string().optional(),
-  shields: SystemRefSchema,
-  reactor: SystemRefSchema,
-  mess: SystemRefSchema,
+  shields: ShieldsSchema,
+  reactor: ReactorSchema,
+  quarters: QuartersSchema,
   sections: z.object({
     left: z.array(SystemRefSchema).default([]),
     core: z.array(SystemRefSchema).default([]),
@@ -207,9 +184,6 @@ function normalizeShipRefs(ship: Ship): Ship {
     r.kind === "slot" ? normalizeSlot(r) : r;
   return {
     ...ship,
-    shields: norm(ship.shields),
-    reactor: norm(ship.reactor),
-    mess: norm(ship.mess),
     sections: {
       left: ship.sections.left.map(norm),
       core: ship.sections.core.map(norm),
@@ -221,10 +195,7 @@ function normalizeShipRefs(ship: Ship): Ship {
 /** Values of {@link System.kind} — distinct from {@link SystemRef.kind}. */
 const BARE_SYSTEM_KINDS = new Set<string>([
   "generic",
-  "mess",
-  "reactor",
   "engine",
-  "shields",
 ]);
 
 function isSystemRefDiscriminator(kind: unknown): boolean {
@@ -233,7 +204,7 @@ function isSystemRefDiscriminator(kind: unknown): boolean {
 
 /**
  * {@link exportShipDocument} flattens each {@link SystemRef} to a bare
- * {@link System} (`kind: "mess"` …). Parsed ships in the editor must be
+ * {@link System} (`kind: "generic"` …). Parsed ships in the editor must be
  * `{ kind: "system", system }` or `{ kind: "slot", … }`; wrap legacy flat blobs.
  */
 function coerceSystemRefFromImport(val: unknown): unknown {
@@ -248,9 +219,18 @@ function coerceSystemRefFromImport(val: unknown): unknown {
 
 function coerceImportedShipShape(raw: Record<string, unknown>): Record<string, unknown> {
   const out: Record<string, unknown> = { ...raw };
-  for (const key of ["shields", "reactor", "mess"] as const) {
-    if (key in out) out[key] = coerceSystemRefFromImport(out[key]);
+  // Upgrade legacy inline/slot features. Empty selections use the first option.
+  for (const key of ["shields", "reactor", "quarters"] as const) {
+    let value: any = out[key] ?? (key === "quarters" ? out.mess : undefined);
+    if (value?.kind === "system") value = value.system;
+    if (value?.kind === "slot") value = value.options?.[value.selectedIndex ?? 0] ?? value.options?.[0];
+    if (value && typeof value === "object") {
+      value = { ...value };
+      if (key === "quarters") value.name = "Quarters";
+    }
+    out[key] = value;
   }
+  delete out.mess;
   const sections = out.sections;
   if (sections != null && typeof sections === "object" && !Array.isArray(sections)) {
     const sec = sections as Record<string, unknown>;
@@ -361,9 +341,6 @@ function mergeFlatImportedOntoTemplate(templateShip: Ship, imported: Ship): Ship
     name: imported.name,
     description: imported.description,
     label: imported.label,
-    shields: mergeSystemRefs(templateShip.shields, imported.shields),
-    reactor: mergeSystemRefs(templateShip.reactor, imported.reactor),
-    mess: mergeSystemRefs(templateShip.mess, imported.mess),
     sections: {
       left: mergeSectionRefs(templateShip.sections.left, imported.sections.left),
       core: mergeSectionRefs(templateShip.sections.core, imported.sections.core),
@@ -482,9 +459,9 @@ export function exportShipDocument(ship: Ship): Record<string, unknown> {
     name: ship.name,
     description: ship.description,
     label: ship.label,
-    shields: flattenSystemRefForExport(ship.shields),
-    reactor: flattenSystemRefForExport(ship.reactor),
-    mess: flattenSystemRefForExport(ship.mess),
+    shields: { ...ship.shields },
+    reactor: { ...ship.reactor },
+    quarters: { ...ship.quarters },
     sections: {
       left: ship.sections.left.map((r) => flattenSystemRefForExport(r)),
       core: ship.sections.core.map((r) => flattenSystemRefForExport(r)),

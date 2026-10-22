@@ -3,59 +3,21 @@
   "description": "Providence Class Salvager",
   "label": "Providence Salvager",
   "shields": {
-    "kind": "system",
-    "system": {
-      "kind": "shields",
-      "name": "Deflector Shields",
-      "rules": "",
-      "electronics": true,
-      "hull": false,
-      "life_support": false,
-      "areas": [],
-      "front": [
-        3,
-        3
-      ],
-      "rear": [
-        3,
-        3
-      ],
-      "weapon": false,
-      "main": false
-    }
-  },
-  "reactor": {
-    "kind": "slot",
-    "label": "Reactor",
-    "options": [
-      {
-        "kind": "reactor",
-        "name": "Reactor",
-        "rules": "Energy Production: 3",
-        "circles": 5,
-        "electronics": true,
-        "hull": false,
-        "life_support": false,
-        "areas": [],
-        "weapon": false,
-        "main": false
-      }
+    "name": "Deflector Shields",
+    "rules": "",
+    "front": [
+      3,
+      3
+    ],
+    "rear": [
+      3,
+      3
     ]
   },
-  "mess": {
-    "kind": "system",
-    "system": {
-      "kind": "mess",
-      "name": "Mess",
-      "rules": "Crew: 4",
-      "med_bay": 1,
-      "electronics": false,
-      "hull": false,
-      "life_support": true,
-      "areas": [],
-      "weapon": false,
-      "main": false
-    }
+  "reactor": {
+    "name": "Reactor",
+    "rules": "Energy Production: 3",
+    "circles": 5
   },
   "sections": {
     "left": [
@@ -227,11 +189,11 @@
           "speed_slots": [
             {
               "speed": "0-1",
-              "rotation": "180°"
+              "rotation": "180\u00b0"
             },
             {
               "speed": "1-2",
-              "rotation": "90°"
+              "rotation": "90\u00b0"
             }
           ],
           "weapon": false,
@@ -310,5 +272,10 @@
         ]
       }
     ]
+  },
+  "quarters": {
+    "name": "Quarters",
+    "rules": "Crew: 4",
+    "med_bay": 1
   }
 }

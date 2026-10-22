@@ -3,63 +3,25 @@
   "description": "Salvation Class Utility Vessel",
   "label": "Salvation Utility Vessel",
   "shields": {
-    "kind": "system",
-    "system": {
-      "kind": "shields",
-      "name": "Deflector Shields",
-      "rules": "",
-      "electronics": true,
-      "hull": false,
-      "life_support": false,
-      "areas": [],
-      "front": [
-        1,
-        1,
-        1,
-        1
-      ],
-      "rear": [
-        1,
-        1,
-        1,
-        1
-      ],
-      "weapon": false,
-      "main": false
-    }
-  },
-  "reactor": {
-    "kind": "slot",
-    "label": "Reactor",
-    "options": [
-      {
-        "kind": "reactor",
-        "name": "Industrial Reactor",
-        "rules": "Energy Production: 4",
-        "circles": 5,
-        "electronics": true,
-        "hull": false,
-        "life_support": false,
-        "areas": [],
-        "weapon": false,
-        "main": false
-      }
+    "name": "Deflector Shields",
+    "rules": "",
+    "front": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "rear": [
+      1,
+      1,
+      1,
+      1
     ]
   },
-  "mess": {
-    "kind": "system",
-    "system": {
-      "kind": "mess",
-      "name": "Mess",
-      "rules": "Crew: 5",
-      "med_bay": 1,
-      "electronics": false,
-      "hull": false,
-      "life_support": true,
-      "areas": [],
-      "weapon": false,
-      "main": false
-    }
+  "reactor": {
+    "name": "Industrial Reactor",
+    "rules": "Energy Production: 4",
+    "circles": 5
   },
   "sections": {
     "left": [
@@ -268,11 +230,11 @@
           "speed_slots": [
             {
               "speed": "0",
-              "rotation": "180°"
+              "rotation": "180\u00b0"
             },
             {
               "speed": "0-2",
-              "rotation": "0°"
+              "rotation": "0\u00b0"
             }
           ]
         }
@@ -349,5 +311,10 @@
         ]
       }
     ]
+  },
+  "quarters": {
+    "name": "Quarters",
+    "rules": "Crew: 5",
+    "med_bay": 1
   }
 }

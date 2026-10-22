@@ -19,7 +19,11 @@ import {
   SHEET_WIDTH,
   TILE_WIDTH,
 } from "./constants";
-import { tileScaleForBox, TILE_PAGE_MARGIN } from "./sheetLayout";
+import {
+  cornerForColumn,
+  tileScaleForBox,
+  TILE_PAGE_MARGIN,
+} from "./sheetLayout";
 import { layoutSystem } from "./SystemSVG";
 import type { PlacedTile, TilePage } from "./modularTiles";
 
@@ -43,7 +47,11 @@ function TileCutout(props: { placed: PlacedTile }): JSX.Element {
   // own border fill the box too, so the printed module is the full standard
   // size rather than a smaller tile floating inside the cut guide.
   const scale = tileScaleForBox(box, TILE_WIDTH);
-  const layout = layoutSystem(placed.tile.system, box.height / scale);
+  const layout = layoutSystem(
+    placed.tile.system,
+    box.height / scale,
+    cornerForColumn(placed.tile.column),
+  );
   const drawnH = layout.height * scale;
   const offsetX = 0;
   const offsetY = (box.height - drawnH) / 2;
@@ -53,27 +61,20 @@ function TileCutout(props: { placed: PlacedTile }): JSX.Element {
     FONT_TITILLIUM,
   );
 
+  // No separate cut guide: the tile's own border already fills the box exactly,
+  // so it *is* the cut line. A dashed rect on top of it was pure overdraw.
   return (
     <g transform={`translate(${x} ${y})`}>
-      {/* Cut guide: the exact box the tile must be cut to. */}
-      <rect
-        x={0}
-        y={0}
-        width={box.width}
-        height={box.height}
-        fill="none"
-        stroke="rgb(140,140,140)"
-        stroke-dasharray="12 10"
-        stroke-width={3}
-      />
       <g transform={`translate(${offsetX} ${offsetY}) scale(${scale})`}>
         {layout.el}
       </g>
+      {/* Which slot this module belongs to — inside the tile, clear of the
+          border, so the cue survives being cut out. */}
       <text
-        x={6}
-        y={box.height - 6}
+        x={18}
+        y={box.height - 16}
         dominant-baseline="alphabetic"
-        style={{ font: captionFont, fill: "rgb(120,120,120)" }}
+        style={{ font: captionFont, fill: "rgb(130,130,130)" }}
       >
         {captionFor(placed)}
       </text>
@@ -94,10 +95,12 @@ function ModularTilesInner(props: ModularTilesSVGProps): JSX.Element {
   const hintFont = cssFont(SHEET_SUBTITLE_SIZE, FONT_TITILLIUM);
 
   const heading = `${props.shipName.toUpperCase()} — MODULES`;
+  const base =
+    "Cut along the tile borders · cut corner marks the column: top-left = LEFT, top-right = RIGHT, square = CENTER";
   const hint =
     props.pageCount > 1
-      ? `Cut along the dashed lines · sheet ${props.pageIndex + 1} of ${props.pageCount}`
-      : "Cut along the dashed lines";
+      ? `${base} · sheet ${props.pageIndex + 1} of ${props.pageCount}`
+      : base;
 
   const svgProps: Record<string, any> = {
     viewBox: `0 0 ${SHEET_WIDTH} ${SHEET_HEIGHT}`,

@@ -6,28 +6,14 @@
  * class's console. This module only answers "does that fixed size still work
  * for this ship?", so the preview can warn instead of silently misprinting.
  *
- * Column geometry worth remembering: the Reactor/Mess boxes sit under the
- * **left** column and the Shields box under the **right** one. The **centre**
- * column is unobstructed and runs to the bottom of the sheet.
+ * Fixed column limits reserve space for quarters and cargo.
  */
 
 import { resolveRef, type Ship, type SystemRef } from "../schema";
-import { SHEET_HEIGHT, TILE_WIDTH } from "./constants";
 import {
-  BOTTOM_BOX_HEIGHT,
-  BOTTOM_BOX_WIDTH,
-  BOX_MARGIN,
-  COLUMN_MARGIN,
-  COLUMN_TILE_SCALE,
-  columnsTopY,
-  CORE_BOTTOM_GAP,
-  MODULAR_CORE_TILE_HEIGHT,
-  MODULAR_ENGINE_TILE_HEIGHT,
-  MODULAR_MAX_SLOTS_PER_COLUMN,
-  MODULAR_SECTION_TILE_HEIGHT,
-  SCALE,
-  tileBoxFor,
-  type ModularTileSize,
+  COLUMN_MARGIN, COLUMN_TILE_SCALE, COLUMN_TOP, COLUMN_BOTTOM,
+  MODULAR_ENGINE_TILE_HEIGHT, MODULAR_MAX_SLOTS_PER_COLUMN,
+  MODULAR_SECTION_TILE_HEIGHT, SCALE, tileBoxFor, type ModularTileSize,
 } from "./sheetLayout";
 import { layoutSystem } from "./SystemSVG";
 
@@ -45,7 +31,7 @@ export function sectionSlotSize(ref: SystemRef): ModularTileSize {
 }
 
 /** Height a ref occupies in a modular console column, in sheet units. */
-function modularRefHeight(ref: SystemRef): number {
+function modularRefHeight(ref: SystemRef, matchModularHeight: boolean): number {
   if (ref.kind === "slot") {
     return isEngineSlot(ref)
       ? MODULAR_ENGINE_TILE_HEIGHT
@@ -53,35 +39,12 @@ function modularRefHeight(ref: SystemRef): number {
   }
   const sys = resolveRef(ref);
   if (!sys) return 200 * SCALE;
-  return layoutSystem(sys).height * COLUMN_TILE_SCALE;
+  const target = matchModularHeight ? (sys.kind === "engine" ? MODULAR_ENGINE_TILE_HEIGHT : MODULAR_SECTION_TILE_HEIGHT) / COLUMN_TILE_SCALE : undefined;
+  return layoutSystem(sys, target).height * COLUMN_TILE_SCALE;
 }
 
-/** Bottom-box height for reactor / mess in modular mode. */
-function coreBlockHeight(ref: SystemRef): number {
-  if (ref.kind === "slot") return MODULAR_CORE_TILE_HEIGHT;
-  const sys = resolveRef(ref);
-  if (!sys) return 240;
-  return layoutSystem(sys).height * (BOTTOM_BOX_WIDTH / TILE_WIDTH);
-}
-
-/**
- * Lowest Y each column may reach.
- *
- * Left is stopped by the Mess box (which sits above the Reactor box), right by
- * the Shields box, centre only by the sheet edge.
- */
-export function columnBottomLimits(ship: Ship): Record<SectionName, number> {
-  const sheetBottom = SHEET_HEIGHT - BOX_MARGIN;
-
-  const reactorH = coreBlockHeight(ship.reactor);
-  const messH = coreBlockHeight(ship.mess);
-  const messTop = sheetBottom - reactorH - messH - CORE_BOTTOM_GAP;
-
-  return {
-    left: messTop,
-    core: sheetBottom,
-    right: sheetBottom - BOTTOM_BOX_HEIGHT,
-  };
+export function columnBottomLimits(_ship: Ship): Record<SectionName, number> {
+  return COLUMN_BOTTOM;
 }
 
 export interface ColumnFit {
@@ -92,15 +55,15 @@ export interface ColumnFit {
 }
 
 /** Where each column actually ends in modular mode, versus its limit. */
-export function columnFits(ship: Ship): ColumnFit[] {
-  const top = columnsTopY(ship.name, ship.description);
+export function columnFits(ship: Ship, matchModularHeight = true): ColumnFit[] {
   const limits = columnBottomLimits(ship);
 
   return SECTION_NAMES.map((column) => {
-    const bottom = ship.sections[column].reduce(
-      (y, ref) => y + modularRefHeight(ref) + COLUMN_MARGIN,
-      top,
-    );
+    const refs = ship.sections[column];
+    const total = refs.reduce((sum, ref) => sum + modularRefHeight(ref, matchModularHeight), 0)
+      + Math.max(0, refs.length - 1) * COLUMN_MARGIN;
+    const top = Math.max(250, Math.min(COLUMN_TOP[column], COLUMN_BOTTOM[column] - total));
+    const bottom = top + total;
     const limit = limits[column];
     return {
       column,
@@ -112,8 +75,8 @@ export function columnFits(ship: Ship): ColumnFit[] {
 }
 
 /** Columns whose systems run past the space available to them. */
-export function overflowingColumns(ship: Ship): ColumnFit[] {
-  return columnFits(ship).filter((f) => f.overflow > 0);
+export function overflowingColumns(ship: Ship, matchModularHeight = true): ColumnFit[] {
+  return columnFits(ship, matchModularHeight).filter((f) => f.overflow > 0);
 }
 
 /**
@@ -144,9 +107,6 @@ export function modularOversizedSystems(
   for (const side of SECTION_NAMES) {
     for (const ref of ship.sections[side]) check(ref, sectionSlotSize(ref));
   }
-  check(ship.reactor, "core");
-  check(ship.mess, "core");
-  check(ship.shields, "shields");
 
   return out;
 }
