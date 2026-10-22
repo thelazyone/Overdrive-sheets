@@ -18,11 +18,16 @@ import { QUARTERS_WIDTH, QUARTERS_HEIGHT } from "./quartersGeometry";
 import { mm } from "./featureGeometry";
 import { SHEET_HEIGHT, SHEET_WIDTH, TILE_WIDTH } from "./constants";
 
+/** Center the fixed nine-position tracks and reactor as one physical group. */
+const FEATURE_VERTICAL_GAP = mm(0.7);
+const FEATURE_GROUP_HEIGHT = 2 * SHIELD_HEIGHT + REACTOR_HEIGHT + 2 * FEATURE_VERTICAL_GAP;
+const FEATURE_GROUP_TOP = (SHEET_HEIGHT - FEATURE_GROUP_HEIGHT) / 2;
+
 /** Physical mask geometry: never derived from ship capacity or content. */
 export const FEATURE_LAYOUT = {
-  front: { x: 80, y: 70, width: SHIELD_WIDTH, height: SHIELD_HEIGHT },
-  reactor: { x: 45, y: 650, width: REACTOR_WIDTH, height: REACTOR_HEIGHT },
-  rear: { x: 80, y: 1130, width: SHIELD_WIDTH, height: SHIELD_HEIGHT },
+  front: { x: 80, y: FEATURE_GROUP_TOP, width: SHIELD_WIDTH, height: SHIELD_HEIGHT },
+  reactor: { x: 45, y: FEATURE_GROUP_TOP + SHIELD_HEIGHT + FEATURE_VERTICAL_GAP, width: REACTOR_WIDTH, height: REACTOR_HEIGHT },
+  rear: { x: 80, y: FEATURE_GROUP_TOP + SHIELD_HEIGHT + REACTOR_HEIGHT + 2 * FEATURE_VERTICAL_GAP, width: SHIELD_WIDTH, height: SHIELD_HEIGHT },
   quarters: { x: 310, y: 1480, width: QUARTERS_WIDTH, height: QUARTERS_HEIGHT },
 } as const;
 export const COLUMN_TOP = { left: 490, core: 400, right: 580 } as const;

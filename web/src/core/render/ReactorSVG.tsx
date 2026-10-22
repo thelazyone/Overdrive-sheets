@@ -6,7 +6,7 @@ import { REACTOR_OUTLINE, REACTOR_WIDTH, REACTOR_HEIGHT } from "./reactorGeometr
 export function ReactorSVG(props: { reactor:Ship["reactor"] }) {
   const box = FEATURE_LAYOUT.reactor;
   return <g data-feature="reactor" transform={`translate(${box.x} ${box.y})`}>
-    <path d={REACTOR_OUTLINE} fill="white" stroke="#333" stroke-width={3} />
+    <path d={REACTOR_OUTLINE} fill="white" />
     <text transform={`translate(${REACTOR_WIDTH+8} ${REACTOR_HEIGHT/2}) rotate(90)`}
       text-anchor="middle" style={{font:cssFont(23,FONT_EUROSTILE)}}>REACTOR</text>
     <text x={REACTOR_WIDTH/2} y={REACTOR_HEIGHT/2-35} text-anchor="middle"

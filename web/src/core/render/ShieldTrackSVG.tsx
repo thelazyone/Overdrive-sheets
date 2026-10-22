@@ -23,7 +23,6 @@ export function ShieldTrackSVG(props: { values:number[]; side:"front"|"rear" }) 
         </g>
       </g>;
     })}
-    <path d={SHIELD_OUTLINE} fill="none" stroke="#333" stroke-width={3} />
     <text transform={`translate(${SHIELD_WIDTH+8} ${SHIELD_HEIGHT/2}) rotate(90)`}
       text-anchor="middle" style={{font:cssFont(23,FONT_EUROSTILE)}}>
       {props.side === "front" ? "FRONT SHIELD" : "REAR SHIELD"}
