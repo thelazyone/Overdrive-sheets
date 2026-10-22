@@ -68,6 +68,7 @@ import {
   sheetRasterWidthPxForFormat,
   type FleetPdfPageFormat,
 } from "./core/render/exportFleetPdf";
+import { imageArchive } from "./core/imageArchive";
 import { rasterizeShipSheetToJpegBlob } from "./core/render/exportSheetImage";
 import { waitForFonts } from "./core/render/measure";
 import { DEFAULT_PRESET_ID, PRESETS } from "./presets";
@@ -401,17 +402,33 @@ export function App(): JSX.Element {
     triggerDownload(blob, fleetDownloadFilename());
   };
 
+  const [imageDownloadBusy, setImageDownloadBusy] = createSignal(false);
   const onDownloadImage = async () => {
     const t = activeTab();
     if (!t) return;
     const wrap = document.querySelector(".ship-preview-wrapper") as HTMLElement | null;
-    if (!wrap?.querySelector("svg")) return;
+    if (!wrap?.querySelector("svg") || imageDownloadBusy()) return;
+    const mode = previewMode();
+    const name = slugify(t.ship.name);
+    setImageDownloadBusy(true);
     try {
-      const blob = await rasterizeShipSheetToJpegBlob();
-      triggerDownload(blob, slugify(t.ship.name) + ".jpg");
+      if (mode === "modular") {
+        const pages = await buildPrintSheetJpegs([t.ship], mode, {
+          matchModularHeight: matchModularHeight(), jpegQuality: 0.94,
+        });
+        const archive = await imageArchive(pages.map((blob, index) => ({
+          name: index === 0 ? `${name}_card.jpg` : `${name}_modules_${index}.jpg`, blob,
+        })));
+        triggerDownload(archive, `${name}_modular.zip`);
+      } else {
+        const blob = await rasterizeShipSheetToJpegBlob();
+        triggerDownload(blob, name + ".jpg");
+      }
       setError(null);
     } catch (e: any) {
       setError(e?.message ?? String(e));
+    } finally {
+      setImageDownloadBusy(false);
     }
   };
 
@@ -710,8 +727,8 @@ export function App(): JSX.Element {
             <button type="button" onClick={onDownloadShipJSON}>
               Save ship
             </button>
-            <button type="button" onClick={onDownloadImage}>
-              Download Image
+            <button type="button" onClick={onDownloadImage} disabled={imageDownloadBusy() || !fontsReady()}>
+              {imageDownloadBusy() ? "Preparing images…" : previewMode() === "modular" ? "Download Images (ZIP)" : "Download Image"}
             </button>
           </div>
         </div>
