@@ -1036,3 +1036,22 @@ html, body, #root {
 
 .toolbar-modes-row { flex-wrap: nowrap; }
 .toolbar-modes-row .mode-toggle { flex: 1; padding-inline: 6px; white-space: nowrap; }
+
+/* Keep the editor mounted so resizing does not discard work. Hide it entirely
+   on viewports too narrow for the controls + card, or too short to use them. */
+.small-screen-notice {
+  display: none;
+  min-height: 100dvh;
+  padding: 32px 24px;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  background: #f2f2f2;
+}
+.small-screen-notice > div { max-width: 440px; }
+.small-screen-notice h1 { font-size: 24px; line-height: 1.25; margin: 0 0 20px; }
+.small-screen-notice p { font-size: 16px; line-height: 1.5; color: #444; }
+@media (max-width: 899px), (max-height: 499px) {
+  .app { display: none; }
+  .small-screen-notice { display: flex; }
+}

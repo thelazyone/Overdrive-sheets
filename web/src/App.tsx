@@ -570,6 +570,14 @@ export function App(): JSX.Element {
 
   return (
     <ShipLibraryProvider value={() => baseLibrary}>
+    <main class="small-screen-notice" aria-labelledby="small-screen-title">
+      <div>
+        <h1 id="small-screen-title">Please use a computer screen</h1>
+        <p>Sorry, this version of Overdrive Sheets only works on computer-sized screens.
+          This screen or window is too small to use the editor comfortably.</p>
+        <p>Open it on a desktop or laptop, or make your browser window larger.</p>
+      </div>
+    </main>
     <div class="app">
       <div class="ship-tabs-bar">
         <div class="ship-tabs-scroll" role="tablist" aria-label="Ships">
