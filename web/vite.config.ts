@@ -103,6 +103,9 @@ export default defineConfig({
     fs: { allow: [repoRoot] },
   },
   build: {
+    rollupOptions: {
+      input: { main: resolve(here, "index.html"), charter: resolve(here, "charter.html") },
+    },
     outDir: "dist",
     emptyOutDir: true,
   },

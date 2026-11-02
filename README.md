@@ -2,6 +2,8 @@
 
 A fast and dirty procedural builder to generate ship sheets for Full Spectrum Overdrive.
 
+For shared rules/content ownership, the companion game repository, and Charter balance tooling, read [the Overdrive project reference](OVERDRIVE.md).
+
 Two implementations share the same `fonts/` and `resources/` assets at the repo root:
 
 - **`web/`** — SolidJS + Vite, client-only, live SVG preview, PNG/JSON export, slot-based ship templates.
@@ -74,11 +76,15 @@ Ship JSONs live in `python/ships/`. Output `.jpg` sheets are written next to the
 
 ## Combinator (designer tool)
 
+The new **[Charter workbench](web/src/charter/README.md)** visualizes the complete upgrade graph, two-trait selection, budget, fleet effects, and access to current ship slot options. Run `./start-charter.ps1` from this folder, then open `http://127.0.0.1:5174/charter.html`. It is also available at `/charter.html` on the existing web development server. It supports local draft requirements, new content concepts, and JSON export/import; it does not yet fit fleets or update card profiles.
+
+The older Python prototype remains below:
+
 Tiny tkinter UI for visualising which ships/systems are available for every
 2-trait player build. Pure stdlib, no extra deps.
 
 ```
-python combinator/main.py
+python combinator/combinator.py
 ```
 
 See `combinator/README.md` for details.

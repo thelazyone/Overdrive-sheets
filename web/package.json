@@ -4,6 +4,8 @@
   "version": "0.0.1",
   "type": "module",
   "scripts": {
+    "report:charter": "tsx scripts/report-charter.ts",
+    "test:charter": "tsx scripts/test-charter.ts",
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",

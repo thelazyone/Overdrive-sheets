@@ -1,3 +1,4 @@
+import { statsPending } from "./presets/charterTemplates";
 /**
  * Two-pane editor shell.
  *
@@ -1001,8 +1002,8 @@ function SectionList(props: SectionListProps) {
       <div class="section-group section-group-divider">
         <h2 class="section-heading">SHIP FEATURES</h2>
         <p><strong>Reactor</strong> — {props.ship.reactor.rules}</p>
-        <p><strong>Quarters</strong> — {props.ship.quarters.rules} · Med bay: {props.ship.quarters.med_bay}</p>
-        <p><strong>Shields</strong> — Front: {props.ship.shields.front.join(", ")} · Rear: {props.ship.shields.rear.join(", ")}</p>
+        <p><strong>Quarters</strong> — {props.ship.quarters.rules} {!statsPending(props.ship.quarters.rules) && <>· Med bay: {props.ship.quarters.med_bay}</>}</p>
+        <p><strong>Shields</strong> — {statsPending(props.ship.shields.rules) ? "Stats pending." : `Front: ${props.ship.shields.front.join(", ")} · Rear: ${props.ship.shields.rear.join(", ")}`}</p>
       </div>
       <SectionGroup
         title="LEFT"
@@ -1170,7 +1171,7 @@ function SystemRow(props: {
             <For each={slot().options}>
               {(sys, i) => (
                 <option value={String(i())}>
-                  {sys.name || `Option ${i() + 1}`}
+                  {sys.name || `Option ${i() + 1}`}{statsPending(sys.rules) ? " — Stats pending" : ""}
                 </option>
               )}
             </For>
@@ -1396,7 +1397,7 @@ function SlotInspector(props: {
           <For each={props.sysRef.options}>
             {(sys, i) => (
               <option value={String(i())}>
-                {sys.name || `Option ${i() + 1}`}
+                {sys.name || `Option ${i() + 1}`}{statsPending(sys.rules) ? " — Stats pending" : ""}
               </option>
             )}
           </For>

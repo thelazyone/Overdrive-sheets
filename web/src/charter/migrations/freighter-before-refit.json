@@ -1,0 +1,168 @@
+[
+  {
+    "id": "preset:opulence_freighter",
+    "name": "Opulence Class Freighter",
+    "kind": "ship",
+    "description": "Current card-builder preset. Access requirements have not yet been authored."
+  },
+  {
+    "id": "preset:opulence_freighter/left/0/0",
+    "shipId": "preset:opulence_freighter",
+    "name": "Command Bridge",
+    "kind": "system",
+    "slot": "left · Bridge",
+    "description": "Control 3 for this Round"
+  },
+  {
+    "id": "preset:opulence_freighter/left/0/1",
+    "shipId": "preset:opulence_freighter",
+    "name": "Observation Deck",
+    "kind": "system",
+    "slot": "left · Bridge",
+    "description": "Scan one Object"
+  },
+  {
+    "id": "preset:opulence_freighter/left/1/0",
+    "shipId": "preset:opulence_freighter",
+    "name": "Point-Defense",
+    "kind": "system",
+    "slot": "left · Side",
+    "description": "AA Burst: Anti-Light, Fast"
+  },
+  {
+    "id": "preset:opulence_freighter/left/1/1",
+    "shipId": "preset:opulence_freighter",
+    "name": "Barracks",
+    "kind": "system",
+    "slot": "left · Side",
+    "description": "Holds 3 Crew · Board up to 1 Crew"
+  },
+  {
+    "id": "preset:opulence_freighter/left/1/2",
+    "shipId": "preset:opulence_freighter",
+    "name": "Missile Rack",
+    "kind": "system",
+    "slot": "left · Side",
+    "description": "Salvo: Anti-Capital, Slow"
+  },
+  {
+    "id": "preset:opulence_freighter/left/2/0",
+    "shipId": "preset:opulence_freighter",
+    "name": "Resource Scanner",
+    "kind": "system",
+    "slot": "left · Sensors",
+    "description": "Scan one Object"
+  },
+  {
+    "id": "preset:opulence_freighter/left/2/1",
+    "shipId": "preset:opulence_freighter",
+    "name": "Fire Control Array",
+    "kind": "system",
+    "slot": "left · Sensors",
+    "description": "Light Ships within Control get +1 to hit"
+  },
+  {
+    "id": "preset:opulence_freighter/left/2/2",
+    "shipId": "preset:opulence_freighter",
+    "name": "Effectors",
+    "kind": "system",
+    "slot": "left · Sensors",
+    "description": "Displace (S) 2 DU"
+  },
+  {
+    "id": "preset:opulence_freighter/core/0/0",
+    "shipId": "preset:opulence_freighter",
+    "name": "Asteroid Buster",
+    "kind": "system",
+    "slot": "core · Fore weapon",
+    "description": "Shoot: Mining"
+  },
+  {
+    "id": "preset:opulence_freighter/core/0/1",
+    "shipId": "preset:opulence_freighter",
+    "name": "Twin Cannon",
+    "kind": "system",
+    "slot": "core · Fore weapon",
+    "description": "Shoot"
+  },
+  {
+    "id": "preset:opulence_freighter/core/1/0",
+    "shipId": "preset:opulence_freighter",
+    "name": "Asteroid Buster",
+    "kind": "system",
+    "slot": "core · Aft weapon",
+    "description": "Shoot: Mining"
+  },
+  {
+    "id": "preset:opulence_freighter/core/1/1",
+    "shipId": "preset:opulence_freighter",
+    "name": "Twin Cannon",
+    "kind": "system",
+    "slot": "core · Aft weapon",
+    "description": "Shoot"
+  },
+  {
+    "id": "preset:opulence_freighter/core/2/0",
+    "shipId": "preset:opulence_freighter",
+    "name": "Dual Flak Battery",
+    "kind": "system",
+    "slot": "core · Fixed system",
+    "description": "AA Burst: Anti-Light"
+  },
+  {
+    "id": "preset:opulence_freighter/core/3/0",
+    "shipId": "preset:opulence_freighter",
+    "name": "Engine",
+    "kind": "system",
+    "slot": "core · Fixed system",
+    "description": "Change Speed"
+  },
+  {
+    "id": "preset:opulence_freighter/right/0/0",
+    "shipId": "preset:opulence_freighter",
+    "name": "Point-Defense",
+    "kind": "system",
+    "slot": "right · Side",
+    "description": "AA Burst: Anti-Light, Fast"
+  },
+  {
+    "id": "preset:opulence_freighter/right/0/1",
+    "shipId": "preset:opulence_freighter",
+    "name": "Barracks",
+    "kind": "system",
+    "slot": "right · Side",
+    "description": "Holds 3 Crew · Board up to 1 Crew"
+  },
+  {
+    "id": "preset:opulence_freighter/right/0/2",
+    "shipId": "preset:opulence_freighter",
+    "name": "Missile Rack",
+    "kind": "system",
+    "slot": "right · Side",
+    "description": "Salvo: Anti-Capital, Slow"
+  },
+  {
+    "id": "preset:opulence_freighter/right/1/0",
+    "shipId": "preset:opulence_freighter",
+    "name": "Drone Bay",
+    "kind": "system",
+    "slot": "right · Fixed system",
+    "description": "Salvage: Salvage one Object within 1 DU"
+  },
+  {
+    "id": "preset:opulence_freighter/right/2/0",
+    "shipId": "preset:opulence_freighter",
+    "name": "Barracks",
+    "kind": "system",
+    "slot": "right · Hab",
+    "description": "Holds 3 Crew · Board up to 1 Crew"
+  },
+  {
+    "id": "preset:opulence_freighter/right/2/1",
+    "shipId": "preset:opulence_freighter",
+    "name": "Additional Quarters",
+    "kind": "system",
+    "slot": "right · Hab",
+    "description": "Profile pending designer authoring."
+  }
+]

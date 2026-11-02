@@ -1,0 +1,89 @@
+{
+  "vessels": [
+    {
+      "id": "tugboats",
+      "name": "Tugboats"
+    },
+    {
+      "id": "corvettes",
+      "name": "Corvettes"
+    },
+    {
+      "id": "fighters",
+      "name": "Fighters"
+    },
+    {
+      "id": "bombers",
+      "name": "Bombers"
+    },
+    {
+      "id": "lances",
+      "name": "Lances",
+      "proposed": true
+    },
+    {
+      "id": "platforms",
+      "name": "Platforms"
+    },
+    {
+      "id": "unassigned",
+      "name": "Unassigned"
+    }
+  ],
+  "weapons": [
+    {
+      "id": "projectiles",
+      "name": "Projectile"
+    },
+    {
+      "id": "railguns",
+      "name": "Railguns"
+    },
+    {
+      "id": "rockets",
+      "name": "Rockets & Missiles"
+    },
+    {
+      "id": "ions",
+      "name": "Ions"
+    },
+    {
+      "id": "emps",
+      "name": "EMPs"
+    },
+    {
+      "id": "lasers",
+      "name": "Lasers"
+    },
+    {
+      "id": "mining",
+      "name": "Mining"
+    },
+    {
+      "id": "industrial",
+      "name": "Industrial"
+    },
+    {
+      "id": "unassigned",
+      "name": "Unassigned"
+    }
+  ],
+  "advancement": [
+    {
+      "id": "base",
+      "name": "Base"
+    },
+    {
+      "id": "advanced",
+      "name": "Advanced"
+    },
+    {
+      "id": "cutting-edge",
+      "name": "Experimental"
+    },
+    {
+      "id": "unassigned",
+      "name": "Unassigned"
+    }
+  ]
+}

@@ -1,3 +1,4 @@
+import { SystemShieldTrackSVG, systemShieldTrackHeight } from "./SystemShieldTrackSVG";
 /**
  * Ported from `python/src/system.py::create_system`.
  *
@@ -191,6 +192,23 @@ function renderAction(area: Area, contentX: number, maxDescWidth: number): Actio
   const elements: JSX.Element[] = [];
   let contentHeight = 0;
 
+  // Non-weapon actions put the standard arc after their action text.
+  if (area.arc && !area.shoot && !area.engine) {
+    const arcSize = 80;
+    const gap = 20;
+    const lines = wrapText(fixDegrees(area.description ?? ""), descFont, maxDescWidth-arcSize-gap-30);
+    const lineHeight = TILE_DESCRIPTION_SIZE+4;
+    const textHeight = Math.max(0, lines.length*lineHeight-4);
+    const textWidth = Math.max(0, ...lines.map(line=>measureText(line,descFont).width));
+    const height = Math.max(arcSize,textHeight);
+    return {contentHeight:height, el:<g>
+      {lines.map((line,i)=><text x={contentX} y={(height-textHeight)/2+i*lineHeight}
+        dominant-baseline="hanging" style={{font:descFont,fill:"black"}}>{line}</text>)}
+      <FiringArcSVG arcStart={area.arc.start} arcEnd={area.arc.end} size={arcSize}
+        x={contentX+textWidth+gap} y={(height-arcSize)/2} />
+    </g>};
+  }
+
   // Weapon or engine symbol.
   let weaponWidth = 0;
   if (area.shoot) {
@@ -219,26 +237,17 @@ function renderAction(area: Area, contentX: number, maxDescWidth: number): Actio
     contentHeight = Math.max(contentHeight, engineSymbolHeight(steer, combatSize));
   }
 
-  // Firing arc.
+  // Directional actions share the arc diagram without a weapon symbol.
   let arcWidth = 0;
+  const arc = area.arc ?? (area.shoot?.["arc-start"] !== undefined && area.shoot?.["arc-end"] !== undefined
+    ? {start: area.shoot["arc-start"], end: area.shoot["arc-end"], directions: false} : undefined);
   const arcSize = 80;
-  if (
-    area.shoot &&
-    area.shoot["arc-start"] !== undefined &&
-    area.shoot["arc-end"] !== undefined
-  ) {
+  if (arc) {
     arcWidth = arcSize;
     const arcX = contentX + (weaponWidth > 0 ? weaponWidth + 20 : 0);
-    const arcY = (contentHeight - arcSize) / 2;
-    elements.push(
-      <FiringArcSVG
-        arcStart={area.shoot["arc-start"]!}
-        arcEnd={area.shoot["arc-end"]!}
-        size={arcSize}
-        x={arcX}
-        y={arcY}
-      />
-    );
+    const arcY = Math.max(0, (contentHeight - arcSize) / 2);
+    elements.push(<FiringArcSVG arcStart={arc.start} arcEnd={arc.end}
+      size={arcSize} x={arcX} y={arcY} />);
     contentHeight = Math.max(contentHeight, arcSize);
   }
 
@@ -258,7 +267,7 @@ function renderAction(area: Area, contentX: number, maxDescWidth: number): Actio
     const totalTextHeight = lines.length * lineHeight - 4;
 
     let descY: number;
-    if (area.shoot || area.engine) {
+    if (area.shoot || area.engine || area.arc) {
       descY = 0;
     } else {
       const baselineOffset = Math.floor(TILE_DESCRIPTION_SIZE / 4);
@@ -282,7 +291,7 @@ function renderAction(area: Area, contentX: number, maxDescWidth: number): Actio
 
     contentHeight = Math.max(
       contentHeight,
-      area.shoot || area.engine ? totalTextHeight : 60
+      area.shoot || area.engine || area.arc ? totalTextHeight : 60
     );
   }
 
@@ -555,12 +564,17 @@ export function layoutSystem(
     y += e.height + VERTICAL_SPACING;
   }
 
+  if (system.shieldTrack) {
+    parts.push(<SystemShieldTrackSVG steps={system.shieldTrack} y={y} />);
+    y += systemShieldTrackHeight + VERTICAL_SPACING;
+  }
+
   // Areas
   if (system.areas.length > 0) {
     const a = renderAreas(system, y);
     parts.push(a.el);
     y += a.height;
-  } else if (system.kind === "generic") {
+  } else if (system.kind === "generic" && !system.shieldTrack) {
     y += 100; // minimum system height padding (matches Python)
   }
 

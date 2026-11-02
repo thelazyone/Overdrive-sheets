@@ -50,7 +50,7 @@
           },
           {
             "kind": "generic",
-            "name": "Observation Deck",
+            "name": "Navigation Bridge",
             "rules": "",
             "electronics": true,
             "hull": false,
@@ -67,6 +67,13 @@
             ],
             "weapon": false,
             "main": false
+          },
+          {
+            "kind": "generic",
+            "name": "Tactical Command",
+            "rules": "Profile pending designer authoring.",
+            "weapon": false,
+            "areas": []
           }
         ]
       },
@@ -102,17 +109,17 @@
           },
           {
             "kind": "generic",
-            "name": "Barracks",
-            "rules": "Holds 3 Crew",
+            "name": "Observation Deck",
+            "rules": "",
+            "electronics": true,
             "hull": false,
-            "electronics": false,
             "life_support": true,
             "areas": [
               {
                 "name": "",
-                "description": "Board up to 1 Crew",
+                "description": "Scan one Object",
                 "cost": {
-                  "energy": 1,
+                  "energy": 0,
                   "crew": 1
                 }
               }
@@ -145,6 +152,41 @@
               }
             ],
             "main": false
+          },
+          {
+            "kind": "generic",
+            "name": "Aux Reactor",
+            "rules": "+1 production",
+            "weapon": false,
+            "areas": []
+          },
+          {
+            "kind": "generic",
+            "name": "Additional Shield",
+            "rules": "Profile pending designer authoring.",
+            "weapon": false,
+            "areas": []
+          },
+          {
+            "kind": "generic",
+            "name": "Hull Plating",
+            "rules": "Profile pending designer authoring.",
+            "weapon": false,
+            "areas": []
+          },
+          {
+            "kind": "generic",
+            "name": "Reinforced Plating",
+            "rules": "Profile pending designer authoring.",
+            "weapon": false,
+            "areas": []
+          },
+          {
+            "kind": "generic",
+            "name": "Tracking Laser",
+            "rules": "Profile pending designer authoring.",
+            "weapon": true,
+            "areas": []
           }
         ]
       },
@@ -194,7 +236,7 @@
           },
           {
             "kind": "generic",
-            "name": "Effectors",
+            "name": "Light Effectors",
             "rules": "",
             "weapon": false,
             "main": false,
@@ -211,6 +253,13 @@
                 }
               }
             ]
+          },
+          {
+            "kind": "generic",
+            "name": "Support Shield Enhancer",
+            "rules": "Profile pending designer authoring.",
+            "weapon": false,
+            "areas": []
           }
         ]
       }
@@ -248,7 +297,7 @@
           },
           {
             "kind": "generic",
-            "name": "Double Cannon",
+            "name": "Twin Cannon",
             "rules": "",
             "weapon": true,
             "electronics": false,
@@ -271,6 +320,48 @@
               }
             ],
             "main": false
+          },
+          {
+            "kind": "generic",
+            "name": "Railgun",
+            "rules": "Profile pending designer authoring.",
+            "weapon": true,
+            "areas": []
+          },
+          {
+            "kind": "generic",
+            "name": "Double Railgun",
+            "rules": "Profile pending designer authoring.",
+            "weapon": true,
+            "areas": []
+          },
+          {
+            "kind": "generic",
+            "name": "High Energy Railgun",
+            "rules": "Profile pending designer authoring.",
+            "weapon": true,
+            "areas": []
+          },
+          {
+            "kind": "generic",
+            "name": "Triple Cannon",
+            "rules": "Profile pending designer authoring.",
+            "weapon": true,
+            "areas": []
+          },
+          {
+            "kind": "generic",
+            "name": "Mining Beam",
+            "rules": "Profile pending designer authoring.",
+            "weapon": true,
+            "areas": []
+          },
+          {
+            "kind": "generic",
+            "name": "Heavy Mining Beam",
+            "rules": "Profile pending designer authoring.",
+            "weapon": true,
+            "areas": []
           }
         ]
       },
@@ -306,7 +397,7 @@
           },
           {
             "kind": "generic",
-            "name": "Double Cannon",
+            "name": "Twin Cannon",
             "rules": "",
             "weapon": true,
             "electronics": false,
@@ -329,6 +420,48 @@
               }
             ],
             "main": false
+          },
+          {
+            "kind": "generic",
+            "name": "Railgun",
+            "rules": "Profile pending designer authoring.",
+            "weapon": true,
+            "areas": []
+          },
+          {
+            "kind": "generic",
+            "name": "Double Railgun",
+            "rules": "Profile pending designer authoring.",
+            "weapon": true,
+            "areas": []
+          },
+          {
+            "kind": "generic",
+            "name": "High Energy Railgun",
+            "rules": "Profile pending designer authoring.",
+            "weapon": true,
+            "areas": []
+          },
+          {
+            "kind": "generic",
+            "name": "Triple Cannon",
+            "rules": "Profile pending designer authoring.",
+            "weapon": true,
+            "areas": []
+          },
+          {
+            "kind": "generic",
+            "name": "Mining Beam",
+            "rules": "Profile pending designer authoring.",
+            "weapon": true,
+            "areas": []
+          },
+          {
+            "kind": "generic",
+            "name": "Heavy Mining Beam",
+            "rules": "Profile pending designer authoring.",
+            "weapon": true,
+            "areas": []
           }
         ]
       },
@@ -383,15 +516,15 @@
           "speed_slots": [
             {
               "speed": "0-1",
-              "rotation": "90\u00b0"
+              "rotation": "90°"
             },
             {
               "speed": "1-2",
-              "rotation": "0\u00b0"
+              "rotation": "0°"
             },
             {
               "speed": "2-3",
-              "rotation": "0\u00b0"
+              "rotation": "0°"
             }
           ],
           "weapon": false,
@@ -432,17 +565,17 @@
           },
           {
             "kind": "generic",
-            "name": "Barracks",
-            "rules": "Holds 3 Crew",
+            "name": "Observation Deck",
+            "rules": "",
+            "electronics": true,
             "hull": false,
-            "electronics": false,
             "life_support": true,
             "areas": [
               {
                 "name": "",
-                "description": "Board up to 1 Crew",
+                "description": "Scan one Object",
                 "cost": {
-                  "energy": 1,
+                  "energy": 0,
                   "crew": 1
                 }
               }
@@ -475,6 +608,41 @@
               }
             ],
             "main": false
+          },
+          {
+            "kind": "generic",
+            "name": "Aux Reactor",
+            "rules": "+1 production",
+            "weapon": false,
+            "areas": []
+          },
+          {
+            "kind": "generic",
+            "name": "Additional Shield",
+            "rules": "Profile pending designer authoring.",
+            "weapon": false,
+            "areas": []
+          },
+          {
+            "kind": "generic",
+            "name": "Hull Plating",
+            "rules": "Profile pending designer authoring.",
+            "weapon": false,
+            "areas": []
+          },
+          {
+            "kind": "generic",
+            "name": "Reinforced Plating",
+            "rules": "Profile pending designer authoring.",
+            "weapon": false,
+            "areas": []
+          },
+          {
+            "kind": "generic",
+            "name": "Tracking Laser",
+            "rules": "Profile pending designer authoring.",
+            "weapon": true,
+            "areas": []
           }
         ]
       },
@@ -500,12 +668,68 @@
           "weapon": false,
           "main": false
         }
+      },
+      {
+        "kind": "slot",
+        "label": "Hab",
+        "options": [
+          {
+            "kind": "generic",
+            "name": "Barracks",
+            "rules": "Holds 3 Crew",
+            "hull": false,
+            "electronics": false,
+            "life_support": true,
+            "areas": [
+              {
+                "name": "",
+                "description": "Board up to 1 Crew",
+                "cost": {
+                  "energy": 1,
+                  "crew": 1
+                }
+              }
+            ],
+            "weapon": false,
+            "main": false
+          },
+          {
+            "kind": "generic",
+            "name": "Additional Quarters",
+            "rules": "Profile pending designer authoring.",
+            "weapon": false,
+            "main": false,
+            "life_support": true,
+            "areas": []
+          },
+          {
+            "kind": "generic",
+            "name": "Passenger Berths",
+            "rules": "Profile pending designer authoring.",
+            "weapon": false,
+            "areas": []
+          },
+          {
+            "kind": "generic",
+            "name": "Security Quarters",
+            "rules": "Profile pending designer authoring.",
+            "weapon": false,
+            "areas": []
+          },
+          {
+            "kind": "generic",
+            "name": "Crew Lounge",
+            "rules": "",
+            "weapon": false,
+            "areas": []
+          }
+        ]
       }
     ]
   },
   "quarters": {
     "name": "Quarters",
-    "rules": "Crew: 3",
+    "rules": "Crew: 4",
     "med_bay": 1
   }
 }

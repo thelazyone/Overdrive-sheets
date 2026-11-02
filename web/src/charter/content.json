@@ -1,0 +1,658 @@
+{
+  "revision": "2026-10-25-escort-unlocks",
+  "source": "Designer instructions in the Charter workbench chat, 2026-10-25.",
+  "size3Upgrade": "tonnage",
+  "hulls": {
+    "preset:opulence_freighter": {
+      "size": 3,
+      "upgrades": [
+        "commercial"
+      ],
+      "defined": true,
+      "role": "Freighter",
+      "className": "Opulence",
+      "traits": [
+        "Trade",
+        "Exploration",
+        "Diplomacy"
+      ]
+    },
+    "preset:salvation_utility_vessel": {
+      "size": 3,
+      "upgrades": [
+        "extraction"
+      ],
+      "defined": true,
+      "note": "Extended Tonnage applies by the size-3 default. A possible exemption for Salvation is pending a designer ruling.",
+      "role": "Utility Vessel",
+      "className": "Salvation",
+      "traits": [
+        "Trade",
+        "Science"
+      ]
+    },
+    "preset:providence_salvager": {
+      "size": 2,
+      "upgrades": [
+        "commercial"
+      ],
+      "defined": true,
+      "note": "Commercial Permit remains the provisional upgrade gate; Exploration or Science is required.",
+      "traits": [
+        "Exploration",
+        "Science"
+      ],
+      "role": "Salvager",
+      "className": "TBD"
+    },
+    "preset:contemplation_escort_vessel": {
+      "size": 2,
+      "upgrades": [
+        "escorting"
+      ],
+      "defined": true,
+      "role": "Supply Tender",
+      "className": "Contemplation",
+      "traits": [
+        "Trade",
+        "Exploration",
+        "Science"
+      ]
+    },
+    "hull:hierarchy_gunship": {
+      "size": 1,
+      "role": "Gunship",
+      "className": "Hierarchy",
+      "defined": true,
+      "upgrades": [
+        "escorting"
+      ],
+      "note": "Combat profile and any future upgrade requirements await authoring.",
+      "traits": [
+        "Military",
+        "Diplomacy"
+      ]
+    },
+    "hull:schooner": {
+      "size": 1,
+      "role": "Schooner",
+      "className": "TBD",
+      "defined": true,
+      "upgrades": [],
+      "note": "Practical, non-offensive modular systems. Fixed point defence is excluded. Combat profile and unspecified system requirements await authoring.",
+      "traits": [
+        "Science",
+        "Diplomacy"
+      ]
+    }
+  },
+  "vessels": [
+    {
+      "id": "light:service_tugboat",
+      "name": "Service Tugboat",
+      "kind": "light",
+      "category": "tugboats"
+    },
+    {
+      "id": "light:light_tugboat",
+      "name": "Light Tugboat",
+      "kind": "light",
+      "category": "tugboats"
+    },
+    {
+      "id": "light:heavy_tugboat",
+      "name": "Heavy Tugboat",
+      "kind": "light",
+      "category": "tugboats"
+    },
+    {
+      "id": "light:railgun_corvette",
+      "name": "Railgun Corvette",
+      "kind": "light",
+      "category": "corvettes"
+    },
+    {
+      "id": "light:flak_corvette",
+      "name": "Flak Corvette",
+      "kind": "light",
+      "category": "corvettes"
+    },
+    {
+      "id": "light:gun_corvette",
+      "name": "Gun Corvette",
+      "kind": "light",
+      "category": "corvettes"
+    },
+    {
+      "id": "platform:sensor",
+      "name": "Sensor Platform",
+      "kind": "platform",
+      "category": "platforms"
+    },
+    {
+      "id": "platform:weapon",
+      "name": "Weapon Platform",
+      "kind": "platform",
+      "category": "platforms"
+    },
+    {
+      "id": "platform:shields",
+      "name": "Shields Platform",
+      "kind": "platform",
+      "category": "platforms"
+    },
+    {
+      "id": "hull:hierarchy_gunship",
+      "name": "Gunship",
+      "kind": "ship"
+    },
+    {
+      "id": "hull:schooner",
+      "name": "Schooner",
+      "kind": "ship"
+    }
+  ],
+  "requirements": {
+    "light:service_tugboat": {
+      "defined": true,
+      "traits": [],
+      "upgrades": [],
+      "reputation": ""
+    },
+    "light:light_tugboat": {
+      "defined": true,
+      "traits": [],
+      "upgrades": [],
+      "reputation": ""
+    },
+    "light:heavy_tugboat": {
+      "defined": true,
+      "traits": [],
+      "upgrades": [
+        "escorting"
+      ],
+      "reputation": ""
+    },
+    "light:railgun_corvette": {
+      "defined": true,
+      "traits": [],
+      "upgrades": [
+        "contracting"
+      ],
+      "reputation": ""
+    },
+    "light:flak_corvette": {
+      "defined": true,
+      "traits": [],
+      "upgrades": [
+        "squadrons"
+      ],
+      "reputation": ""
+    },
+    "light:gun_corvette": {
+      "defined": true,
+      "traits": [
+        "Military"
+      ],
+      "upgrades": [
+        "squadrons"
+      ],
+      "reputation": ""
+    },
+    "platform:shields": {
+      "defined": true,
+      "traits": [],
+      "upgrades": [
+        "hull"
+      ],
+      "reputation": ""
+    },
+    "platform:weapon": {
+      "defined": true,
+      "traits": [],
+      "upgrades": [
+        "hull",
+        "contracting"
+      ],
+      "reputation": ""
+    },
+    "preset:providence_salvager/core/1/0": {
+      "defined": true,
+      "traits": [
+        "Exploration"
+      ],
+      "upgrades": [],
+      "reputation": ""
+    },
+    "preset:providence_salvager/core/1/1": {
+      "defined": true,
+      "traits": [],
+      "upgrades": [],
+      "reputation": ""
+    },
+    "preset:providence_salvager/core/1/2": {
+      "defined": true,
+      "traits": [],
+      "upgrades": [
+        "hull"
+      ],
+      "reputation": ""
+    },
+    "preset:providence_salvager/core/2/1": {
+      "defined": true,
+      "traits": [],
+      "upgrades": [
+        "storage"
+      ],
+      "reputation": ""
+    },
+    "preset:providence_salvager/core/2/0": {
+      "defined": true,
+      "traits": [],
+      "upgrades": [],
+      "reputation": ""
+    },
+    "weapon:ballistic_cannon": {
+      "defined": true,
+      "traits": [],
+      "upgrades": [],
+      "reputation": ""
+    },
+    "weapon:scatter_gun": {
+      "defined": true,
+      "traits": [
+        "Exploration"
+      ],
+      "upgrades": [],
+      "reputation": ""
+    },
+    "weapon:rotary_cannon": {
+      "defined": true,
+      "traits": [],
+      "upgrades": [
+        "logistics"
+      ],
+      "reputation": ""
+    },
+    "weapon:double_cannon": {
+      "defined": true,
+      "traits": [],
+      "upgrades": [],
+      "reputation": ""
+    },
+    "weapon:mining_laser": {
+      "defined": true,
+      "traits": [],
+      "upgrades": [
+        "extraction"
+      ],
+      "reputation": ""
+    },
+    "weapon:plasma_cutter": {
+      "defined": true,
+      "traits": [],
+      "upgrades": [
+        "hull"
+      ],
+      "reputation": ""
+    },
+    "hull:hierarchy_gunship/sensors/shield_extension": {
+      "defined": true,
+      "traits": [
+        "Science"
+      ],
+      "upgrades": [],
+      "reputation": ""
+    },
+    "hull:hierarchy_gunship/sensors/effector_antenna": {
+      "defined": true,
+      "traits": [],
+      "upgrades": [
+        "logistics"
+      ],
+      "reputation": ""
+    },
+    "hull:hierarchy_gunship/sensors/fire_control_array": {
+      "defined": true,
+      "traits": [],
+      "upgrades": [
+        "squadrons"
+      ],
+      "reputation": ""
+    },
+    "hull:hierarchy_gunship/sensors/resources_scanner": {
+      "defined": true,
+      "traits": [],
+      "upgrades": [],
+      "reputation": ""
+    },
+    "weapon:emp_emitter": {
+      "defined": true,
+      "traits": [],
+      "upgrades": [],
+      "reputation": ""
+    },
+    "hull:schooner/effectors/long_range_effectors": {
+      "defined": true,
+      "traits": [],
+      "upgrades": [
+        "logistics"
+      ],
+      "reputation": ""
+    },
+    "hull:schooner/effectors/heavy_duty_effectors": {
+      "defined": true,
+      "traits": [],
+      "upgrades": [
+        "storage"
+      ],
+      "reputation": ""
+    },
+    "hull:schooner/effectors/industrial_effectors": {
+      "defined": true,
+      "traits": [],
+      "upgrades": [
+        "fields"
+      ],
+      "reputation": ""
+    },
+    "weapon:asteroid_buster": {
+      "defined": true,
+      "traits": [],
+      "upgrades": [],
+      "reputation": ""
+    },
+    "preset:opulence_freighter/left/0/2": {
+      "defined": true,
+      "traits": [
+        "Military"
+      ],
+      "upgrades": [
+        "perimeter"
+      ],
+      "reputation": ""
+    },
+    "preset:opulence_freighter/left/0/1": {
+      "defined": true,
+      "traits": [
+        "Exploration"
+      ],
+      "upgrades": [],
+      "reputation": ""
+    },
+    "weapon:point_defense": {
+      "defined": true,
+      "traits": [],
+      "upgrades": [],
+      "reputation": ""
+    },
+    "weapon:tracking_laser": {
+      "defined": true,
+      "traits": [],
+      "upgrades": [
+        "contracting"
+      ],
+      "reputation": ""
+    },
+    "preset:opulence_freighter/left/1/1": {
+      "defined": true,
+      "traits": [
+        "Science"
+      ],
+      "upgrades": [],
+      "reputation": ""
+    },
+    "preset:opulence_freighter/left/1/2": {
+      "defined": true,
+      "traits": [],
+      "upgrades": [
+        "ordnance"
+      ],
+      "reputation": ""
+    },
+    "preset:opulence_freighter/left/1/3": {
+      "defined": true,
+      "traits": [],
+      "upgrades": [
+        "fusor"
+      ],
+      "reputation": ""
+    },
+    "preset:opulence_freighter/left/1/4": {
+      "defined": true,
+      "traits": [],
+      "upgrades": [
+        "fields"
+      ],
+      "reputation": ""
+    },
+    "preset:opulence_freighter/left/1/5": {
+      "defined": true,
+      "traits": [],
+      "upgrades": [],
+      "reputation": ""
+    },
+    "preset:opulence_freighter/left/1/6": {
+      "defined": true,
+      "traits": [],
+      "upgrades": [
+        "hull"
+      ],
+      "reputation": ""
+    },
+    "weapon:heavy_mining_laser": {
+      "defined": true,
+      "traits": [
+        "Trade"
+      ],
+      "upgrades": [
+        "storage"
+      ],
+      "reputation": ""
+    },
+    "weapon:railgun": {
+      "defined": true,
+      "traits": [],
+      "upgrades": [
+        "contracting"
+      ],
+      "reputation": ""
+    },
+    "weapon:double_railgun": {
+      "defined": true,
+      "traits": [],
+      "upgrades": [
+        "ordnance"
+      ],
+      "reputation": ""
+    },
+    "weapon:triple_cannon": {
+      "defined": true,
+      "traits": [],
+      "upgrades": [
+        "ordnance"
+      ],
+      "reputation": ""
+    },
+    "preset:opulence_freighter/left/2/0": {
+      "defined": true,
+      "traits": [
+        "Science"
+      ],
+      "upgrades": [],
+      "reputation": ""
+    },
+    "preset:opulence_freighter/left/2/1": {
+      "defined": true,
+      "traits": [
+        "Military"
+      ],
+      "upgrades": [],
+      "reputation": ""
+    },
+    "preset:opulence_freighter/left/2/2": {
+      "defined": true,
+      "traits": [],
+      "upgrades": [],
+      "reputation": ""
+    },
+    "preset:opulence_freighter/left/2/3": {
+      "defined": true,
+      "traits": [],
+      "upgrades": [
+        "squadrons"
+      ],
+      "reputation": ""
+    },
+    "weapon:high_energy_railgun": {
+      "defined": true,
+      "traits": [],
+      "upgrades": [
+        "fire"
+      ],
+      "reputation": ""
+    },
+    "preset:opulence_freighter/right/2/0": {
+      "defined": true,
+      "traits": [
+        "Military"
+      ],
+      "upgrades": [],
+      "reputation": ""
+    },
+    "preset:opulence_freighter/right/2/1": {
+      "defined": true,
+      "traits": [],
+      "upgrades": [
+        "habitat"
+      ],
+      "reputation": ""
+    },
+    "preset:opulence_freighter/right/2/2": {
+      "defined": true,
+      "traits": [
+        "Diplomacy"
+      ],
+      "upgrades": [],
+      "reputation": ""
+    },
+    "preset:opulence_freighter/right/2/3": {
+      "defined": true,
+      "traits": [],
+      "upgrades": [
+        "habitat"
+      ],
+      "reputation": ""
+    },
+    "preset:opulence_freighter/right/2/4": {
+      "defined": true,
+      "traits": [],
+      "upgrades": [],
+      "reputation": ""
+    },
+    "preset:opulence_freighter/left/0/0": {
+      "defined": true,
+      "traits": [],
+      "upgrades": [],
+      "reputation": ""
+    }
+  },
+  "effects": {
+    "commercial": [
+      {
+        "stat": "fleetCargoCapacity",
+        "add": 3,
+        "text": "Fleet cargo capacity +3"
+      }
+    ]
+  },
+  "slotLayouts": {
+    "hull:hierarchy_gunship": [
+      {
+        "name": "Weapon",
+        "locations": [
+          "Weapon"
+        ],
+        "options": [
+          "Ballistic Cannon",
+          "Twin Cannon",
+          "Rotary Cannon",
+          "Scatter Gun",
+          "Mining Beam",
+          "Plasma Cutter"
+        ]
+      },
+      {
+        "name": "Sensors",
+        "locations": [
+          "Left Sensors"
+        ],
+        "options": [
+          "Forward Effector",
+          "Cargo Storage",
+          "Hull"
+        ]
+      },
+      {
+        "name": "Utilities",
+        "locations": [
+          "Right Utilities"
+        ],
+        "options": [
+          "Hull",
+          "Cargo Storage",
+          "Shield Generator",
+          "Torpedo System"
+        ]
+      },
+      {
+        "name": "Hull",
+        "locations": [
+          "Left Hull",
+          "Right Hull"
+        ],
+        "options": [
+          "Hull"
+        ]
+      }
+    ],
+    "hull:schooner": [
+      {
+        "name": "Effectors",
+        "locations": [
+          "Effectors"
+        ],
+        "options": [
+          "Effector Array",
+          "Long Range Effectors",
+          "Heavy Duty Effectors",
+          "Industrial Effectors"
+        ]
+      },
+      {
+        "name": "Systems",
+        "locations": [
+          "Left Systems",
+          "Right Systems"
+        ],
+        "options": [
+          "Resources Scanner",
+          "Shield Extension",
+          "Forcefield Generator",
+          "Sensor Array"
+        ]
+      }
+    ]
+  },
+  "requirementLinks": {
+    "hull:schooner/systems/resources_scanner": "hull:hierarchy_gunship/sensors/resources_scanner",
+    "hull:schooner/systems/shield_extension": "hull:hierarchy_gunship/sensors/shield_extension",
+    "hull:schooner/systems/forcefield_generator": "preset:providence_salvager/core/1/2",
+    "preset:opulence_freighter/right/0/1": "preset:opulence_freighter/left/1/1",
+    "preset:opulence_freighter/right/0/2": "preset:opulence_freighter/left/1/2",
+    "preset:opulence_freighter/right/0/3": "preset:opulence_freighter/left/1/3",
+    "preset:opulence_freighter/right/0/4": "preset:opulence_freighter/left/1/4",
+    "preset:opulence_freighter/right/0/5": "preset:opulence_freighter/left/1/5",
+    "preset:opulence_freighter/right/0/6": "preset:opulence_freighter/left/1/6"
+  }
+}

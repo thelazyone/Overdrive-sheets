@@ -1,0 +1,18 @@
+[
+  {
+    "id": "preset:contemplation_escort_vessel/left/0/0",
+    "shipId": "preset:contemplation_escort_vessel",
+    "name": "Asteroid Buster",
+    "kind": "system",
+    "slot": "left · Weapon",
+    "description": "Shoot: Mining"
+  },
+  {
+    "id": "preset:contemplation_escort_vessel/right/0/0",
+    "shipId": "preset:contemplation_escort_vessel",
+    "name": "Asteroid Buster",
+    "kind": "system",
+    "slot": "right · Weapon",
+    "description": "Shoot: Mining"
+  }
+]

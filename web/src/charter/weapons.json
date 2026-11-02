@@ -1,0 +1,224 @@
+{
+  "source": "Designer catalog, 2026-10-27: families and advancement are independent of a common physical mount. Advancement assignments are pending. Point-Defense and Flak are excluded from the interchangeable weapon matrix; their ship profiles remain. Stable IDs and name aliases preserve renamed Mining Beam requirements.",
+  "weapons": [
+    {
+      "id": "weapon:asteroid_buster",
+      "name": "Asteroid Buster",
+      "category": "projectiles",
+      "family": "projectiles",
+      "advancement": "advanced"
+    },
+    {
+      "id": "weapon:double_cannon",
+      "name": "Twin Cannon",
+      "category": "projectiles",
+      "aliases": [
+        "Double Cannon"
+      ],
+      "family": "projectiles",
+      "advancement": "advanced"
+    },
+    {
+      "id": "weapon:railgun",
+      "name": "Railgun",
+      "category": "railguns",
+      "family": "railguns",
+      "advancement": "advanced"
+    },
+    {
+      "id": "weapon:heavy_railgun",
+      "name": "Heavy Railgun",
+      "category": "railguns",
+      "family": "railguns",
+      "advancement": "cutting-edge"
+    },
+    {
+      "id": "weapon:mining_laser",
+      "name": "Mining Beam",
+      "category": "mining",
+      "aliases": [
+        "Mining Laser"
+      ],
+      "family": "mining",
+      "advancement": "base"
+    },
+    {
+      "id": "weapon:heavy_mining_laser",
+      "name": "Heavy Mining Beam",
+      "category": "mining",
+      "aliases": [
+        "Heavy Mining Laser"
+      ],
+      "family": "mining",
+      "advancement": "advanced"
+    },
+    {
+      "id": "weapon:ion_beam",
+      "name": "Ion Beam",
+      "category": "ions",
+      "family": "ions",
+      "advancement": "base"
+    },
+    {
+      "id": "weapon:phased_ion_beam",
+      "name": "Phased Ion Beam",
+      "category": "ions",
+      "family": "ions",
+      "advancement": "cutting-edge"
+    },
+    {
+      "id": "weapon:collimated_ion_beam",
+      "name": "Collimated Ion Beam",
+      "category": "ions",
+      "family": "ions",
+      "advancement": "cutting-edge"
+    },
+    {
+      "id": "weapon:laser_cannon",
+      "name": "Laser Cannon",
+      "category": "lasers",
+      "family": "lasers",
+      "advancement": "base"
+    },
+    {
+      "id": "weapon:pulse_laser_cannon",
+      "name": "Pulse Laser Cannon",
+      "category": "lasers",
+      "family": "lasers",
+      "advancement": "advanced"
+    },
+    {
+      "id": "weapon:adaptive_laser_cannon",
+      "name": "Adaptive Laser Cannon",
+      "category": "lasers",
+      "family": "lasers",
+      "advancement": "cutting-edge"
+    },
+    {
+      "id": "weapon:emp_emitter",
+      "name": "EMP Emitter",
+      "category": "emps",
+      "family": "emps",
+      "advancement": "advanced"
+    },
+    {
+      "id": "weapon:focused_emp_emitter",
+      "name": "Focused EMP Emitter",
+      "category": "emps",
+      "family": "emps",
+      "advancement": "cutting-edge"
+    },
+    {
+      "id": "weapon:wideband_emp_emitter",
+      "name": "Wideband EMP Emitter",
+      "category": "emps",
+      "family": "emps",
+      "advancement": "cutting-edge"
+    },
+    {
+      "id": "weapon:rotary_cannon",
+      "name": "Rotary Cannon",
+      "category": "projectiles",
+      "family": "projectiles",
+      "advancement": "advanced"
+    },
+    {
+      "id": "weapon:missile_array",
+      "name": "Missile Array",
+      "category": "rockets",
+      "family": "rockets",
+      "advancement": "advanced"
+    },
+    {
+      "id": "weapon:rocket_pod",
+      "name": "Rocket Pod",
+      "category": "rockets",
+      "family": "rockets",
+      "advancement": "base"
+    },
+    {
+      "id": "weapon:tracking_laser",
+      "name": "Tracking Laser",
+      "category": "lasers",
+      "family": "lasers",
+      "advancement": "base"
+    },
+    {
+      "id": "weapon:double_railgun",
+      "name": "Double Railgun",
+      "category": "railguns",
+      "family": "railguns",
+      "advancement": "advanced"
+    },
+    {
+      "id": "weapon:siege_cannon",
+      "name": "Siege Cannon",
+      "category": "projectiles",
+      "family": "projectiles",
+      "advancement": "cutting-edge"
+    },
+    {
+      "id": "weapon:missile_battery",
+      "name": "Missile Battery",
+      "category": "rockets",
+      "family": "rockets",
+      "advancement": "cutting-edge"
+    },
+    {
+      "id": "weapon:ballistic_cannon",
+      "name": "Ballistic Cannon",
+      "category": "projectiles",
+      "family": "projectiles",
+      "advancement": "base"
+    },
+    {
+      "id": "weapon:scatter_gun",
+      "name": "Scatter Gun",
+      "category": "projectiles",
+      "family": "projectiles",
+      "advancement": "advanced"
+    },
+    {
+      "id": "weapon:high_energy_railgun",
+      "name": "High Energy Railgun",
+      "category": "railguns",
+      "family": "railguns",
+      "advancement": "cutting-edge"
+    },
+    {
+      "id": "weapon:triple_cannon",
+      "name": "Triple Cannon",
+      "category": "projectiles",
+      "family": "projectiles",
+      "advancement": "cutting-edge"
+    },
+    {
+      "id": "weapon:high_intensity_laser",
+      "name": "High Intensity Laser",
+      "category": "lasers",
+      "family": "lasers",
+      "advancement": "cutting-edge"
+    },
+    {
+      "id": "weapon:plasma_cutter",
+      "name": "Plasma Cutter",
+      "category": "industrial",
+      "family": "industrial",
+      "advancement": "advanced"
+    },
+    {
+      "id": "weapon:disassembler_field",
+      "name": "Disassembler Field",
+      "category": "industrial",
+      "family": "industrial",
+      "advancement": "cutting-edge"
+    },
+    {
+      "id": "weapon:heavy_ion_beam",
+      "name": "Heavy Ion Beam",
+      "category": "ions",
+      "family": "ions",
+      "advancement": "advanced"
+    }
+  ]
+}

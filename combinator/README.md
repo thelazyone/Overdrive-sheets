@@ -1,5 +1,7 @@
 # Combinator
 
+For the new graph-based Charter workbench, see [the workbench guide](../web/src/charter/README.md). This folder is the older trait-only prototype.
+
 Tiny developer/designer tool to visualise which ships and systems are
 available for every two-trait player build.
 
@@ -8,7 +10,7 @@ available for every two-trait player build.
 Requirements: Python 3.10+ (uses stdlib only — `tkinter` ships with Python).
 
 ```
-python combinator/main.py
+python combinator/combinator.py
 ```
 
 ## How it works
@@ -31,3 +33,5 @@ python combinator/main.py
   give a quick "quantity of stuff" read.
 
 Data lives in `combinator/data.json`.
+
+This is sample data maintained independently of the card presets. The current tool checks traits only, not Charter upgrades, reputation, or complete fleet legality. See [the shared project reference](../OVERDRIVE.md) for authoritative sources and the planned Charter balance analysis.

@@ -1,3 +1,5 @@
+import { charterTemplates, prepareConsole } from "./charterTemplates";
+import content from "../charter/content.json";
 /**
  * Ship presets shown in the "Load preset..." dropdown.
  *
@@ -24,7 +26,7 @@ function labelOf(raw: any, fallback: string): string {
   return typeof v === "string" && v.length > 0 ? v : fallback;
 }
 
-export const PRESETS: PresetEntry[] = [
+const existingPresets: PresetEntry[] = [
   { id: "opulence_freighter", name: labelOf(opulence, "Opulence Freighter"), data: opulence },
   {
     id: "providence_salvager",
@@ -44,3 +46,16 @@ export const PRESETS: PresetEntry[] = [
 ];
 
 export const DEFAULT_PRESET_ID = "opulence_freighter";
+
+export const PRESETS: PresetEntry[] = [
+  ...existingPresets.map(entry => {
+    const hull = content.hulls[`preset:${entry.id}` as keyof typeof content.hulls];
+    const className = hull.className === "TBD" ? "" : `${hull.className} `;
+    const name = `${className}${hull.role} · Size ${hull.size}`;
+    const data = prepareConsole(entry.data);
+    data.description = name;
+    // Preserve historical label identity for existing exported ships.
+    return {...entry, name, data};
+  }),
+  ...charterTemplates(),
+];

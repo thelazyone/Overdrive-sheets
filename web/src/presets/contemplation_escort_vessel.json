@@ -28,60 +28,113 @@
         "options": [
           {
             "kind": "generic",
-            "name": "Asteroid Buster",
-            "rules": "",
+            "name": "Ballistic Cannon",
+            "rules": "Profile pending designer authoring.",
             "weapon": true,
-            "electronics": false,
-            "hull": true,
-            "life_support": false,
-            "areas": [
-              {
-                "name": "Shoot",
-                "description": "Mining",
-                "shoot": {
-                  "damage": 5,
-                  "range": "2-4",
-                  "arc-start": 1,
-                  "arc-end": 7
-                },
-                "cost": {
-                  "energy": 1,
-                  "crew": 1
-                }
-              }
-            ],
-            "main": false
+            "areas": []
+          },
+          {
+            "kind": "generic",
+            "name": "Missile Array",
+            "rules": "Profile pending designer authoring.",
+            "weapon": true,
+            "areas": []
+          },
+          {
+            "kind": "generic",
+            "name": "Scatter Gun",
+            "rules": "Profile pending designer authoring.",
+            "weapon": true,
+            "areas": []
+          },
+          {
+            "kind": "generic",
+            "name": "Mining Beam",
+            "rules": "Profile pending designer authoring.",
+            "weapon": true,
+            "areas": []
+          },
+          {
+            "kind": "generic",
+            "name": "Heavy Mining Beam",
+            "rules": "Profile pending designer authoring.",
+            "weapon": true,
+            "areas": []
+          },
+          {
+            "kind": "generic",
+            "name": "Plasma Cutter",
+            "rules": "Profile pending designer authoring.",
+            "weapon": true,
+            "areas": []
+          },
+          {
+            "kind": "generic",
+            "name": "Ion Beam",
+            "rules": "Profile pending designer authoring.",
+            "weapon": true,
+            "areas": []
           }
         ]
       },
       {
-        "kind": "system",
-        "system": {
-          "kind": "generic",
-          "name": "EMP Emitter",
-          "rules": "",
-          "electronics": true,
-          "hull": false,
-          "life_support": false,
-          "areas": [
-            {
-              "name": "EMP Pulse",
-              "description": "EMP",
-              "shoot": {
-                "damage": 6,
-                "range": "1-4",
-                "arc-start": 1,
-                "arc-end": 7
-              },
-              "cost": {
-                "energy": 3,
-                "crew": 0
+        "kind": "slot",
+        "label": "Antenna",
+        "options": [
+          {
+            "kind": "generic",
+            "name": "EMP Emitter",
+            "rules": "",
+            "electronics": true,
+            "hull": false,
+            "life_support": false,
+            "areas": [
+              {
+                "name": "EMP Pulse",
+                "description": "EMP",
+                "shoot": {
+                  "damage": 6,
+                  "range": "1-4",
+                  "arc-start": 1,
+                  "arc-end": 7
+                },
+                "cost": {
+                  "energy": 3,
+                  "crew": 0
+                }
               }
-            }
-          ],
-          "weapon": false,
-          "main": false
-        }
+            ],
+            "weapon": false,
+            "main": false
+          },
+          {
+            "kind": "generic",
+            "name": "Long Range Effector",
+            "rules": "",
+            "electronics": true,
+            "hull": false,
+            "life_support": false,
+            "areas": [
+              {
+                "name": "",
+                "description": "Displace (S) 3 DU",
+                "cost": {
+                  "energy": 1,
+                  "crew": 0
+                }
+              }
+            ],
+            "weapon": false,
+            "main": false
+          },
+          {
+            "kind": "generic",
+            "name": "Sensor Array",
+            "rules": "Profile pending designer authoring.",
+            "weapon": false,
+            "areas": []
+          }
+        ]
       }
     ],
     "core": [
@@ -197,29 +250,52 @@
         "options": [
           {
             "kind": "generic",
-            "name": "Asteroid Buster",
-            "rules": "",
+            "name": "Ballistic Cannon",
+            "rules": "Profile pending designer authoring.",
             "weapon": true,
-            "electronics": false,
-            "hull": true,
-            "life_support": false,
-            "areas": [
-              {
-                "name": "Shoot",
-                "description": "Mining",
-                "shoot": {
-                  "damage": 5,
-                  "range": "2-4",
-                  "arc-start": 1,
-                  "arc-end": 7
-                },
-                "cost": {
-                  "energy": 1,
-                  "crew": 1
-                }
-              }
-            ],
-            "main": false
+            "areas": []
+          },
+          {
+            "kind": "generic",
+            "name": "Missile Array",
+            "rules": "Profile pending designer authoring.",
+            "weapon": true,
+            "areas": []
+          },
+          {
+            "kind": "generic",
+            "name": "Scatter Gun",
+            "rules": "Profile pending designer authoring.",
+            "weapon": true,
+            "areas": []
+          },
+          {
+            "kind": "generic",
+            "name": "Mining Beam",
+            "rules": "Profile pending designer authoring.",
+            "weapon": true,
+            "areas": []
+          },
+          {
+            "kind": "generic",
+            "name": "Heavy Mining Beam",
+            "rules": "Profile pending designer authoring.",
+            "weapon": true,
+            "areas": []
+          },
+          {
+            "kind": "generic",
+            "name": "Plasma Cutter",
+            "rules": "Profile pending designer authoring.",
+            "weapon": true,
+            "areas": []
+          },
+          {
+            "kind": "generic",
+            "name": "Ion Beam",
+            "rules": "Profile pending designer authoring.",
+            "weapon": true,
+            "areas": []
           }
         ]
       }

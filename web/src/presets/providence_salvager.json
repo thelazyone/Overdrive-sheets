@@ -97,7 +97,7 @@
             "kind": "generic",
             "name": "Front Welders",
             "rules": "",
-            "weapon": true,
+            "weapon": false,
             "main": false,
             "hull": true,
             "electronics": false,
@@ -138,6 +138,13 @@
                 }
               }
             ]
+          },
+          {
+            "kind": "generic",
+            "name": "Forcefield Generator",
+            "rules": "Profile pending designer authoring.",
+            "weapon": false,
+            "areas": []
           }
         ]
       },
@@ -147,7 +154,7 @@
         "options": [
           {
             "kind": "generic",
-            "name": "Docking Bay",
+            "name": "Processing Bay",
             "rules": "",
             "electronics": true,
             "hull": true,
@@ -164,6 +171,13 @@
             ],
             "weapon": false,
             "main": false
+          },
+          {
+            "kind": "generic",
+            "name": "Cargo Bay",
+            "rules": "Profile pending designer authoring.",
+            "weapon": false,
+            "areas": []
           }
         ]
       },
@@ -246,30 +260,27 @@
         }
       },
       {
-        "kind": "slot",
-        "label": "Effectors",
-        "options": [
-          {
-            "kind": "generic",
-            "name": "Long Range Effectors",
-            "rules": "",
-            "electronics": true,
-            "hull": false,
-            "life_support": false,
-            "areas": [
-              {
-                "name": "",
-                "description": "Displace (S) 3 DU",
-                "cost": {
-                  "energy": 1,
-                  "crew": 0
-                }
+        "kind": "system",
+        "system": {
+          "kind": "generic",
+          "name": "Long Range Effectors",
+          "rules": "",
+          "electronics": true,
+          "hull": false,
+          "life_support": false,
+          "areas": [
+            {
+              "name": "",
+              "description": "Displace (S) 3 DU",
+              "cost": {
+                "energy": 1,
+                "crew": 0
               }
-            ],
-            "weapon": false,
-            "main": false
-          }
-        ]
+            }
+          ],
+          "weapon": false,
+          "main": false
+        }
       }
     ]
   },

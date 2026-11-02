@@ -46,6 +46,8 @@ export type EngineAction = z.infer<typeof EngineActionSchema>;
 export const AreaSchema = z.object({
   name: z.string().optional(),
   description: z.string().optional(),
+  // Directional non-weapon actions can have an arc without damage/range stats.
+  arc: z.object({ start: z.number().int().min(0).max(8), end: z.number().int().min(0).max(8), directions: z.boolean().optional() }).optional(),
   shoot: ShootSchema.optional(),
   engine: EngineActionSchema.optional(),
   cost: CostSchema,
@@ -66,6 +68,7 @@ export type SpeedSlot = z.infer<typeof SpeedSlotSchema>;
 const SystemBaseSchema = z.object({
   name: z.string(),
   rules: z.string().optional(),
+  shieldTrack: z.array(z.enum(["off", "recharge"])).min(1).max(3).optional(),
   areas: z.array(AreaSchema).default([]),
   // Top-left chevron flags
   weapon: z.boolean().default(false),

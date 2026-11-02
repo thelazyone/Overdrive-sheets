@@ -1,0 +1,22 @@
+{
+  "revision": "charter-2026-10-25-v1",
+  "source": "User-supplied Section C — Ratified Charter Upgrades; connections and per-row costs confirmed in conversation 2026-10-25.",
+  "upgrades": [
+    {"id":"basic","name":"Basic Charter Benefits","description":"No special treatment granted","tier":0,"cost":0,"x":450,"parents":[]},
+    {"id":"commercial","name":"Commercial Permit","description":"Freighter vessels, cargo upgrades.","tier":1,"cost":5,"x":225,"parents":["basic"]},
+    {"id":"tonnage","name":"Extended Tonnage","description":"Larger Capital Ships.","tier":1,"cost":5,"x":450,"parents":["basic"]},
+    {"id":"escorting","name":"Escorting Rights","description":"Larger Squadrons, defense vessels.","tier":1,"cost":5,"x":675,"parents":["basic"]},
+    {"id":"extraction","name":"Extraction Concession","description":"Mining Systems and vessels.","tier":2,"cost":10,"x":112.5,"parents":["commercial"]},
+    {"id":"habitat","name":"Habitat Upgrades","description":"Improvements for Capital Ships Crew and operations.","tier":2,"cost":10,"x":337.5,"parents":["tonnage"]},
+    {"id":"hull","name":"Hull Enhancement","description":"Armor Systems and heavy Platforms.","tier":2,"cost":10,"x":562.5,"parents":["tonnage","escorting"]},
+    {"id":"squadrons","name":"Extended Squadrons","description":"Advanced Light Ships functionalities.","tier":2,"cost":10,"x":787.5,"parents":["escorting"]},
+    {"id":"storage","name":"Mass Storage","description":"Extended cargo, on-board manufacturing.","tier":3,"cost":15,"x":112.5,"parents":["extraction"]},
+    {"id":"logistics","name":"Advanced Logistics","description":"Efficient Light Ships and Platforms.","tier":3,"cost":15,"x":337.5,"parents":["extraction","habitat"]},
+    {"id":"contracting","name":"Military Contracting","description":"No special treatment granted","tier":3,"cost":15,"x":562.5,"parents":["habitat","hull","squadrons"]},
+    {"id":"ordnance","name":"Ordinance Service","description":"Offensive and defensive Torpedo Systems.","tier":3,"cost":15,"x":787.5,"parents":["squadrons"]},
+    {"id":"fields","name":"Field Manipulators","description":"Effectors and improved Shields.","tier":4,"cost":20,"x":112.5,"parents":["storage","logistics"]},
+    {"id":"fusor","name":"Fusor Technologies","description":"Improved Reactors and energy Systems.","tier":4,"cost":20,"x":337.5,"parents":["logistics","contracting"]},
+    {"id":"perimeter","name":"Perimeter Protection","description":"Extended Escort and optimized Control.","tier":4,"cost":20,"x":562.5,"parents":["contracting"]},
+    {"id":"fire","name":"Fire Control Permit","description":"Heavy turrets, Systems, and Platforms.","tier":4,"cost":20,"x":787.5,"parents":["contracting"]}
+  ]
+}

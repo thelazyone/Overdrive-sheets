@@ -1,0 +1,1964 @@
+{
+  "ship": {
+    "name": "Unnamed Ship",
+    "description": "Opulence Class Freighter",
+    "label": "Opulence Freighter",
+    "shields": {
+      "name": "Deflector Shields",
+      "rules": "",
+      "front": [
+        2,
+        1,
+        1,
+        0
+      ],
+      "rear": [
+        2,
+        1,
+        1
+      ]
+    },
+    "reactor": {
+      "name": "Fast Reactor",
+      "rules": "Energy Production: 3",
+      "circles": 6
+    },
+    "quarters": {
+      "name": "Quarters",
+      "rules": "Crew: 3",
+      "med_bay": 1
+    },
+    "sections": {
+      "left": [
+        {
+          "kind": "slot",
+          "label": "Bridge",
+          "options": [
+            {
+              "name": "Command Bridge",
+              "rules": "",
+              "areas": [
+                {
+                  "name": "",
+                  "description": "Control 3 for this Round",
+                  "cost": {
+                    "energy": 0,
+                    "crew": 1
+                  }
+                }
+              ],
+              "weapon": false,
+              "main": false,
+              "hull": false,
+              "electronics": true,
+              "life_support": true,
+              "kind": "generic"
+            },
+            {
+              "name": "Navigation Bridge",
+              "rules": "",
+              "areas": [
+                {
+                  "name": "",
+                  "description": "Scan one Object",
+                  "cost": {
+                    "energy": 0,
+                    "crew": 1
+                  }
+                }
+              ],
+              "weapon": false,
+              "main": false,
+              "hull": false,
+              "electronics": true,
+              "life_support": true,
+              "kind": "generic"
+            },
+            {
+              "name": "Tactical Command",
+              "rules": "Profile pending designer authoring.",
+              "areas": [],
+              "weapon": false,
+              "main": false,
+              "hull": false,
+              "electronics": false,
+              "life_support": false,
+              "kind": "generic"
+            }
+          ],
+          "selectedIndex": null
+        },
+        {
+          "kind": "slot",
+          "label": "Side",
+          "options": [
+            {
+              "name": "Point-Defense",
+              "rules": "",
+              "areas": [
+                {
+                  "name": "AA Burst",
+                  "description": "Anti-Light, Fast",
+                  "shoot": {
+                    "damage": 3,
+                    "range": "0-2",
+                    "arc-start": 7,
+                    "arc-end": 5
+                  },
+                  "cost": {
+                    "energy": 1,
+                    "crew": 0
+                  }
+                }
+              ],
+              "weapon": true,
+              "main": false,
+              "hull": true,
+              "electronics": false,
+              "life_support": false,
+              "kind": "generic"
+            },
+            {
+              "name": "Observation Deck",
+              "rules": "",
+              "areas": [
+                {
+                  "name": "",
+                  "description": "Scan one Object",
+                  "cost": {
+                    "energy": 0,
+                    "crew": 1
+                  }
+                }
+              ],
+              "weapon": false,
+              "main": false,
+              "hull": false,
+              "electronics": true,
+              "life_support": true,
+              "kind": "generic"
+            },
+            {
+              "name": "Missile Rack",
+              "rules": "",
+              "areas": [
+                {
+                  "name": "Salvo",
+                  "description": "Anti-Capital, Slow",
+                  "shoot": {
+                    "damage": 6,
+                    "range": "3-6",
+                    "arc-start": 7,
+                    "arc-end": 5
+                  },
+                  "cost": {
+                    "energy": 2,
+                    "crew": 1
+                  }
+                }
+              ],
+              "weapon": true,
+              "main": false,
+              "hull": true,
+              "electronics": false,
+              "life_support": false,
+              "kind": "generic"
+            },
+            {
+              "name": "Aux Reactor",
+              "rules": "Profile pending designer authoring.",
+              "areas": [],
+              "weapon": false,
+              "main": false,
+              "hull": false,
+              "electronics": false,
+              "life_support": false,
+              "kind": "generic"
+            },
+            {
+              "name": "Additional Shield",
+              "rules": "Profile pending designer authoring.",
+              "areas": [],
+              "weapon": false,
+              "main": false,
+              "hull": false,
+              "electronics": false,
+              "life_support": false,
+              "kind": "generic"
+            },
+            {
+              "name": "Hull Plating",
+              "rules": "Profile pending designer authoring.",
+              "areas": [],
+              "weapon": false,
+              "main": false,
+              "hull": false,
+              "electronics": false,
+              "life_support": false,
+              "kind": "generic"
+            },
+            {
+              "name": "Reinforced Plating",
+              "rules": "Profile pending designer authoring.",
+              "areas": [],
+              "weapon": false,
+              "main": false,
+              "hull": false,
+              "electronics": false,
+              "life_support": false,
+              "kind": "generic"
+            },
+            {
+              "name": "Tracking Laser",
+              "rules": "Profile pending designer authoring.",
+              "areas": [],
+              "weapon": true,
+              "main": false,
+              "hull": false,
+              "electronics": false,
+              "life_support": false,
+              "kind": "generic"
+            }
+          ],
+          "selectedIndex": null
+        },
+        {
+          "kind": "slot",
+          "label": "Sensors",
+          "options": [
+            {
+              "name": "Resource Scanner",
+              "rules": "",
+              "areas": [
+                {
+                  "name": "",
+                  "description": "Scan one Object",
+                  "cost": {
+                    "energy": 1,
+                    "crew": 0
+                  }
+                }
+              ],
+              "weapon": false,
+              "main": false,
+              "hull": false,
+              "electronics": true,
+              "life_support": false,
+              "kind": "generic"
+            },
+            {
+              "name": "Fire Control Array",
+              "rules": "",
+              "areas": [
+                {
+                  "name": "",
+                  "description": "Light Ships within Control get +1 to hit",
+                  "cost": {
+                    "energy": 1,
+                    "crew": 0
+                  }
+                }
+              ],
+              "weapon": false,
+              "main": false,
+              "hull": false,
+              "electronics": true,
+              "life_support": false,
+              "kind": "generic"
+            },
+            {
+              "name": "Light Effectors",
+              "rules": "",
+              "areas": [
+                {
+                  "name": "",
+                  "description": "Displace (S) 2 DU",
+                  "cost": {
+                    "energy": 2,
+                    "crew": 0
+                  }
+                }
+              ],
+              "weapon": false,
+              "main": false,
+              "hull": false,
+              "electronics": true,
+              "life_support": false,
+              "kind": "generic"
+            },
+            {
+              "name": "Support Shield Enhancer",
+              "rules": "Profile pending designer authoring.",
+              "areas": [],
+              "weapon": false,
+              "main": false,
+              "hull": false,
+              "electronics": false,
+              "life_support": false,
+              "kind": "generic"
+            }
+          ],
+          "selectedIndex": null
+        }
+      ],
+      "core": [
+        {
+          "kind": "slot",
+          "label": "Fore weapon",
+          "options": [
+            {
+              "name": "Asteroid Buster",
+              "rules": "",
+              "areas": [
+                {
+                  "name": "Shoot",
+                  "description": "Mining",
+                  "shoot": {
+                    "damage": 5,
+                    "range": "2-4",
+                    "arc-start": 1,
+                    "arc-end": 7
+                  },
+                  "cost": {
+                    "energy": 1,
+                    "crew": 1
+                  }
+                }
+              ],
+              "weapon": true,
+              "main": false,
+              "hull": true,
+              "electronics": false,
+              "life_support": false,
+              "kind": "generic"
+            },
+            {
+              "name": "Twin Cannon",
+              "rules": "",
+              "areas": [
+                {
+                  "name": "Shoot",
+                  "description": "",
+                  "shoot": {
+                    "damage": 4,
+                    "range": "1-3",
+                    "arc-start": 1,
+                    "arc-end": 7
+                  },
+                  "cost": {
+                    "energy": 0,
+                    "crew": 1
+                  }
+                }
+              ],
+              "weapon": true,
+              "main": false,
+              "hull": true,
+              "electronics": false,
+              "life_support": false,
+              "kind": "generic"
+            },
+            {
+              "name": "Railgun",
+              "rules": "Profile pending designer authoring.",
+              "areas": [],
+              "weapon": true,
+              "main": false,
+              "hull": false,
+              "electronics": false,
+              "life_support": false,
+              "kind": "generic"
+            },
+            {
+              "name": "Double Railgun",
+              "rules": "Profile pending designer authoring.",
+              "areas": [],
+              "weapon": true,
+              "main": false,
+              "hull": false,
+              "electronics": false,
+              "life_support": false,
+              "kind": "generic"
+            },
+            {
+              "name": "High Energy Railgun",
+              "rules": "Profile pending designer authoring.",
+              "areas": [],
+              "weapon": true,
+              "main": false,
+              "hull": false,
+              "electronics": false,
+              "life_support": false,
+              "kind": "generic"
+            },
+            {
+              "name": "Triple Cannon",
+              "rules": "Profile pending designer authoring.",
+              "areas": [],
+              "weapon": true,
+              "main": false,
+              "hull": false,
+              "electronics": false,
+              "life_support": false,
+              "kind": "generic"
+            },
+            {
+              "name": "Mining Beam",
+              "rules": "Profile pending designer authoring.",
+              "areas": [],
+              "weapon": true,
+              "main": false,
+              "hull": false,
+              "electronics": false,
+              "life_support": false,
+              "kind": "generic"
+            },
+            {
+              "name": "Heavy Mining Beam",
+              "rules": "Profile pending designer authoring.",
+              "areas": [],
+              "weapon": true,
+              "main": false,
+              "hull": false,
+              "electronics": false,
+              "life_support": false,
+              "kind": "generic"
+            }
+          ],
+          "selectedIndex": null
+        },
+        {
+          "kind": "slot",
+          "label": "Aft weapon",
+          "options": [
+            {
+              "name": "Asteroid Buster",
+              "rules": "",
+              "areas": [
+                {
+                  "name": "Shoot",
+                  "description": "Mining",
+                  "shoot": {
+                    "damage": 5,
+                    "range": "2-4",
+                    "arc-start": 1,
+                    "arc-end": 7
+                  },
+                  "cost": {
+                    "energy": 1,
+                    "crew": 1
+                  }
+                }
+              ],
+              "weapon": true,
+              "main": false,
+              "hull": true,
+              "electronics": false,
+              "life_support": false,
+              "kind": "generic"
+            },
+            {
+              "name": "Twin Cannon",
+              "rules": "",
+              "areas": [
+                {
+                  "name": "Shoot",
+                  "description": "",
+                  "shoot": {
+                    "damage": 4,
+                    "range": "1-3",
+                    "arc-start": 1,
+                    "arc-end": 7
+                  },
+                  "cost": {
+                    "energy": 0,
+                    "crew": 1
+                  }
+                }
+              ],
+              "weapon": true,
+              "main": false,
+              "hull": true,
+              "electronics": false,
+              "life_support": false,
+              "kind": "generic"
+            },
+            {
+              "name": "Railgun",
+              "rules": "Profile pending designer authoring.",
+              "areas": [],
+              "weapon": true,
+              "main": false,
+              "hull": false,
+              "electronics": false,
+              "life_support": false,
+              "kind": "generic"
+            },
+            {
+              "name": "Double Railgun",
+              "rules": "Profile pending designer authoring.",
+              "areas": [],
+              "weapon": true,
+              "main": false,
+              "hull": false,
+              "electronics": false,
+              "life_support": false,
+              "kind": "generic"
+            },
+            {
+              "name": "High Energy Railgun",
+              "rules": "Profile pending designer authoring.",
+              "areas": [],
+              "weapon": true,
+              "main": false,
+              "hull": false,
+              "electronics": false,
+              "life_support": false,
+              "kind": "generic"
+            },
+            {
+              "name": "Triple Cannon",
+              "rules": "Profile pending designer authoring.",
+              "areas": [],
+              "weapon": true,
+              "main": false,
+              "hull": false,
+              "electronics": false,
+              "life_support": false,
+              "kind": "generic"
+            },
+            {
+              "name": "Mining Beam",
+              "rules": "Profile pending designer authoring.",
+              "areas": [],
+              "weapon": true,
+              "main": false,
+              "hull": false,
+              "electronics": false,
+              "life_support": false,
+              "kind": "generic"
+            },
+            {
+              "name": "Heavy Mining Beam",
+              "rules": "Profile pending designer authoring.",
+              "areas": [],
+              "weapon": true,
+              "main": false,
+              "hull": false,
+              "electronics": false,
+              "life_support": false,
+              "kind": "generic"
+            }
+          ],
+          "selectedIndex": null
+        },
+        {
+          "kind": "system",
+          "system": {
+            "name": "Dual Flak Battery",
+            "rules": "",
+            "areas": [
+              {
+                "name": "AA Burst",
+                "description": "Anti-Light",
+                "shoot": {
+                  "damage": 7,
+                  "range": "0-2",
+                  "arc-start": 0,
+                  "arc-end": 8
+                },
+                "cost": {
+                  "energy": 1,
+                  "crew": 0
+                }
+              }
+            ],
+            "weapon": true,
+            "main": false,
+            "hull": true,
+            "electronics": false,
+            "life_support": true,
+            "kind": "generic"
+          }
+        },
+        {
+          "kind": "system",
+          "system": {
+            "name": "Engine",
+            "rules": "",
+            "areas": [
+              {
+                "name": "",
+                "description": "Change Speed",
+                "cost": {
+                  "energy": 1,
+                  "crew": 1
+                }
+              }
+            ],
+            "weapon": false,
+            "main": false,
+            "hull": false,
+            "electronics": true,
+            "life_support": false,
+            "kind": "engine",
+            "speed_slots": [
+              {
+                "speed": "0-1",
+                "rotation": "90°"
+              },
+              {
+                "speed": "1-2",
+                "rotation": "0°"
+              },
+              {
+                "speed": "2-3",
+                "rotation": "0°"
+              }
+            ]
+          }
+        }
+      ],
+      "right": [
+        {
+          "kind": "slot",
+          "label": "Side",
+          "options": [
+            {
+              "name": "Point-Defense",
+              "rules": "",
+              "areas": [
+                {
+                  "name": "AA Burst",
+                  "description": "Anti-Light, Fast",
+                  "shoot": {
+                    "damage": 3,
+                    "range": "0-2",
+                    "arc-start": 3,
+                    "arc-end": 1
+                  },
+                  "cost": {
+                    "energy": 1,
+                    "crew": 0
+                  }
+                }
+              ],
+              "weapon": true,
+              "main": false,
+              "hull": true,
+              "electronics": false,
+              "life_support": false,
+              "kind": "generic"
+            },
+            {
+              "name": "Observation Deck",
+              "rules": "",
+              "areas": [
+                {
+                  "name": "",
+                  "description": "Scan one Object",
+                  "cost": {
+                    "energy": 0,
+                    "crew": 1
+                  }
+                }
+              ],
+              "weapon": false,
+              "main": false,
+              "hull": false,
+              "electronics": true,
+              "life_support": true,
+              "kind": "generic"
+            },
+            {
+              "name": "Missile Rack",
+              "rules": "",
+              "areas": [
+                {
+                  "name": "Salvo",
+                  "description": "Anti-Capital, Slow",
+                  "shoot": {
+                    "damage": 6,
+                    "range": "3-6",
+                    "arc-start": 3,
+                    "arc-end": 1
+                  },
+                  "cost": {
+                    "energy": 2,
+                    "crew": 1
+                  }
+                }
+              ],
+              "weapon": true,
+              "main": false,
+              "hull": true,
+              "electronics": false,
+              "life_support": false,
+              "kind": "generic"
+            },
+            {
+              "name": "Aux Reactor",
+              "rules": "Profile pending designer authoring.",
+              "areas": [],
+              "weapon": false,
+              "main": false,
+              "hull": false,
+              "electronics": false,
+              "life_support": false,
+              "kind": "generic"
+            },
+            {
+              "name": "Additional Shield",
+              "rules": "Profile pending designer authoring.",
+              "areas": [],
+              "weapon": false,
+              "main": false,
+              "hull": false,
+              "electronics": false,
+              "life_support": false,
+              "kind": "generic"
+            },
+            {
+              "name": "Hull Plating",
+              "rules": "Profile pending designer authoring.",
+              "areas": [],
+              "weapon": false,
+              "main": false,
+              "hull": false,
+              "electronics": false,
+              "life_support": false,
+              "kind": "generic"
+            },
+            {
+              "name": "Reinforced Plating",
+              "rules": "Profile pending designer authoring.",
+              "areas": [],
+              "weapon": false,
+              "main": false,
+              "hull": false,
+              "electronics": false,
+              "life_support": false,
+              "kind": "generic"
+            },
+            {
+              "name": "Tracking Laser",
+              "rules": "Profile pending designer authoring.",
+              "areas": [],
+              "weapon": true,
+              "main": false,
+              "hull": false,
+              "electronics": false,
+              "life_support": false,
+              "kind": "generic"
+            }
+          ],
+          "selectedIndex": null
+        },
+        {
+          "kind": "system",
+          "system": {
+            "name": "Drone Bay",
+            "rules": "",
+            "areas": [
+              {
+                "name": "Salvage",
+                "description": "Salvage one Object within 1 DU",
+                "cost": {
+                  "energy": 2,
+                  "crew": 0
+                }
+              }
+            ],
+            "weapon": false,
+            "main": false,
+            "hull": false,
+            "electronics": true,
+            "life_support": false,
+            "kind": "generic"
+          }
+        },
+        {
+          "kind": "slot",
+          "label": "Hab",
+          "options": [
+            {
+              "name": "Barracks",
+              "rules": "Holds 3 Crew",
+              "areas": [
+                {
+                  "name": "",
+                  "description": "Board up to 1 Crew",
+                  "cost": {
+                    "energy": 1,
+                    "crew": 1
+                  }
+                }
+              ],
+              "weapon": false,
+              "main": false,
+              "hull": false,
+              "electronics": false,
+              "life_support": true,
+              "kind": "generic"
+            },
+            {
+              "name": "Additional Quarters",
+              "rules": "Profile pending designer authoring.",
+              "areas": [],
+              "weapon": false,
+              "main": false,
+              "hull": false,
+              "electronics": false,
+              "life_support": true,
+              "kind": "generic"
+            },
+            {
+              "name": "Passenger Berths",
+              "rules": "Profile pending designer authoring.",
+              "areas": [],
+              "weapon": false,
+              "main": false,
+              "hull": false,
+              "electronics": false,
+              "life_support": false,
+              "kind": "generic"
+            },
+            {
+              "name": "Security Quarters",
+              "rules": "Profile pending designer authoring.",
+              "areas": [],
+              "weapon": false,
+              "main": false,
+              "hull": false,
+              "electronics": false,
+              "life_support": false,
+              "kind": "generic"
+            },
+            {
+              "name": "Crew Lounge",
+              "rules": "",
+              "areas": [],
+              "weapon": false,
+              "main": false,
+              "hull": false,
+              "electronics": false,
+              "life_support": false,
+              "kind": "generic"
+            }
+          ],
+          "selectedIndex": null
+        }
+      ]
+    }
+  },
+  "hull": {
+    "size": 3,
+    "upgrades": [
+      "commercial"
+    ],
+    "defined": true,
+    "role": "Freighter",
+    "className": "Opulence",
+    "traits": [
+      "Trade",
+      "Exploration",
+      "Diplomacy"
+    ]
+  },
+  "requirements": {
+    "traits": [
+      "Trade",
+      "Exploration",
+      "Diplomacy"
+    ],
+    "upgrades": [
+      "Commercial Permit",
+      "Extended Tonnage"
+    ]
+  },
+  "sections": {
+    "left": [
+      {
+        "kind": "slot",
+        "label": "Bridge",
+        "options": [
+          {
+            "name": "Command Bridge",
+            "profile": {
+              "kind": "generic",
+              "name": "Command Bridge",
+              "rules": "",
+              "electronics": true,
+              "hull": false,
+              "life_support": true,
+              "areas": [
+                {
+                  "name": "",
+                  "description": "Control 3 for this Round",
+                  "cost": {
+                    "energy": 0,
+                    "crew": 1
+                  }
+                }
+              ],
+              "weapon": false,
+              "main": false
+            },
+            "requirements": {
+              "traits": [],
+              "upgrades": []
+            }
+          },
+          {
+            "name": "Navigation Bridge",
+            "profile": {
+              "kind": "generic",
+              "name": "Navigation Bridge",
+              "rules": "",
+              "electronics": true,
+              "hull": false,
+              "life_support": true,
+              "areas": [
+                {
+                  "name": "",
+                  "description": "Scan one Object",
+                  "cost": {
+                    "energy": 0,
+                    "crew": 1
+                  }
+                }
+              ],
+              "weapon": false,
+              "main": false
+            },
+            "requirements": {
+              "traits": [
+                "Exploration"
+              ],
+              "upgrades": []
+            }
+          },
+          {
+            "name": "Tactical Command",
+            "profile": {
+              "kind": "generic",
+              "name": "Tactical Command",
+              "rules": "Profile pending designer authoring.",
+              "weapon": false,
+              "areas": []
+            },
+            "requirements": {
+              "traits": [
+                "Military"
+              ],
+              "upgrades": [
+                "Perimeter Protection"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "kind": "slot",
+        "label": "Side",
+        "options": [
+          {
+            "name": "Point-Defense",
+            "profile": {
+              "kind": "generic",
+              "name": "Point-Defense",
+              "rules": "",
+              "weapon": true,
+              "hull": true,
+              "electronics": false,
+              "life_support": false,
+              "areas": [
+                {
+                  "name": "AA Burst",
+                  "description": "Anti-Light, Fast",
+                  "shoot": {
+                    "damage": 3,
+                    "range": "0-2",
+                    "arc-start": 7,
+                    "arc-end": 5
+                  },
+                  "cost": {
+                    "energy": 1,
+                    "crew": 0
+                  }
+                }
+              ],
+              "main": false
+            },
+            "requirements": {
+              "traits": [],
+              "upgrades": []
+            }
+          },
+          {
+            "name": "Observation Deck",
+            "profile": {
+              "kind": "generic",
+              "name": "Observation Deck",
+              "rules": "",
+              "electronics": true,
+              "hull": false,
+              "life_support": true,
+              "areas": [
+                {
+                  "name": "",
+                  "description": "Scan one Object",
+                  "cost": {
+                    "energy": 0,
+                    "crew": 1
+                  }
+                }
+              ],
+              "weapon": false,
+              "main": false
+            },
+            "requirements": {
+              "traits": [
+                "Science"
+              ],
+              "upgrades": []
+            }
+          },
+          {
+            "name": "Missile Rack",
+            "profile": {
+              "kind": "generic",
+              "name": "Missile Rack",
+              "rules": "",
+              "weapon": true,
+              "hull": true,
+              "electronics": false,
+              "life_support": false,
+              "areas": [
+                {
+                  "name": "Salvo",
+                  "description": "Anti-Capital, Slow",
+                  "shoot": {
+                    "damage": 6,
+                    "range": "3-6",
+                    "arc-start": 7,
+                    "arc-end": 5
+                  },
+                  "cost": {
+                    "energy": 2,
+                    "crew": 1
+                  }
+                }
+              ],
+              "main": false
+            },
+            "requirements": {
+              "traits": [],
+              "upgrades": [
+                "Ordinance Service"
+              ]
+            }
+          },
+          {
+            "name": "Aux Reactor",
+            "profile": {
+              "kind": "generic",
+              "name": "Aux Reactor",
+              "rules": "Profile pending designer authoring.",
+              "weapon": false,
+              "areas": []
+            },
+            "requirements": {
+              "traits": [],
+              "upgrades": [
+                "Fusor Technologies"
+              ]
+            }
+          },
+          {
+            "name": "Additional Shield",
+            "profile": {
+              "kind": "generic",
+              "name": "Additional Shield",
+              "rules": "Profile pending designer authoring.",
+              "weapon": false,
+              "areas": []
+            },
+            "requirements": {
+              "traits": [],
+              "upgrades": [
+                "Field Manipulators"
+              ]
+            }
+          },
+          {
+            "name": "Hull Plating",
+            "profile": {
+              "kind": "generic",
+              "name": "Hull Plating",
+              "rules": "Profile pending designer authoring.",
+              "weapon": false,
+              "areas": []
+            },
+            "requirements": {
+              "traits": [],
+              "upgrades": []
+            }
+          },
+          {
+            "name": "Reinforced Plating",
+            "profile": {
+              "kind": "generic",
+              "name": "Reinforced Plating",
+              "rules": "Profile pending designer authoring.",
+              "weapon": false,
+              "areas": []
+            },
+            "requirements": {
+              "traits": [],
+              "upgrades": [
+                "Hull Enhancement"
+              ]
+            }
+          },
+          {
+            "name": "Tracking Laser",
+            "profile": {
+              "kind": "generic",
+              "name": "Tracking Laser",
+              "rules": "Profile pending designer authoring.",
+              "weapon": true,
+              "areas": []
+            },
+            "requirements": {
+              "traits": [],
+              "upgrades": [
+                "Military Contracting"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "kind": "slot",
+        "label": "Sensors",
+        "options": [
+          {
+            "name": "Resource Scanner",
+            "profile": {
+              "kind": "generic",
+              "name": "Resource Scanner",
+              "rules": "",
+              "weapon": false,
+              "main": false,
+              "hull": false,
+              "electronics": true,
+              "life_support": false,
+              "areas": [
+                {
+                  "name": "",
+                  "description": "Scan one Object",
+                  "cost": {
+                    "energy": 1,
+                    "crew": 0
+                  }
+                }
+              ]
+            },
+            "requirements": {
+              "traits": [
+                "Science"
+              ],
+              "upgrades": []
+            }
+          },
+          {
+            "name": "Fire Control Array",
+            "profile": {
+              "kind": "generic",
+              "name": "Fire Control Array",
+              "rules": "",
+              "weapon": false,
+              "main": false,
+              "hull": false,
+              "electronics": true,
+              "life_support": false,
+              "areas": [
+                {
+                  "name": "",
+                  "description": "Light Ships within Control get +1 to hit",
+                  "cost": {
+                    "energy": 1,
+                    "crew": 0
+                  }
+                }
+              ]
+            },
+            "requirements": {
+              "traits": [
+                "Military"
+              ],
+              "upgrades": []
+            }
+          },
+          {
+            "name": "Light Effectors",
+            "profile": {
+              "kind": "generic",
+              "name": "Light Effectors",
+              "rules": "",
+              "weapon": false,
+              "main": false,
+              "hull": false,
+              "electronics": true,
+              "life_support": false,
+              "areas": [
+                {
+                  "name": "",
+                  "description": "Displace (S) 2 DU",
+                  "cost": {
+                    "energy": 2,
+                    "crew": 0
+                  }
+                }
+              ]
+            },
+            "requirements": {
+              "traits": [],
+              "upgrades": []
+            }
+          },
+          {
+            "name": "Support Shield Enhancer",
+            "profile": {
+              "kind": "generic",
+              "name": "Support Shield Enhancer",
+              "rules": "Profile pending designer authoring.",
+              "weapon": false,
+              "areas": []
+            },
+            "requirements": {
+              "traits": [],
+              "upgrades": [
+                "Extended Squadrons"
+              ]
+            }
+          }
+        ]
+      }
+    ],
+    "core": [
+      {
+        "kind": "slot",
+        "label": "Fore weapon",
+        "options": [
+          {
+            "name": "Asteroid Buster",
+            "profile": {
+              "kind": "generic",
+              "name": "Asteroid Buster",
+              "rules": "",
+              "weapon": true,
+              "electronics": false,
+              "hull": true,
+              "life_support": false,
+              "areas": [
+                {
+                  "name": "Shoot",
+                  "description": "Mining",
+                  "shoot": {
+                    "damage": 5,
+                    "range": "2-4",
+                    "arc-start": 1,
+                    "arc-end": 7
+                  },
+                  "cost": {
+                    "energy": 1,
+                    "crew": 1
+                  }
+                }
+              ],
+              "main": false
+            },
+            "requirements": {
+              "traits": [],
+              "upgrades": []
+            }
+          },
+          {
+            "name": "Twin Cannon",
+            "profile": {
+              "kind": "generic",
+              "name": "Twin Cannon",
+              "rules": "",
+              "weapon": true,
+              "electronics": false,
+              "hull": true,
+              "life_support": false,
+              "areas": [
+                {
+                  "name": "Shoot",
+                  "description": "",
+                  "shoot": {
+                    "damage": 4,
+                    "range": "1-3",
+                    "arc-start": 1,
+                    "arc-end": 7
+                  },
+                  "cost": {
+                    "energy": 0,
+                    "crew": 1
+                  }
+                }
+              ],
+              "main": false
+            },
+            "requirements": {
+              "traits": [],
+              "upgrades": []
+            }
+          },
+          {
+            "name": "Railgun",
+            "profile": {
+              "kind": "generic",
+              "name": "Railgun",
+              "rules": "Profile pending designer authoring.",
+              "weapon": true,
+              "areas": []
+            },
+            "requirements": {
+              "traits": [],
+              "upgrades": [
+                "Military Contracting"
+              ]
+            }
+          },
+          {
+            "name": "Double Railgun",
+            "profile": {
+              "kind": "generic",
+              "name": "Double Railgun",
+              "rules": "Profile pending designer authoring.",
+              "weapon": true,
+              "areas": []
+            },
+            "requirements": {
+              "traits": [],
+              "upgrades": [
+                "Ordinance Service"
+              ]
+            }
+          },
+          {
+            "name": "High Energy Railgun",
+            "profile": {
+              "kind": "generic",
+              "name": "High Energy Railgun",
+              "rules": "Profile pending designer authoring.",
+              "weapon": true,
+              "areas": []
+            },
+            "requirements": {
+              "traits": [],
+              "upgrades": [
+                "Fire Control Permit"
+              ]
+            }
+          },
+          {
+            "name": "Triple Cannon",
+            "profile": {
+              "kind": "generic",
+              "name": "Triple Cannon",
+              "rules": "Profile pending designer authoring.",
+              "weapon": true,
+              "areas": []
+            },
+            "requirements": {
+              "traits": [],
+              "upgrades": [
+                "Ordinance Service"
+              ]
+            }
+          },
+          {
+            "name": "Mining Beam",
+            "profile": {
+              "kind": "generic",
+              "name": "Mining Beam",
+              "rules": "Profile pending designer authoring.",
+              "weapon": true,
+              "areas": []
+            },
+            "requirements": {
+              "traits": [],
+              "upgrades": [
+                "Extraction Concession"
+              ]
+            }
+          },
+          {
+            "name": "Heavy Mining Beam",
+            "profile": {
+              "kind": "generic",
+              "name": "Heavy Mining Beam",
+              "rules": "Profile pending designer authoring.",
+              "weapon": true,
+              "areas": []
+            },
+            "requirements": {
+              "traits": [
+                "Trade"
+              ],
+              "upgrades": [
+                "Mass Storage"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "kind": "slot",
+        "label": "Aft weapon",
+        "options": [
+          {
+            "name": "Asteroid Buster",
+            "profile": {
+              "kind": "generic",
+              "name": "Asteroid Buster",
+              "rules": "",
+              "weapon": true,
+              "electronics": false,
+              "hull": true,
+              "life_support": false,
+              "areas": [
+                {
+                  "name": "Shoot",
+                  "description": "Mining",
+                  "shoot": {
+                    "damage": 5,
+                    "range": "2-4",
+                    "arc-start": 1,
+                    "arc-end": 7
+                  },
+                  "cost": {
+                    "energy": 1,
+                    "crew": 1
+                  }
+                }
+              ],
+              "main": false
+            },
+            "requirements": {
+              "traits": [],
+              "upgrades": []
+            }
+          },
+          {
+            "name": "Twin Cannon",
+            "profile": {
+              "kind": "generic",
+              "name": "Twin Cannon",
+              "rules": "",
+              "weapon": true,
+              "electronics": false,
+              "hull": true,
+              "life_support": false,
+              "areas": [
+                {
+                  "name": "Shoot",
+                  "description": "",
+                  "shoot": {
+                    "damage": 4,
+                    "range": "1-3",
+                    "arc-start": 1,
+                    "arc-end": 7
+                  },
+                  "cost": {
+                    "energy": 0,
+                    "crew": 1
+                  }
+                }
+              ],
+              "main": false
+            },
+            "requirements": {
+              "traits": [],
+              "upgrades": []
+            }
+          },
+          {
+            "name": "Railgun",
+            "profile": {
+              "kind": "generic",
+              "name": "Railgun",
+              "rules": "Profile pending designer authoring.",
+              "weapon": true,
+              "areas": []
+            },
+            "requirements": {
+              "traits": [],
+              "upgrades": [
+                "Military Contracting"
+              ]
+            }
+          },
+          {
+            "name": "Double Railgun",
+            "profile": {
+              "kind": "generic",
+              "name": "Double Railgun",
+              "rules": "Profile pending designer authoring.",
+              "weapon": true,
+              "areas": []
+            },
+            "requirements": {
+              "traits": [],
+              "upgrades": [
+                "Ordinance Service"
+              ]
+            }
+          },
+          {
+            "name": "High Energy Railgun",
+            "profile": {
+              "kind": "generic",
+              "name": "High Energy Railgun",
+              "rules": "Profile pending designer authoring.",
+              "weapon": true,
+              "areas": []
+            },
+            "requirements": {
+              "traits": [],
+              "upgrades": [
+                "Fire Control Permit"
+              ]
+            }
+          },
+          {
+            "name": "Triple Cannon",
+            "profile": {
+              "kind": "generic",
+              "name": "Triple Cannon",
+              "rules": "Profile pending designer authoring.",
+              "weapon": true,
+              "areas": []
+            },
+            "requirements": {
+              "traits": [],
+              "upgrades": [
+                "Ordinance Service"
+              ]
+            }
+          },
+          {
+            "name": "Mining Beam",
+            "profile": {
+              "kind": "generic",
+              "name": "Mining Beam",
+              "rules": "Profile pending designer authoring.",
+              "weapon": true,
+              "areas": []
+            },
+            "requirements": {
+              "traits": [],
+              "upgrades": [
+                "Extraction Concession"
+              ]
+            }
+          },
+          {
+            "name": "Heavy Mining Beam",
+            "profile": {
+              "kind": "generic",
+              "name": "Heavy Mining Beam",
+              "rules": "Profile pending designer authoring.",
+              "weapon": true,
+              "areas": []
+            },
+            "requirements": {
+              "traits": [
+                "Trade"
+              ],
+              "upgrades": [
+                "Mass Storage"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "kind": "fixed",
+        "system": {
+          "name": "Dual Flak Battery",
+          "rules": "",
+          "areas": [
+            {
+              "name": "AA Burst",
+              "description": "Anti-Light",
+              "shoot": {
+                "damage": 7,
+                "range": "0-2",
+                "arc-start": 0,
+                "arc-end": 8
+              },
+              "cost": {
+                "energy": 1,
+                "crew": 0
+              }
+            }
+          ],
+          "weapon": true,
+          "main": false,
+          "hull": true,
+          "electronics": false,
+          "life_support": true,
+          "kind": "generic"
+        }
+      },
+      {
+        "kind": "fixed",
+        "system": {
+          "name": "Engine",
+          "rules": "",
+          "areas": [
+            {
+              "name": "",
+              "description": "Change Speed",
+              "cost": {
+                "energy": 1,
+                "crew": 1
+              }
+            }
+          ],
+          "weapon": false,
+          "main": false,
+          "hull": false,
+          "electronics": true,
+          "life_support": false,
+          "kind": "engine",
+          "speed_slots": [
+            {
+              "speed": "0-1",
+              "rotation": "90°"
+            },
+            {
+              "speed": "1-2",
+              "rotation": "0°"
+            },
+            {
+              "speed": "2-3",
+              "rotation": "0°"
+            }
+          ]
+        }
+      }
+    ],
+    "right": [
+      {
+        "kind": "slot",
+        "label": "Side",
+        "options": [
+          {
+            "name": "Point-Defense",
+            "profile": {
+              "kind": "generic",
+              "name": "Point-Defense",
+              "rules": "",
+              "weapon": true,
+              "hull": true,
+              "electronics": false,
+              "life_support": false,
+              "areas": [
+                {
+                  "name": "AA Burst",
+                  "description": "Anti-Light, Fast",
+                  "shoot": {
+                    "damage": 3,
+                    "range": "0-2",
+                    "arc-start": 3,
+                    "arc-end": 1
+                  },
+                  "cost": {
+                    "energy": 1,
+                    "crew": 0
+                  }
+                }
+              ],
+              "main": false
+            },
+            "requirements": {
+              "traits": [],
+              "upgrades": []
+            }
+          },
+          {
+            "name": "Observation Deck",
+            "profile": {
+              "kind": "generic",
+              "name": "Observation Deck",
+              "rules": "",
+              "electronics": true,
+              "hull": false,
+              "life_support": true,
+              "areas": [
+                {
+                  "name": "",
+                  "description": "Scan one Object",
+                  "cost": {
+                    "energy": 0,
+                    "crew": 1
+                  }
+                }
+              ],
+              "weapon": false,
+              "main": false
+            },
+            "requirements": {
+              "traits": [
+                "Science"
+              ],
+              "upgrades": []
+            }
+          },
+          {
+            "name": "Missile Rack",
+            "profile": {
+              "kind": "generic",
+              "name": "Missile Rack",
+              "rules": "",
+              "weapon": true,
+              "hull": true,
+              "electronics": false,
+              "life_support": false,
+              "areas": [
+                {
+                  "name": "Salvo",
+                  "description": "Anti-Capital, Slow",
+                  "shoot": {
+                    "damage": 6,
+                    "range": "3-6",
+                    "arc-start": 3,
+                    "arc-end": 1
+                  },
+                  "cost": {
+                    "energy": 2,
+                    "crew": 1
+                  }
+                }
+              ],
+              "main": false
+            },
+            "requirements": {
+              "traits": [],
+              "upgrades": [
+                "Ordinance Service"
+              ]
+            }
+          },
+          {
+            "name": "Aux Reactor",
+            "profile": {
+              "kind": "generic",
+              "name": "Aux Reactor",
+              "rules": "Profile pending designer authoring.",
+              "weapon": false,
+              "areas": []
+            },
+            "requirements": {
+              "traits": [],
+              "upgrades": [
+                "Fusor Technologies"
+              ]
+            }
+          },
+          {
+            "name": "Additional Shield",
+            "profile": {
+              "kind": "generic",
+              "name": "Additional Shield",
+              "rules": "Profile pending designer authoring.",
+              "weapon": false,
+              "areas": []
+            },
+            "requirements": {
+              "traits": [],
+              "upgrades": [
+                "Field Manipulators"
+              ]
+            }
+          },
+          {
+            "name": "Hull Plating",
+            "profile": {
+              "kind": "generic",
+              "name": "Hull Plating",
+              "rules": "Profile pending designer authoring.",
+              "weapon": false,
+              "areas": []
+            },
+            "requirements": {
+              "traits": [],
+              "upgrades": []
+            }
+          },
+          {
+            "name": "Reinforced Plating",
+            "profile": {
+              "kind": "generic",
+              "name": "Reinforced Plating",
+              "rules": "Profile pending designer authoring.",
+              "weapon": false,
+              "areas": []
+            },
+            "requirements": {
+              "traits": [],
+              "upgrades": [
+                "Hull Enhancement"
+              ]
+            }
+          },
+          {
+            "name": "Tracking Laser",
+            "profile": {
+              "kind": "generic",
+              "name": "Tracking Laser",
+              "rules": "Profile pending designer authoring.",
+              "weapon": true,
+              "areas": []
+            },
+            "requirements": {
+              "traits": [],
+              "upgrades": [
+                "Military Contracting"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "kind": "fixed",
+        "system": {
+          "name": "Drone Bay",
+          "rules": "",
+          "areas": [
+            {
+              "name": "Salvage",
+              "description": "Salvage one Object within 1 DU",
+              "cost": {
+                "energy": 2,
+                "crew": 0
+              }
+            }
+          ],
+          "weapon": false,
+          "main": false,
+          "hull": false,
+          "electronics": true,
+          "life_support": false,
+          "kind": "generic"
+        }
+      },
+      {
+        "kind": "slot",
+        "label": "Hab",
+        "options": [
+          {
+            "name": "Barracks",
+            "profile": {
+              "kind": "generic",
+              "name": "Barracks",
+              "rules": "Holds 3 Crew",
+              "hull": false,
+              "electronics": false,
+              "life_support": true,
+              "areas": [
+                {
+                  "name": "",
+                  "description": "Board up to 1 Crew",
+                  "cost": {
+                    "energy": 1,
+                    "crew": 1
+                  }
+                }
+              ],
+              "weapon": false,
+              "main": false
+            },
+            "requirements": {
+              "traits": [
+                "Military"
+              ],
+              "upgrades": []
+            }
+          },
+          {
+            "name": "Additional Quarters",
+            "profile": {
+              "kind": "generic",
+              "name": "Additional Quarters",
+              "rules": "Profile pending designer authoring.",
+              "weapon": false,
+              "main": false,
+              "life_support": true,
+              "areas": []
+            },
+            "requirements": {
+              "traits": [],
+              "upgrades": [
+                "Habitat Upgrades"
+              ]
+            }
+          },
+          {
+            "name": "Passenger Berths",
+            "profile": {
+              "kind": "generic",
+              "name": "Passenger Berths",
+              "rules": "Profile pending designer authoring.",
+              "weapon": false,
+              "areas": []
+            },
+            "requirements": {
+              "traits": [
+                "Diplomacy"
+              ],
+              "upgrades": []
+            }
+          },
+          {
+            "name": "Security Quarters",
+            "profile": {
+              "kind": "generic",
+              "name": "Security Quarters",
+              "rules": "Profile pending designer authoring.",
+              "weapon": false,
+              "areas": []
+            },
+            "requirements": {
+              "traits": [],
+              "upgrades": [
+                "Habitat Upgrades"
+              ]
+            }
+          },
+          {
+            "name": "Crew Lounge",
+            "profile": {
+              "kind": "generic",
+              "name": "Crew Lounge",
+              "rules": "",
+              "weapon": false,
+              "areas": []
+            },
+            "requirements": {
+              "traits": [],
+              "upgrades": []
+            }
+          }
+        ]
+      }
+    ]
+  }
+}
