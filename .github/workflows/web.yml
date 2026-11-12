@@ -6,12 +6,16 @@ on:
     paths:
       - "web/**"
       - "resources/**"
+      - "fonts/**"
+      - "*_trait.png"
       - ".github/workflows/web.yml"
   pull_request:
     branches: [main]
     paths:
       - "web/**"
       - "resources/**"
+      - "fonts/**"
+      - "*_trait.png"
       - ".github/workflows/web.yml"
 
 # One Pages deployment at a time (deploy-pages does not need cancel-in-progress).
@@ -39,6 +43,7 @@ jobs:
           cache-dependency-path: web/package-lock.json
       - run: npm ci
       - run: npx tsx scripts/verify-ships.ts
+      - run: npm run test:studio
       - name: Build
         run: npm run build
         env:

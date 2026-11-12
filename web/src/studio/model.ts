@@ -1,0 +1,42 @@
+import { z } from 'zod';
+
+export const traits = ['Trade', 'Military', 'Exploration', 'Science', 'Diplomacy'] as const;
+export const layouts = ['character', 'objective', 'overdrive', 'open'] as const;
+export type Layout = typeof layouts[number];
+export const formats = {
+  poker: { name: 'European poker', width: 63, height: 88, rounded: true },
+  bridge: { name: 'Bridge', width: 57, height: 89, rounded: true },
+  tarot: { name: 'Tarot', width: 70, height: 120, rounded: true },
+  a4: { name: 'A4 sheet', width: 210, height: 297, rounded: false },
+  a5: { name: 'A5 sheet', width: 148, height: 210, rounded: false },
+  custom: { name: 'Custom', width: 63, height: 88, rounded: true },
+} as const;
+const color = z.string().regex(/^#[0-9a-f]{6}$/i);
+const paletteSchema = z.object({ background: color, dark: color, light: color, text: color, accent: color });
+export type Palette = z.infer<typeof paletteSchema>;
+export const colorPalette: Palette = { background: '#080909', dark: '#383b3c', light: '#a8aaa8', text: '#ffffff', accent: '#f3b500' };
+export const printPalette: Palette = { background: '#ffffff', dark: '#dddddd', light: '#7b7b7b', text: '#161616', accent: '#161616' };
+const previousLeftDecoration = 'The identity of the individual is Property of Reclaim and Prospecting Authority.\nAny breach of the identity contract is punishable with indented servitude.\nIndividuals are hereby accepting the T&C.';
+const uppercaseLeftDecoration = 'INDIVIDUALS ARE HEREBY ACCEPTING THE T&C.\nBREACH OF CONTRACT IS PUNISHABLE WITH INDENTED SERVITUDE.\nTHE IDENTITY OF THE INDIVIDUAL IS PROPERTY OF RECLAIM AND PROSPECTING AUTHORITY.';
+export const defaultLeftDecoration = 'Individuals are hereby accepting the T&C.\nBreach of contract is punishable with indented servitude.\nThe identity of the individual is Property of Reclaim and Prospecting Authority.';
+const contentSchema = z.object({ inlineLeft: z.string().max(200).default('RPA // VERIFIED'), inlineDivider: z.string().max(200).default('OVERDRIVE // FIELD RECORD'), inlineRight: z.string().max(200).default('VESSEL // REGISTERED'), topDecoration: z.string().max(200).default('FULL SPECTRUM OVERDRIVE'), rightDecoration: z.string().max(12000).default(defaultLeftDecoration), leftDecoration: z.string().max(12000).default(defaultLeftDecoration).transform(value => (value === previousLeftDecoration || value === uppercaseLeftDecoration) ? defaultLeftDecoration : value), title: z.string().max(200), subtitle: z.string().max(200), heading: z.string().max(200), body: z.string().max(12000), code: z.string().max(100), footer: z.string().max(200), points: z.string().max(20), traits: z.array(z.enum(traits)).max(5), artwork: z.string().max(12000000).refine(v => !v || /^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/.test(v)), imagePosition: z.number().min(0).max(100) });
+export const parameterSchema = z.object({ line: z.number().min(0.5).max(5), inset: z.number().min(24).max(65), cross: z.number().min(4).max(22), crossGap: z.number().min(0).max(24).default(3), titleInset: z.number().min(0).max(150).default(70), titleGap: z.number().min(0).max(80).default(16), titleOffset: z.number().min(0).max(150).default(0), symbolUprightExtra: z.number().min(0).max(80).default(0), topBarcode: z.boolean().default(true), bottomBarcode: z.boolean().default(true), traitsBarcode: z.boolean().default(true), traitSize: z.number().min(16).max(80).default(40), traitSpacing: z.number().min(0).max(40).default(9), rightDecorationWidth: z.number().min(80).max(240).default(150), symbolWidth: z.number().min(20).max(120).default(52), symbolHeight: z.number().min(20).max(150).default(76), symbolX: z.number().min(-40).max(80).default(0), symbolY: z.number().min(-80).max(80).default(0), symbolGap: z.number().min(0).max(24).default(6), symbolReserve: z.boolean().default(true), symbolKnockout: z.boolean().default(true), titleSpacing: z.number().min(0).max(12).default(0), titleWeight: z.number().min(400).max(900).default(700), barThickness: z.number().min(1).max(24).default(7), subtitleWeight: z.number().min(400).max(900).default(700), hideFrameAbove: z.boolean().default(true), subtitleSize: z.number().min(10).max(48).default(23), titleSize: z.number().min(24).max(64), bodySize: z.number().min(16).max(44), weight: z.union([z.literal(400), z.literal(600), z.literal(700)]), leading: z.number().min(1).max(1.6), decorationTextWeight: z.number().min(400).max(700).default(400), decorationTextSize: z.number().min(2).max(10).transform(value => Math.min(6, value)).default(5), leftDecorationWidth: z.number().min(24).max(120).default(32), imageMargin: z.number().min(0).max(40).default(10), artShare: z.number().min(30).max(72), barcode: z.boolean() });
+export const defaultParameters: z.infer<typeof parameterSchema> = { line: 2, inset: 38, cross: 12, crossGap: 3, titleInset: 70, titleGap: 16, titleOffset: 0, symbolUprightExtra: 0, topBarcode: true, bottomBarcode: true, traitsBarcode: true, traitSize: 40, traitSpacing: 9, rightDecorationWidth: 150, symbolWidth: 52, symbolHeight: 76, symbolX: 0, symbolY: 0, symbolGap: 6, symbolReserve: true, symbolKnockout: true, titleSpacing: 0, titleWeight: 700, barThickness: 7, subtitleWeight: 700, hideFrameAbove: true, subtitleSize: 23, titleSize: 48, bodySize: 30, weight: 700, leading: 1.18, decorationTextWeight: 400, decorationTextSize: 5, leftDecorationWidth: 32, imageMargin: 10, artShare: 61, barcode: true };
+export const designSchema = z.object({ version: z.literal(1), symbolImage: z.string().max(12000000).refine(v => !v || /^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/.test(v)).default(''), layout: z.enum(layouts), format: z.enum(['poker', 'bridge', 'tarot', 'a4', 'a5', 'custom']), orientation: z.enum(['portrait', 'landscape']), customWidth: z.number().min(30).max(420), customHeight: z.number().min(30).max(420), customRounded: z.boolean(), mode: z.enum(['color', 'print']), palettes: z.object({ color: paletteSchema, print: paletteSchema }), parameters: parameterSchema, content: z.object({ character: contentSchema, objective: contentSchema, overdrive: contentSchema, open: contentSchema }) });
+export type Design = z.infer<typeof designSchema>;
+export function newDesign(): Design {
+  const base = { inlineLeft: 'RPA // VERIFIED', inlineDivider: 'OVERDRIVE // FIELD RECORD', inlineRight: 'VESSEL // REGISTERED', topDecoration: 'FULL SPECTRUM OVERDRIVE', rightDecoration: defaultLeftDecoration, leftDecoration: defaultLeftDecoration, title: '', subtitle: '', heading: '', body: '', code: '', footer: 'OVERDRIVE_V_0.8', points: '3', traits: [] as typeof traits[number][], artwork: '', imagePosition: 50 };
+  return { version: 1, symbolImage: '', layout: 'character', format: 'poker', orientation: 'landscape', customWidth: 63, customHeight: 88, customRounded: true, mode: 'color', palettes: { color: { ...colorPalette }, print: { ...printPalette } }, parameters: { ...defaultParameters }, content: {
+    character: { ...base, title: 'GUILD ATTACHÉ', subtitle: 'CHARACTER', heading: 'SINGLE USE', body: 'Do one cool action of some kind\nSpace for a second line\nAnd a third.', code: 'CHR_05', traits: ['Military', 'Exploration', 'Science'] },
+    objective: { ...base, title: 'OBJECTIVE', subtitle: 'NUMBER_01', heading: '', body: 'Write your objective here.\n\nAdd the conditions for completing it and the reward.', code: 'OBJ_01' },
+    overdrive: { ...base, title: 'OVERDRIVE', subtitle: 'MANOEUVRE', heading: 'PUSH THE LIMIT', body: 'Write the card effect here.\n\nAdd timing, costs and any restrictions.', code: 'OVR_01' },
+    open: { ...base },
+  } };
+}
+export function dimensions(d: Design) {
+  const f = formats[d.format];
+  const a = d.format === 'custom' ? d.customWidth : f.width;
+  const b = d.format === 'custom' ? d.customHeight : f.height;
+  const [short, long] = [Math.min(a, b), Math.max(a, b)];
+  return { width: d.orientation === 'landscape' ? long : short, height: d.orientation === 'landscape' ? short : long, rounded: d.format === 'custom' ? d.customRounded : f.rounded };
+}

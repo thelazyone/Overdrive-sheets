@@ -104,7 +104,7 @@ export default defineConfig({
   },
   build: {
     rollupOptions: {
-      input: { main: resolve(here, "index.html"), charter: resolve(here, "charter.html") },
+      input: { main: resolve(here, "index.html"), charter: resolve(here, "charter.html"), studio: resolve(here, "studio/index.html") },
     },
     outDir: "dist",
     emptyOutDir: true,

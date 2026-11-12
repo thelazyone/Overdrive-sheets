@@ -665,6 +665,7 @@ export function App(): JSX.Element {
         <div class="toolbar">
           <div class="toolbar-row toolbar-title-row">
             <h1>Overdrive Sheets</h1>
+            <a href="./studio/" style={{ "margin-left": "auto", color: "inherit" }}>Layout Studio ↗</a>
           </div>
           <div class="toolbar-row toolbar-modes-row">
             <button

@@ -27,6 +27,23 @@ npx tsx scripts/verify-ships.ts     # validate presets + legacy ships + library
 
 Web-specific presets live in `web/src/presets/*.json` and are selected via the toolbar dropdown. Reusable systems live in `web/src/core/library/systems.json` and are referenced by slot allow-lists.
 
+### Layout Studio — cards and sheets
+
+The separate Layout Studio runs at `/studio/` on the web dev server. From the
+repository root, run `./start-studio.ps1` and open `http://127.0.0.1:5176/studio/`.
+It is included in the existing GitHub Pages build at
+`/<repo>/overdrive/studio/`, alongside the console builder and Charter workbench.
+Push to `main` to trigger the existing deployment workflow; a local commit alone
+does not publish it.
+
+Choose Character, Objective, Overdrive or text-free Open layouts; poker (63 × 88 mm),
+bridge, tarot, A4, A5 or custom formats; and full-color or printer-friendly palettes.
+Edit text, toggle any of the five Charter trait symbols on Character cards, upload
+artwork, and adjust frame geometry, panel split and typography. A4/A5
+sheets have square corners. Headings use locally bundled Orbitron Bold and body
+copy uses the existing Titillium Web fonts. See `web/src/studio/README.md` for
+export behavior and implementation notes. No ship profiles or game rules change.
+
 ### Print modes
 
 “Print fleet” offers two ways to get a sheet onto paper:
