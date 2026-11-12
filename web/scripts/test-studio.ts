@@ -21,7 +21,7 @@ for (const layout of layouts) for (const format of Object.keys(formats) as Array
 }
 d.content.character.title = '<script>alert("test")</script> &';
 assert.ok(!renderCard(d, assets, measure).svg.includes('<script>'));
-assert.ok(renderCard(d, assets, measure).svg.includes('&lt;script&gt;'));
+assert.ok(renderCard(d, assets, measure).svg.includes('&lt;SCRIPT&gt;'));
 d.content.character.body = Array(200).fill('An overflowing paragraph').join('\n');
 assert.ok(renderCard(d, assets, measure).warnings.some(w => w.includes('exceeds')));
 const lines = wrapText('first paragraph\n\nSupercalifragilisticexpialidocious', 60, 20, 400, measure);
@@ -310,3 +310,9 @@ assert.equal(suppliedPreset.parameters.titleWeight, 900);
 assert.equal(suppliedPreset.parameters.decorationTextSize, 4.5);
 assert.deepEqual(suppliedPreset.content.character.traits, ['Diplomacy', 'Military']);
 for (const layout of layouts) assert.ok(!/NaN|Infinity/.test(renderCard({ ...suppliedPreset, layout }, assets, measure).svg));
+
+const upperFields = newDesign();
+Object.assign(upperFields.content.character, { title: 'Mixed title', subtitle: 'Mixed category', code: 'chr_abc', heading: 'Single use' });
+const upperSVG = renderCard(upperFields, assets, measure).svg;
+for (const text of ['MIXED TITLE', 'MIXED CATEGORY', 'CHR_ABC', 'SINGLE USE']) assert.ok(upperSVG.includes('>' + text + '</text>'));
+assert.equal(upperFields.content.character.title, 'Mixed title', 'Rendering preserves editable source text');

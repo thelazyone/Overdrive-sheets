@@ -37,7 +37,9 @@ const traitBounds: Record<string, [number, number, number, number]> = {
 export function renderCard(d: Design, assets: Assets, measure: Measure, prefix = 'card', bleed = false) {
   // Normalize the longest edge: typography keeps the same physical scale when rotated.
   const dim = dimensions(d), w = 1000 * dim.width / Math.max(dim.width, dim.height), h = w * dim.height / dim.width;
-  const p = d.parameters, c = d.content[d.layout], pal = d.palettes[d.mode], m = p.inset;
+  const p = d.parameters, source = d.content[d.layout], pal = d.palettes[d.mode], m = p.inset;
+  // Normalize before measuring as well as drawing, so uppercase text fits correctly.
+  const c = { ...source, title: source.title.toUpperCase(), subtitle: source.subtitle.toUpperCase(), code: source.code.toUpperCase(), heading: source.heading.toUpperCase() };
   const radius = dim.rounded ? 3 / dim.width * w : 0;
   const b = bleed ? 5 / dim.width * w : 0;
   const frameTop = m + p.titleInset;
