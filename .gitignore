@@ -1,6 +1,7 @@
 # Custom adds:
 /systems/
 *.jpg
+!/web/src/studio/images/gunship_exploration.jpg
 
 
 # Byte-compiled / optimized / DLL files
