@@ -325,3 +325,8 @@ const continuation = renderCard(continuationDesign, assets, measure, 'continuati
 const continuationY = continuationDesign.parameters.inset + continuationDesign.parameters.titleInset;
 assert.ok(continuation.includes(`M${-5 / 88 * 1000} ${continuationY}L${continuationDesign.parameters.inset - continuationDesign.parameters.crossGap} ${continuationY}`));
 assert.equal((continuation.match(/<path/g) || []).length, 1, 'Continuation adds a line without a cross');
+
+assert.equal(presetDesign().parameters.leftDecorationWidth, 42);
+const alignedCode = newDesign();
+const alignedX = +getCodePosition(renderCard(alignedCode, assets, measure).svg).split(' ')[0];
+assert.equal(alignedX, alignedCode.parameters.inset - alignedCode.parameters.line / 2, 'Underscore ink aligns to left edge of rail stroke');

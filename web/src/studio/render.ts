@@ -252,7 +252,7 @@ export function renderCard(d: Design, assets: Assets, measure: Measure, prefix =
     const codeSize = Math.min(26, 26 * codeSpace / Math.max(1, measure(c.code, 26, true, 700)));
     const codeInk = ink(c.code, codeSize);
     // With 90-degree rotation, the underscore's descent becomes the left edge.
-    const codeX = m + ink('_', codeSize).descent;
+    const codeX = m - p.line / 2 + ink('_', codeSize).descent;
     if (c.code) {
       parts.push(rect(m - p.line / 2 - 3, codeY - 3, codeInk.ascent + codeInk.descent + p.line / 2 + 6, measure(c.code, codeSize, true, 700) + 6, pal.background));
       parts.push(`<g transform="translate(${codeX} ${codeY}) rotate(90)">${label(c.code, 0, 0, codeSize, pal.text, codeSpace, true)}</g>`);

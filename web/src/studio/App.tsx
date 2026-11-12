@@ -16,7 +16,7 @@ export function Studio() {
   const [storageStatus, setStorageStatus] = createSignal('Local draft');
   const [ready, setReady] = createSignal(false);
   const [busy, setBusy] = createSignal(false);
-  const [zoom, setZoom] = createSignal(90);
+  const [zoom, setZoom] = createSignal(100);
   const [guides, setGuides] = createSignal(false);
   const [bleed, setBleed] = createSignal(false);
   const [background, setBackground] = createSignal('dark');
@@ -30,9 +30,12 @@ export function Studio() {
     return { ascent: metrics.actualBoundingBoxAscent, descent: metrics.actualBoundingBoxDescent, width: metrics.actualBoundingBoxLeft + metrics.actualBoundingBoxRight };
   };
   measure.bodyInk = (text, size, weight = 400) => {
-    context.font = `${weight} ${size}px StudioBody`;
+    // Measure large outlines and scale down: tiny canvas fonts round their ink
+    // bounds to pixels, which shifts the apparent center of inline rail text.
+    const metricSize = 1000;
+    context.font = `${weight} ${metricSize}px StudioBody`;
     const metrics = context.measureText(text);
-    return { ascent: metrics.actualBoundingBoxAscent, descent: metrics.actualBoundingBoxDescent };
+    return { ascent: metrics.actualBoundingBoxAscent * size / metricSize, descent: metrics.actualBoundingBoxDescent * size / metricSize };
   };
   const preview = createMemo(() => assets() ? renderCard(design, assets()!, measure, 'card', bleed()) : undefined);
   const dim = () => dimensions(design);
@@ -143,8 +146,8 @@ export function Studio() {
       </div></details><div class="sidebar-footer">{storageStatus()}</div>
     </aside>
     <main class={`preview-pane ${background()}`}><div class="preview-toolbar"><span>{dim().width} × {dim().height} mm</span><div class="preview-options"><label><input type="checkbox" checked={bleed()} onChange={e => setBleed(e.currentTarget.checked)} />Bleed area</label><label><input type="checkbox" checked={guides()} onChange={e => setGuides(e.currentTarget.checked)} />Safe area</label><button aria-label="Toggle preview background" title="Toggle preview background" onClick={() => setBackground(background() === 'dark' ? 'light' : 'dark')}>◐</button></div></div>
-      <div class="preview-stage"><div class="card-shell" style={{ width: `${zoom()}%`, 'max-width': 'min(1040px, calc(max(300px, 100dvh - 250px) * ' + ((dim().width + (bleed() ? 10 : 0)) / (dim().height + (bleed() ? 10 : 0)) * zoom() / 90) + '))', 'aspect-ratio': `${dim().width + (bleed() ? 10 : 0)} / ${dim().height + (bleed() ? 10 : 0)}` }}><Show when={preview()} fallback={<div class="loading">{message()}</div>}><div class="card-preview" innerHTML={preview()!.svg}/><Show when={bleed()}><div class="cut-guide" style={{ inset: `${5 / (dim().height + 10) * 100}% ${5 / (dim().width + 10) * 100}%`, "border-radius": dim().rounded ? `${3 / dim().width * 100}% / ${3 / dim().height * 100}%` : "0" }}><span>Cut edge · 5 mm bleed</span></div></Show><Show when={guides()}><div class="safe-guide" style={{ inset: `${(bleed() ? 8 : 3) / (dim().height + (bleed() ? 10 : 0)) * 100}% ${(bleed() ? 8 : 3) / (dim().width + (bleed() ? 10 : 0)) * 100}%` }}><span>3 mm safe area</span></div></Show></Show></div></div>
-      <div class="preview-bottom"><Show when={preview()?.warnings.length}><div class="warnings" role="alert"><For each={preview()?.warnings}>{warning => <p>⚠ {warning}</p>}</For></div></Show><div class="bottom-controls"><label class="zoom-control">Zoom<input type="range" min="40" max="100" value={zoom()} onInput={e => setZoom(+e.currentTarget.value)} /><output>{zoom()}%</output></label><span class="scale-note">Export: {dim().width + (bleed() ? 10 : 0)} × {dim().height + (bleed() ? 10 : 0)} mm{bleed() ? " · 5 mm bleed" : ""}</span></div><div class="export-bar"><p role="status">{message()}</p><div><button disabled={!preview()} onClick={() => { download(new Blob([preview()!.svg], { type: 'image/svg+xml' }), `${filename()}.svg`); setMessage('Self-contained SVG exported'); }}>Export SVG ↗</button><button disabled={!preview() || busy()} onClick={() => void exportPNG()}>{busy() ? 'Exporting…' : 'PNG · 300 DPI'}</button><button class="primary" disabled={!preview()} onClick={() => window.print()}>Print / PDF ↗</button></div></div></div>
+      <div class="preview-stage"><div class="card-shell" style={{ width: `${zoom()}%`, 'max-width': 'min(' + (1040 * zoom() / 100) + 'px, calc(max(300px, 100dvh - 250px) * ' + ((dim().width + (bleed() ? 10 : 0)) / (dim().height + (bleed() ? 10 : 0)) * zoom() / 100) + '))', 'aspect-ratio': `${dim().width + (bleed() ? 10 : 0)} / ${dim().height + (bleed() ? 10 : 0)}` }}><Show when={preview()} fallback={<div class="loading">{message()}</div>}><div class="card-preview" innerHTML={preview()!.svg}/><Show when={bleed()}><div class="cut-guide" style={{ inset: `${5 / (dim().height + 10) * 100}% ${5 / (dim().width + 10) * 100}%`, "border-radius": dim().rounded ? `${3 / dim().width * 100}% / ${3 / dim().height * 100}%` : "0" }}><span>Cut edge · 5 mm bleed</span></div></Show><Show when={guides()}><div class="safe-guide" style={{ inset: `${(bleed() ? 8 : 3) / (dim().height + (bleed() ? 10 : 0)) * 100}% ${(bleed() ? 8 : 3) / (dim().width + (bleed() ? 10 : 0)) * 100}%` }}><span>3 mm safe area</span></div></Show></Show></div></div>
+      <div class="preview-bottom"><Show when={preview()?.warnings.length}><div class="warnings" role="alert"><For each={preview()?.warnings}>{warning => <p>⚠ {warning}</p>}</For></div></Show><div class="bottom-controls"><label class="zoom-control">Zoom<input type="range" min="40" max="200" value={zoom()} onInput={e => setZoom(+e.currentTarget.value)} /><output>{zoom()}%</output></label><span class="scale-note">Export: {dim().width + (bleed() ? 10 : 0)} × {dim().height + (bleed() ? 10 : 0)} mm{bleed() ? " · 5 mm bleed" : ""}</span></div><div class="export-bar"><p role="status">{message()}</p><div><button disabled={!preview()} onClick={() => { download(new Blob([preview()!.svg], { type: 'image/svg+xml' }), `${filename()}.svg`); setMessage('Self-contained SVG exported'); }}>Export SVG ↗</button><button disabled={!preview() || busy()} onClick={() => void exportPNG()}>{busy() ? 'Exporting…' : 'PNG · 300 DPI'}</button><button class="primary" disabled={!preview()} onClick={() => window.print()}>Print / PDF ↗</button></div></div></div>
     </main></div><div class="print-output" innerHTML={assets() ? renderCard(design, assets()!, measure, 'print', bleed()).svg : ''}/><style>{`@media print { @page { size: ${dim().width + (bleed() ? 10 : 0)}mm ${dim().height + (bleed() ? 10 : 0)}mm; margin: 0; } }`}</style>
   </div>;
 }

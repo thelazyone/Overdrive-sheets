@@ -59,7 +59,7 @@ export default {
     "leading": 1,
     "decorationTextWeight": 600,
     "decorationTextSize": 4.5,
-    "leftDecorationWidth": 38,
+    "leftDecorationWidth": 42,
     "imageMargin": 10,
     "artShare": 61,
     "barcode": true

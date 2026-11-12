@@ -82,7 +82,7 @@ input[type=checkbox]{accent-color:#d8b448}
 .preview-options{display:flex;align-items:center;gap:20px}
 .preview-options label{margin:0;font-size:11px;letter-spacing:0;display:flex;gap:6px;align-items:center}
 .preview-options button{padding:3px 10px;font-size:18px}
-.preview-stage{flex:1 0 auto;padding:20px 30px;min-height:350px;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.preview-stage{flex:1 0 auto;padding:20px 30px;min-height:350px;display:flex;flex-direction:column;align-items:safe center;justify-content:center}
 .canvas-label,.canvas-caption{width:90%;max-width:1040px;display:flex;justify-content:space-between;color:#84948c;font-size:9px;letter-spacing:1.7px}
 .canvas-label{margin-bottom:17px}
 .canvas-caption{margin-top:18px;font-size:8px}
