@@ -49,7 +49,7 @@ export function Studio() {
     try {
       const loaded = await loadAssets();
       if (!restored) setDesign('content', 'character', 'artwork', loaded.defaultArtwork || '');
-      setAssets(loaded); setMessage('Ready to design');
+      setAssets(loaded); setMessage('');
     }
     catch (error) { setMessage(String(error)); }
     setReady(true);
@@ -88,16 +88,16 @@ export function Studio() {
     } catch (error) { setMessage(error instanceof Error ? error.message : 'Could not load artwork.'); }
     imageInput.value = '';
   }
-  async function exportPNG() {
+  async function exportPNG(dpi: 300 | 600) {
     const card = preview(); if (!card) return;
     setBusy(true);
     const url = URL.createObjectURL(new Blob([card.svg], { type: 'image/svg+xml' }));
     try {
       const img = new Image(); img.src = url; await img.decode();
-      const canvas = document.createElement('canvas'); canvas.width = Math.round(card.width / 25.4 * 300); canvas.height = Math.round(card.height / 25.4 * 300);
+      const canvas = document.createElement('canvas'); canvas.width = Math.round(card.width / 25.4 * dpi); canvas.height = Math.round(card.height / 25.4 * dpi);
       canvas.getContext('2d')!.drawImage(img, 0, 0, canvas.width, canvas.height);
       const blob = await new Promise<Blob>((resolve, reject) => canvas.toBlob(b => b ? resolve(b) : reject(new Error('PNG export failed.')), 'image/png'));
-      download(blob, `${filename()}-300dpi.png`); setMessage(`PNG exported · ${canvas.width} × ${canvas.height} px`);
+      download(blob, `${filename()}-${dpi}dpi.png`); setMessage(`PNG exported · ${canvas.width} × ${canvas.height} px`);
     } catch { setMessage('PNG export failed. Try SVG export instead.'); }
     finally { URL.revokeObjectURL(url); setBusy(false); }
   }
@@ -147,7 +147,7 @@ export function Studio() {
     </aside>
     <main class={`preview-pane ${background()}`}><div class="preview-toolbar"><span>{dim().width} × {dim().height} mm</span><div class="preview-options"><label><input type="checkbox" checked={bleed()} onChange={e => setBleed(e.currentTarget.checked)} />Bleed area</label><label><input type="checkbox" checked={guides()} onChange={e => setGuides(e.currentTarget.checked)} />Safe area</label><button aria-label="Toggle preview background" title="Toggle preview background" onClick={() => setBackground(background() === 'dark' ? 'light' : 'dark')}>◐</button></div></div>
       <div class="preview-stage"><div class="card-shell" style={{ width: `${zoom()}%`, 'max-width': 'min(' + (1040 * zoom() / 100) + 'px, calc(max(300px, 100dvh - 250px) * ' + ((dim().width + (bleed() ? 10 : 0)) / (dim().height + (bleed() ? 10 : 0)) * zoom() / 100) + '))', 'aspect-ratio': `${dim().width + (bleed() ? 10 : 0)} / ${dim().height + (bleed() ? 10 : 0)}` }}><Show when={preview()} fallback={<div class="loading">{message()}</div>}><div class="card-preview" innerHTML={preview()!.svg}/><Show when={bleed()}><div class="cut-guide" style={{ inset: `${5 / (dim().height + 10) * 100}% ${5 / (dim().width + 10) * 100}%`, "border-radius": dim().rounded ? `${3 / dim().width * 100}% / ${3 / dim().height * 100}%` : "0" }}><span>Cut edge · 5 mm bleed</span></div></Show><Show when={guides()}><div class="safe-guide" style={{ inset: `${(bleed() ? 8 : 3) / (dim().height + (bleed() ? 10 : 0)) * 100}% ${(bleed() ? 8 : 3) / (dim().width + (bleed() ? 10 : 0)) * 100}%` }}><span>3 mm safe area</span></div></Show></Show></div></div>
-      <div class="preview-bottom"><Show when={preview()?.warnings.length}><div class="warnings" role="alert"><For each={preview()?.warnings}>{warning => <p>⚠ {warning}</p>}</For></div></Show><div class="bottom-controls"><label class="zoom-control">Zoom<input type="range" min="40" max="200" value={zoom()} onInput={e => setZoom(+e.currentTarget.value)} /><output>{zoom()}%</output></label><span class="scale-note">Export: {dim().width + (bleed() ? 10 : 0)} × {dim().height + (bleed() ? 10 : 0)} mm{bleed() ? " · 5 mm bleed" : ""}</span></div><div class="export-bar"><p role="status">{message()}</p><div><button disabled={!preview()} onClick={() => { download(new Blob([preview()!.svg], { type: 'image/svg+xml' }), `${filename()}.svg`); setMessage('Self-contained SVG exported'); }}>Export SVG ↗</button><button disabled={!preview() || busy()} onClick={() => void exportPNG()}>{busy() ? 'Exporting…' : 'PNG · 300 DPI'}</button><button class="primary" disabled={!preview()} onClick={() => window.print()}>Print / PDF ↗</button></div></div></div>
+      <div class="preview-bottom"><Show when={preview()?.warnings.length}><div class="warnings" role="alert"><For each={preview()?.warnings}>{warning => <p>⚠ {warning}</p>}</For></div></Show><div class="bottom-controls"><label class="zoom-control">Zoom<input type="range" min="40" max="200" value={zoom()} onInput={e => setZoom(+e.currentTarget.value)} /><output>{zoom()}%</output></label><span class="scale-note">Export: {dim().width + (bleed() ? 10 : 0)} × {dim().height + (bleed() ? 10 : 0)} mm{bleed() ? " · 5 mm bleed" : ""}</span></div><div class="export-bar"><Show when={message()}><p role="status">{message()}</p></Show><div><button disabled={!preview()} onClick={() => { download(new Blob([preview()!.svg], { type: 'image/svg+xml' }), `${filename()}.svg`); setMessage('Self-contained SVG exported'); }}>Export SVG ↗</button><button disabled={!preview() || busy()} onClick={() => void exportPNG(300)}>{busy() ? 'Exporting…' : 'PNG · 300 DPI'}</button><button disabled={!preview() || busy()} onClick={() => void exportPNG(600)}>{busy() ? 'Exporting…' : 'PNG · 600 DPI'}</button><button class="primary" disabled={!preview()} onClick={() => window.print()}>Print / PDF</button></div></div></div>
     </main></div><div class="print-output" innerHTML={assets() ? renderCard(design, assets()!, measure, 'print', bleed()).svg : ''}/><style>{`@media print { @page { size: ${dim().width + (bleed() ? 10 : 0)}mm ${dim().height + (bleed() ? 10 : 0)}mm; margin: 0; } }`}</style>
   </div>;
 }

@@ -101,7 +101,7 @@ input[type=checkbox]{accent-color:#d8b448}
 .scale-note{font-size:10px;color:#839289}
 .export-bar{display:flex;align-items:center;justify-content:space-between;gap:15px;padding:16px;background:#222929;border:1px solid #3f4843;border-radius:7px}
 .export-bar p{font-size:11px;color:#b2beb6;max-width:35%}
-.export-bar>div{display:flex;gap:8px}
+.export-bar>div{display:flex;gap:8px;margin-left:auto}
 .export-bar button{font-size:12px;white-space:nowrap}
 .primary{background:#efbe42;color:#1b211b;border-color:#efbe42;font-weight:700}
 .primary:hover{background:#ffcf55;border-color:#ffcf55}
