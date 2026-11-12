@@ -117,3 +117,10 @@ the upper bleed boundary, and the bottom barcode reaches the lower boundary.
 Edge barcodes touch the inside of their frame rails and use the RPA dark color.
 Mini-text weight is adjustable, with bundled Titillium regular, semibold and
 bold faces. Mini-text lines use 1.15× spacing.
+
+Startup defaults come from preset.ts, transcribed from the supplied Guild Attaché
+JSON (including all parameter, format, palette and content values). The supplied
+gunship_exploration.jpg is bundled unchanged and loaded for the initial Character
+artwork. Parameter reset restores the preset settings. This preset uses a new
+local-draft key; later reloads preserve edits, while the previous key remains
+untouched. Geometry tests use a fixed reference fixture plus preset assertions.

@@ -4,7 +4,7 @@ import { dataURL, loadAssets, type Assets } from './assets';
 import { colorPalette, defaultParameters, designSchema, dimensions, formats, layouts, newDesign, printPalette, traits, type Design, type Layout, type Palette } from './model';
 import { renderCard, type Measure } from './render';
 
-const STORAGE = 'overdrive-layout-studio-v1';
+const STORAGE = 'overdrive-layout-studio-guild-preset-v1';
 function download(blob: Blob, name: string) {
   const url = URL.createObjectURL(blob), a = document.createElement('a');
   a.href = url; a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
@@ -40,9 +40,14 @@ export function Studio() {
   const palette = () => design.palettes[design.mode];
   const filename = () => (content().title || design.layout).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'overdrive';
   onMount(async () => {
-    try { const saved = localStorage.getItem(STORAGE); if (saved) setDesign(reconcile(designSchema.parse(JSON.parse(saved)))); }
+    let restored = false;
+    try { const saved = localStorage.getItem(STORAGE); if (saved) { setDesign(reconcile(designSchema.parse(JSON.parse(saved)))); restored = true; } }
     catch { setStorageStatus('Saved draft unavailable'); }
-    try { setAssets(await loadAssets()); setMessage('Ready to design'); }
+    try {
+      const loaded = await loadAssets();
+      if (!restored) setDesign('content', 'character', 'artwork', loaded.defaultArtwork || '');
+      setAssets(loaded); setMessage('Ready to design');
+    }
     catch (error) { setMessage(String(error)); }
     setReady(true);
   });

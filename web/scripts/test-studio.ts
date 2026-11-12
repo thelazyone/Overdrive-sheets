@@ -1,7 +1,11 @@
+import referenceDesign from './fixtures/studio-reference.json';
+import preset from '../src/studio/preset';
 import assert from 'node:assert/strict';
-import { designSchema, dimensions, formats, layouts, newDesign } from '../src/studio/model';
+import { designSchema, dimensions, formats, layouts, newDesign as presetDesign, defaultParameters } from '../src/studio/model';
 import { renderCard, wrapText, titleFingerprint, type Measure } from '../src/studio/render';
 
+// Keep geometry regressions on a fixed reference while product defaults can change.
+const newDesign = () => designSchema.parse(referenceDesign);
 const measure: Measure = (text, size) => [...text].length * size * 0.5;
 const assets = { icons: {}, css: '' };
 const d = newDesign();
@@ -297,3 +301,12 @@ assert.ok(subtitleSVG.includes('data-hide-frame-above="true"'));
 assert.ok(subtitleSVG.match(/font-size="26"[^>]*>CHR_05<\/text>/));
 subtitleDesign.parameters.hideFrameAbove = false;
 assert.ok(!renderCard(subtitleDesign, assets, measure).svg.includes('data-hide-frame-above'));
+
+const suppliedPreset = presetDesign();
+assert.deepEqual(suppliedPreset, designSchema.parse(preset), 'Startup design matches the supplied preset');
+assert.deepEqual(defaultParameters, suppliedPreset.parameters, 'Reset parameters restores supplied settings');
+assert.equal(suppliedPreset.parameters.inset, 43);
+assert.equal(suppliedPreset.parameters.titleWeight, 900);
+assert.equal(suppliedPreset.parameters.decorationTextSize, 4.5);
+assert.deepEqual(suppliedPreset.content.character.traits, ['Diplomacy', 'Military']);
+for (const layout of layouts) assert.ok(!/NaN|Infinity/.test(renderCard({ ...suppliedPreset, layout }, assets, measure).svg));
