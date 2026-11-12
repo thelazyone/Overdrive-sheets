@@ -316,3 +316,12 @@ Object.assign(upperFields.content.character, { title: 'Mixed title', subtitle: '
 const upperSVG = renderCard(upperFields, assets, measure).svg;
 for (const text of ['MIXED TITLE', 'MIXED CATEGORY', 'CHR_ABC', 'SINGLE USE']) assert.ok(upperSVG.includes('>' + text + '</text>'));
 assert.equal(upperFields.content.character.title, 'Mixed title', 'Rendering preserves editable source text');
+
+const continuationDesign = newDesign();
+assert.equal(continuationDesign.parameters.topLeftContinuation, false);
+assert.ok(!renderCard(continuationDesign, assets, measure).svg.includes('data-top-left-continuation'));
+continuationDesign.parameters.topLeftContinuation = true;
+const continuation = renderCard(continuationDesign, assets, measure, 'continuation', true).svg.match(/<g data-top-left-continuation="true">(.*?)<\/g>/)![1];
+const continuationY = continuationDesign.parameters.inset + continuationDesign.parameters.titleInset;
+assert.ok(continuation.includes(`M${-5 / 88 * 1000} ${continuationY}L${continuationDesign.parameters.inset - continuationDesign.parameters.crossGap} ${continuationY}`));
+assert.equal((continuation.match(/<path/g) || []).length, 1, 'Continuation adds a line without a cross');

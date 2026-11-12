@@ -132,7 +132,7 @@ export function Studio() {
           <Show when={design.layout === 'character' || design.layout === 'overdrive'}><label class="check"><input type="checkbox" checked={design.parameters.barcode} onChange={e => setDesign('parameters', 'barcode', e.currentTarget.checked)} />RPA logo, hash and barcode</label>{range('rightDecorationWidth', 'Right decoration width', 80, 240)}<label>Right decoration text<textarea rows="5" maxLength="12000" value={content().rightDecoration} onInput={e => setDesign('content', design.layout, 'rightDecoration', e.currentTarget.value)} /></label></Show>
         </div></details></Show>
         <details class="subsection"><summary>Frame<span class="chevron">⌄</span></summary><div class="subsection-content">
-          {range('line', 'Line thickness', 0.5, 5, 0.5)}{range('inset', 'Frame inset', 24, 65)}{range('cross', 'Cross size', 4, 22)}{range('crossGap', 'Cross spacing', 0, 24)}
+          {range('line', 'Line thickness', 0.5, 5, 0.5)}{range('inset', 'Frame inset', 24, 65)}{range('cross', 'Cross size', 4, 22)}{range('crossGap', 'Cross spacing', 0, 24)}<Show when={design.layout !== 'open'}><label class="check"><input type="checkbox" checked={design.parameters.topLeftContinuation} onChange={e => setDesign('parameters', 'topLeftContinuation', e.currentTarget.checked)} />Top-left line continuation</label></Show>
         </div></details>
         <Show when={design.layout !== 'open'}><details class="subsection"><summary>Title<span class="chevron">⌄</span></summary><div class="subsection-content">
           {range('titleSize', 'Title size', 24, 64)}{range('titleInset', 'Title inset', 0, 150)}{range('titleSpacing', 'Title letter spacing', 0, 12, 0.25)}{range('titleWeight', 'Title weight', 400, 900, 10)}

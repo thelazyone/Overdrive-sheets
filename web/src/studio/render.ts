@@ -146,6 +146,7 @@ export function renderCard(d: Design, assets: Assets, measure: Measure, prefix =
     }
     const categoryInk = ink(c.subtitle, categorySize, p.subtitleWeight);
     parts.push(label(c.subtitle, categoryX, bandTop + (bandHeight + categoryInk.ascent - categoryInk.descent) / 2, categorySize, pal.background, Math.max(1, bandRight - categoryX - padding), true, p.subtitleWeight), '</g>');
+    if (p.topLeftContinuation) parts.push(`<g data-top-left-continuation="true">${line(-b, frameTop, symbolX - p.crossGap, frameTop)}</g>`);
     if (symbolY < 0) warnings.push('Title extends above the cut edge. Increase Title inset or reduce Title size.');
     parts.push(label(c.title, titleX, titleY, p.titleSize, pal.accent, titleSpace, true, p.titleWeight, p.titleSpacing));
     const edgeBarWidth = 44, edgeBarGap = 8, edgeBarX = m + p.line / 2 + 3;
