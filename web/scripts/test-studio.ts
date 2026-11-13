@@ -2,7 +2,7 @@ import referenceDesign from './fixtures/studio-reference.json';
 import preset from '../src/studio/preset';
 import assert from 'node:assert/strict';
 import { designSchema, dimensions, formats, layouts, newDesign as presetDesign, defaultParameters } from '../src/studio/model';
-import { renderCard, wrapText, titleFingerprint, type Measure } from '../src/studio/render';
+import { renderCard, wrapBody, wrapText, titleFingerprint, contrastText, type Measure } from '../src/studio/render';
 
 // Keep geometry regressions on a fixed reference while product defaults can change.
 const newDesign = () => designSchema.parse(referenceDesign);
@@ -71,7 +71,7 @@ for (const layout of ['character', 'overdrive'] as const) {
   assert.ok(divider.includes(`L${1000 + bleedUnits} `), 'Divider ends at outer bleed edge');
   assert.equal((divider.match(/<path /g) || []).length, 5, 'Divider plus two complete crosses');
   assert.equal((divider.match(/<rect /g) || []).length, 0, 'Cross clearance must not erase a square of artwork');
-  dividerDesign.parameters.artShare = 40;
+  dividerDesign.parameters[layout === 'overdrive' ? 'overdriveArtShare' : 'artShare'] = 40;
   const shifted = renderCard(dividerDesign, assets, measure, 'divider', true).svg.match(/<g data-frame-divider="true">(.*?)<\/g>/)![1];
   assert.notEqual(shifted, divider, 'Artwork share moves the divider and its crosses together');
 }
@@ -330,3 +330,119 @@ assert.equal(presetDesign().parameters.leftDecorationWidth, 42);
 const alignedCode = newDesign();
 const alignedX = +getCodePosition(renderCard(alignedCode, assets, measure).svg).split(' ')[0];
 assert.equal(alignedX, alignedCode.parameters.inset - alignedCode.parameters.line / 2, 'Underscore ink aligns to left edge of rail stroke');
+
+const objectiveDesign = newDesign(); objectiveDesign.layout = 'objective';
+let objectiveSVG = renderCard(objectiveDesign, assets, measure).svg;
+assert.ok(objectiveSVG.includes('data-footer-knockout="true"'));
+assert.ok(!objectiveSVG.includes('data-edge-barcode="bottom"'));
+assert.ok(!objectiveSVG.includes('data-rpa-logo') && !objectiveSVG.includes('data-title-barcode'));
+const textPanel = objectiveSVG.match(/<rect x="([^"]+)" y="([^"]+)" width="([^"]+)" height="([^"]+)" fill="([^"]+)" data-text-frame/)!;
+const objectiveImage = objectiveSVG.match(/<mask id="card-art-cutout"[^>]* x="([^"]+)" y="([^"]+)" width="([^"]+)" height="([^"]+)"/)!;
+assert.equal(textPanel[2], objectiveImage[2]); assert.equal(textPanel[4], objectiveImage[4]);
+const bevelExtension = Math.min(48, +objectiveImage[4] * 9 / 16 * 0.2, +objectiveImage[4] * 0.2) * 0.6;
+assert.ok(Math.abs(+objectiveImage[3] - (+objectiveImage[4] * 9 / 16 + bevelExtension / 2)) < 1e-8, 'Object artwork expands by half the centered bevel');
+assert.ok(objectiveSVG.includes('data-text-bevel="true"'));
+const straightObject = structuredClone(objectiveDesign);
+straightObject.parameters.objectProtrusion = false;
+const straightSVG = renderCard(straightObject, assets, measure).svg;
+const straightImage = straightSVG.match(/<mask id="card-art-cutout"[^>]* x="([^"]+)" y="([^"]+)" width="([^"]+)" height="([^"]+)"/)!;
+assert.deepEqual(straightImage.slice(1), objectiveImage.slice(1), 'Disabling protrusion keeps the wider image bounds');
+const straightEdge = straightSVG.match(/data-text-bevel="true" d="([^"]+)"/)![1];
+const edgeVertices = straightEdge.match(/H ([^ ]+) V [^ ]+ L ([^ ]+)/)!;
+assert.equal(edgeVertices[1], edgeVertices[2], 'Disabled protrusion has a straight vertical edge');
+
+assert.ok(Math.abs(+objectiveImage[1] - +textPanel[1] - +textPanel[3] - objectiveDesign.parameters.imageMargin + bevelExtension) < 1e-8);
+assert.equal(textPanel[5], objectiveDesign.palettes.color.accent);
+assert.equal(contrastText('#ffffff'), '#000000'); assert.equal(contrastText('#000000'), '#ffffff');
+objectiveDesign.parameters.textFrameColor = '#111111';
+objectiveSVG = renderCard(objectiveDesign, assets, measure).svg;
+assert.ok(objectiveSVG.includes('fill="#111111" data-text-frame'));
+assert.ok(objectiveSVG.match(/fill="#ffffff"[^>]*>Write your objective here.<\/text>/));
+const shieldPattern = (value: string) => {
+  objectiveDesign.content.objective.points = value;
+  return renderCard(objectiveDesign, assets, measure).svg.match(/<g data-edge-barcode="shield".*?<\/g>/)![0];
+};
+assert.notEqual(shieldPattern('1'), shieldPattern('5'));
+
+const richLines = wrapBody('The **Mine** detonates\n\nAn **Attack 4** follows', 120, 20, 400, measure);
+assert.ok(richLines.some(line => line.runs.some(run => run.weight === 700 && run.text.includes('Mine'))));
+assert.ok(richLines.some(line => line.gap === 20), 'Blank line adds paragraph spacing');
+for (const line of richLines) assert.ok(line.runs.reduce((width, run) => width + measure(run.text, 20, false, run.weight), 0) <= 120);
+assert.equal(wrapBody('Unclosed **marker', 500, 20, 400, measure)[0].runs[0].text, 'Unclosed **marker');
+const richDesign = presetDesign(); richDesign.layout = 'objective'; richDesign.parameters.weight = 400;
+const richSVG = renderCard(richDesign, assets, measure).svg;
+assert.ok(richSVG.includes('<tspan font-weight="700">Mine</tspan>'));
+assert.ok(!richSVG.includes('**Mine**'));
+
+const spacingDesign = newDesign();
+spacingDesign.content.character.body = 'Alpha\nBeta';
+const bodyPositions = (svg: string) => ['Alpha', 'Beta'].map(word => Number(svg.match(new RegExp('<text x="[^" ]+" y="([^" ]+)"[^>]*>' + word + '</text>'))![1]));
+const normalPositions = bodyPositions(renderCard(spacingDesign, assets, measure).svg);
+spacingDesign.parameters.lineSpacing = -10;
+const tightPositions = bodyPositions(renderCard(spacingDesign, assets, measure).svg);
+assert.ok(tightPositions[1] - tightPositions[0] < normalPositions[1] - normalPositions[0], 'Negative spacing tightens explicit newlines');
+spacingDesign.parameters.effectHeadingGap += 8;
+const headingGapPositions = bodyPositions(renderCard(spacingDesign, assets, measure).svg);
+assert.equal(headingGapPositions[0] - tightPositions[0], 8, 'Heading gap moves body independently');
+spacingDesign.parameters.effectHeadingSize = 44;
+assert.ok(renderCard(spacingDesign, assets, measure).svg.includes('font-size="44"'));
+
+const separateWeights = presetDesign();
+separateWeights.parameters.weight = 400;
+separateWeights.parameters.bodyWeights = { character: 400, objective: 600 };
+separateWeights.content.character.body = 'Weight check';
+separateWeights.content.objective.body = 'Weight check **bold**';
+separateWeights.layout = 'character';
+assert.ok(renderCard(separateWeights, assets, measure).svg.match(/font-weight="400"[^>]*>Weight check<\/text>/));
+separateWeights.layout = 'objective';
+const objectWeightSVG = renderCard(separateWeights, assets, measure).svg;
+assert.ok(objectWeightSVG.includes('<tspan font-weight="600">Weight check </tspan>'));
+assert.ok(objectWeightSVG.includes('<tspan font-weight="700">bold</tspan>'));
+assert.deepEqual(designSchema.parse(JSON.parse(JSON.stringify(separateWeights))).parameters.bodyWeights, { character: 400, objective: 600 });
+
+const manualLines = wrapBody('Alpha\nBeta', 100, 20, 400, measure);
+assert.equal(manualLines[1].gap, 0, 'Single manual breaks use the same spacing as automatic wrapping');
+assert.equal(wrapBody('Alpha\n\nBeta', 100, 20, 400, measure)[1].gap, 20, 'Blank lines retain paragraph spacing');
+const independentSpacing = newDesign();
+independentSpacing.content.character.body = 'Alpha\nBeta';
+independentSpacing.parameters.bodyLineSpacings = { character: -8, objective: 0 };
+const characterSpacingBefore = bodyPositions(renderCard(independentSpacing, assets, measure).svg);
+independentSpacing.parameters.bodyLineSpacings.objective = 12;
+assert.deepEqual(bodyPositions(renderCard(independentSpacing, assets, measure).svg), characterSpacingBefore, 'Object line spacing does not alter Character');
+
+for (const layout of ['character', 'objective', 'overdrive'] as const) {
+  const printer = presetDesign(); printer.layout = layout; printer.mode = 'print';
+  printer.palettes.print.background = '#222222'; printer.palettes.print.text = '#ffffff'; printer.palettes.print.accent = '#ff0000';
+  printer.parameters.textFrameColor = '#123456';
+  printer.content[layout].body = 'Ink saving'; printer.content[layout].heading = 'PRINT HEADING';
+  const svg = renderCard(printer, assets, measure).svg;
+  assert.ok(svg.match(/fill="#000000"[^>]*>Ink saving<\/text>/));
+  assert.ok(svg.match(/fill="#000000"[^>]*>PRINT HEADING<\/text>/));
+  assert.ok(layout === 'objective' ? svg.includes('fill="#ffffff" data-text-frame') : svg.includes('fill="#ffffff" data-print-body-panel'));
+}
+
+const overdriveUpdated = presetDesign(); overdriveUpdated.layout = 'overdrive'; overdriveUpdated.orientation = 'portrait';
+assert.equal(overdriveUpdated.parameters.overdriveArtShare, 55);
+for (const key of ['inlineLeft', 'inlineDivider', 'inlineRight'] as const) assert.equal(overdriveUpdated.content.overdrive[key], overdriveUpdated.content.character[key]);
+const overdriveSVG = renderCard(overdriveUpdated, assets, measure).svg;
+assert.ok(!overdriveSVG.includes('data-decoration-column'));
+assert.ok(overdriveSVG.indexOf('Play this card') > overdriveSVG.indexOf('data-rpa-logo'), 'Body renders over the RPA decoration');
+
+assert.equal(overdriveUpdated.content.overdrive.title, 'AMBUSH');
+assert.equal(overdriveUpdated.content.overdrive.subtitle, 'OVERDRIVE');
+assert.ok(overdriveSVG.includes('data-trait="Military"'));
+assert.equal((overdriveSVG.match(/data-overdrive-id-note=/g) || []).length, 3);
+assert.ok(overdriveSVG.includes('data-footer-knockout="true"'));
+assert.ok(overdriveSVG.includes('data-barcode-rail-knockout="true"'));
+assert.ok(!overdriveSVG.includes('data-edge-barcode="bottom"'));
+overdriveUpdated.content.overdrive.traits = ['Military', 'Trade'];
+assert.equal((renderCard(overdriveUpdated, assets, measure).svg.match(/data-trait=/g) || []).length, 1);
+
+const overdriveRail = renderCard(overdriveUpdated, assets, measure).svg;
+const knockout = overdriveRail.match(/<rect x="([^"]+)" y="([^"]+)" width="([^"]+)" height="([^"]+)"[^>]*data-barcode-rail-knockout/)!;
+const rpaBounds = overdriveRail.match(/data-rpa-logo="true" x="([^"]+)" y="([^"]+)" width="([^"]+)"/)!;
+assert.equal(+rpaBounds[1] - +knockout[1], overdriveUpdated.parameters.crossGap, 'RPA clearance matches cross spacing');
+const odDimensions = dimensions(overdriveUpdated);
+const odWidth = 1000 * odDimensions.width / Math.max(odDimensions.width, odDimensions.height);
+assert.ok(Math.abs(+knockout[1] + +knockout[3] - (odWidth - overdriveUpdated.parameters.inset - overdriveUpdated.parameters.line / 2)) < 1e-8, 'Barcode knockout stops before vertical junction stroke');
+assert.equal(presetDesign().parameters.overdriveDecorationWidth, 180);

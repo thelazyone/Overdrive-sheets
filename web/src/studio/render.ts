@@ -23,6 +23,36 @@ export function wrapText(text: string, width: number, size: number, weight: numb
   }
   return lines;
 }
+type BodyRun = { text: string; weight: number };
+export function wrapBody(text: string, width: number, size: number, weight: number, measure: Measure) {
+  const result: { runs: BodyRun[]; gap: number }[] = [];
+  let pendingGap = 0;
+  for (const paragraph of text.replace(/\r\n?/g, '\n').split('\n')) {
+    if (!paragraph.trim()) { pendingGap += size; continue; }
+    const runs: BodyRun[] = paragraph.split(/(\*\*[^*]+\*\*)/g).filter(Boolean).map(text => ({ text: text.startsWith('**') && text.endsWith('**') ? text.slice(2, -2) : text, weight: text.startsWith('**') && text.endsWith('**') ? 700 : weight }));
+    let line: BodyRun[] = [], used = 0, space = false;
+    const flush = () => { if (line.length) { result.push({ runs: line, gap: pendingGap }); pendingGap = 0; line = []; used = 0; } };
+    const append = (text: string, runWeight: number) => {
+      const last = line[line.length - 1];
+      if (last?.weight === runWeight) last.text += text; else line.push({ text, weight: runWeight });
+      used += measure(text, size, false, runWeight);
+    };
+    for (const run of runs) for (const token of run.text.split(/(\s+)/).filter(Boolean)) {
+      if (/^\s+$/.test(token)) { space = true; continue; }
+      const spaceWidth = space && line.length ? measure(' ', size, false, weight) : 0;
+      if (line.length && used + spaceWidth + measure(token, size, false, run.weight) > width) flush();
+      if (space && line.length) append(' ', weight);
+      space = false;
+      for (const char of token) {
+        if (line.length && used + measure(char, size, false, run.weight) > width) flush();
+        append(char, run.weight);
+      }
+    }
+    flush();
+    pendingGap = 0;
+  }
+  return result;
+}
 // Stable 64-bit FNV-1a fingerprint; the decorative barcode encodes these same bits.
 export function titleFingerprint(title: string): string {
   let hash = 0xcbf29ce484222325n;
@@ -34,12 +64,16 @@ const traitBounds: Record<string, [number, number, number, number]> = {
   Trade: [39, 80, 341, 259], Military: [79, 50, 261, 320],
   Exploration: [3, 33, 387, 353], Science: [69, 69, 282, 282], Diplomacy: [79, 42, 262, 335],
 };
+export function contrastText(color: string) {
+  const channels = [1, 3, 5].map(offset => parseInt(color.slice(offset, offset + 2), 16) / 255).map(c => c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4);
+  return channels[0] * 0.2126 + channels[1] * 0.7152 + channels[2] * 0.0722 > 0.179 ? '#000000' : '#ffffff';
+}
 export function renderCard(d: Design, assets: Assets, measure: Measure, prefix = 'card', bleed = false) {
   // Normalize the longest edge: typography keeps the same physical scale when rotated.
   const dim = dimensions(d), w = 1000 * dim.width / Math.max(dim.width, dim.height), h = w * dim.height / dim.width;
-  const p = d.parameters, source = d.content[d.layout], pal = d.palettes[d.mode], m = p.inset;
+  const p = { ...d.parameters, lineSpacing: d.parameters.bodyLineSpacings[d.layout] ?? (d.layout === 'overdrive' ? 0 : d.parameters.lineSpacing), weight: d.parameters.bodyWeights[d.layout] ?? d.parameters.weight }, source = d.content[d.layout], pal = d.palettes[d.mode], m = p.inset;
   // Normalize before measuring as well as drawing, so uppercase text fits correctly.
-  const c = { ...source, title: source.title.toUpperCase(), subtitle: source.subtitle.toUpperCase(), code: source.code.toUpperCase(), heading: source.heading.toUpperCase() };
+  const c = { ...source, traits: d.layout === 'overdrive' ? source.traits.slice(0, 1) : source.traits, title: source.title.toUpperCase(), subtitle: source.subtitle.toUpperCase(), code: source.code.toUpperCase(), heading: source.heading.toUpperCase() };
   const radius = dim.rounded ? 3 / dim.width * w : 0;
   const b = bleed ? 5 / dim.width * w : 0;
   const frameTop = m + p.titleInset;
@@ -64,7 +98,7 @@ export function renderCard(d: Design, assets: Assets, measure: Measure, prefix =
   }
   function frameCrosses(y: number, omitLeft = false) {
     for (const x of omitLeft ? [w - m] : [m, w - m]) {
-      const crossPath = `M${x - p.cross} ${y}H${x + p.cross}M${x} ${y - p.cross}V${y + p.cross}`;
+      const crossPath = `M${d.layout === 'overdrive' && p.barcode && y === h - m && x === w - m ? x : x - p.cross} ${y}H${x + p.cross}M${x} ${y - p.cross}V${y + p.cross}`;
       // Clearance follows the arms rather than erasing a square of artwork.
       parts.push(`<path d="${crossPath}" fill="none" stroke="${pal.background}" stroke-width="${p.line + 2 * p.crossGap}" stroke-linecap="square"/>`);
       parts.push(`<path d="${crossPath}" fill="none" stroke="${pal.light}" stroke-width="${p.line}"/>`);
@@ -88,19 +122,35 @@ export function renderCard(d: Design, assets: Assets, measure: Measure, prefix =
     parts.push(`<text x="0" y="${(metrics.ascent - metrics.descent) / 2}" text-anchor="middle" fill="${pal.light}" font-family="StudioBody" font-weight="${p.decorationTextWeight}" font-size="${size}">${escapeXML(copy)}</text></g>`);
   }
   function body(x: number, y: number, width: number, height: number, fill = pal.text) {
-    let top = y;
-    if (c.heading) { parts.push(label(c.heading, x, top + 30, 32, fill === pal.text ? pal.accent : fill, width, true)); top += 48; }
-    const lines = wrapText(c.body, width, p.bodySize, p.weight, measure);
-    const capacity = Math.max(0, Math.floor((height - (top - y)) / (p.bodySize * p.leading)));
-    if (lines.length > capacity && c.body) warnings.push(`Body text exceeds its panel by ${lines.length - capacity} line(s). Reduce font size, shorten text, or adjust panel split.`);
-    lines.slice(0, capacity).forEach((text, i) => parts.push(label(text, x, top + p.bodySize + i * p.bodySize * p.leading, p.bodySize, fill, width)));
+    if (d.mode === 'print') fill = '#000000';
+    const lines = wrapBody(c.body, width, p.bodySize, p.weight, measure);
+    const lineAdvance = Math.max(1, p.bodySize * p.leading + p.lineSpacing);
+    const extraGap = (gap: number) => gap * (d.layout === 'objective' || d.layout === 'overdrive' ? 0.5 : 1);
+    const headingHeight = c.heading ? p.effectHeadingSize + p.effectHeadingGap : 0;
+    const textHeight = lines.length ? p.bodySize + (lines.length - 1) * lineAdvance + lines.reduce((sum, line) => sum + extraGap(line.gap), 0) : 0;
+    const blockHeight = textHeight + headingHeight;
+    let top = y + (d.layout === 'objective' ? Math.max(0, (height - blockHeight) / 2) : 0);
+    if (c.heading) { parts.push(label(c.heading, x, top + p.effectHeadingSize * 30 / 32, p.effectHeadingSize, d.mode === 'print' ? '#000000' : d.layout === 'objective' ? fill : fill === pal.text ? pal.accent : fill, width, true)); top += headingHeight; }
+    let baseline = top + p.bodySize, hidden = 0;
+    for (const line of lines) {
+      baseline += extraGap(line.gap);
+      if (baseline > y + height) { hidden++; continue; }
+      if (line.runs.every(run => run.weight === p.weight)) parts.push(label(line.runs.map(run => run.text).join(''), x, baseline, p.bodySize, fill, width));
+      else parts.push(`<text x="${x}" y="${baseline}" fill="${fill}" font-family="StudioBody" font-size="${p.bodySize}">${line.runs.map(run => `<tspan font-weight="${run.weight}">${escapeXML(run.text)}</tspan>`).join('')}</text>`);
+      baseline += lineAdvance;
+    }
+    if (hidden) warnings.push(`Body text exceeds its panel by ${hidden} line(s). Reduce font size, shorten text, or adjust panel split.`);
   }
   let artworkCutout = '';
+  let panelCutout = '';
   function art(x: number, y: number, width: number, height: number) {
     width = Math.max(1, width); height = Math.max(1, height);
     parts.push(`<mask id="${prefix}-art-cutout" maskUnits="userSpaceOnUse" x="${x}" y="${y}" width="${width}" height="${height}" style="mask-type:luminance">${rect(x, y, width, height, '#ffffff')}<path d="${artworkCutout}" fill="#000000" stroke="#000000" stroke-width="${2 * p.imageMargin}" stroke-linejoin="miter"/></mask><g data-image-frame="true" mask="url(#${prefix}-art-cutout)">`);
-    parts.push(rect(x, y, width, height, d.mode === 'print' ? '#f3f3f3' : pal.light));
-    if (c.artwork) parts.push(`<svg x="${x}" y="${y}" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" overflow="hidden"><image href="${c.artwork}" width="${width}" height="${height}" preserveAspectRatio="xMid${c.imagePosition < 34 ? 'YMin' : c.imagePosition > 66 ? 'YMax' : 'YMid'} slice"/></svg>`);
+    if (panelCutout) parts.push(`<clipPath id="${prefix}-panel-image-clip"><path d="${panelCutout}"/></clipPath><g clip-path="url(#${prefix}-panel-image-clip)">`);
+    // A light placeholder under loaded artwork leaks through antialiased edges.
+    if (!c.artwork) parts.push(rect(x, y, width, height, d.mode === 'print' ? '#f3f3f3' : pal.light));
+    if (c.artwork) parts.push(`<svg x="${x}" y="${y}" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" overflow="hidden"><image href="${c.artwork}" width="${width}" height="${height}" preserveAspectRatio="${c.imageHorizontal === 'right' ? 'xMax' : c.imageHorizontal === 'left' ? 'xMin' : 'xMid'}${c.imagePosition < 34 ? 'YMin' : c.imagePosition > 66 ? 'YMax' : 'YMid'} slice"/></svg>`);
+    if (panelCutout) parts.push('</g>');
     parts.push('</g>');
   }
   parts.push(rect(-b, -b, w + b * 2, h + b * 2, pal.background));
@@ -115,7 +165,7 @@ export function renderCard(d: Design, assets: Assets, measure: Measure, prefix =
     const titleX = symbolX + uprightWidth + p.titleGap;
     const iconSize = p.traitSize, iconGap = p.traitSpacing;
     const traitWidths = c.traits.map(trait => iconSize * traitBounds[trait][2] / traitBounds[trait][3]);
-    const iconWidth = d.layout === 'character' ? traitWidths.reduce((sum, width) => sum + width, 0) + Math.max(0, c.traits.length - 1) * iconGap : d.layout === 'objective' ? 55 : 0;
+    const iconWidth = (d.layout === 'character' || d.layout === 'overdrive') ? traitWidths.reduce((sum, width) => sum + width, 0) + Math.max(0, c.traits.length - 1) * iconGap : d.layout === 'objective' ? 55 : 0;
     const traitsRight = w - m - p.line / 2 - 6;
     const titleRight = d.layout === 'character' ? traitsRight : w - start;
     const titleSpace = Math.max(1, titleRight - titleX - iconWidth - 16);
@@ -152,18 +202,18 @@ export function renderCard(d: Design, assets: Assets, measure: Measure, prefix =
     const edgeBarWidth = 44, edgeBarGap = 8, edgeBarX = m + p.line / 2 + 3;
     const topDecorationY = symbolY - 8;
     const topTextX = p.topBarcode ? edgeBarX + edgeBarWidth + edgeBarGap : m + p.line / 2 + p.crossGap;
-    const topTextRight = d.layout === 'character' && c.traits.length ? traitsRight - iconWidth - 16 : w - start;
+    const topTextRight = (d.layout === 'character' || d.layout === 'overdrive') && c.traits.length ? traitsRight - iconWidth - 16 : w - start;
     parts.push(label(c.topDecoration.toUpperCase(), topTextX, topDecorationY, p.decorationTextSize, pal.light, Math.max(1, topTextRight - topTextX), false, p.decorationTextWeight));
     if (p.topBarcode) edgeBarcode('42', edgeBarX, -b, edgeBarWidth, Math.max(0, topDecorationY + b), 'top');
-    if (p.traitsBarcode && d.layout === 'character' && c.traits.length) {
+    if (p.traitsBarcode && (d.layout === 'character' || d.layout === 'overdrive') && c.traits.length) {
       const cap = ink('O', titleSize, p.titleWeight);
       const traitsTop = titleY + (cap.descent - cap.ascent - iconSize) / 2;
       const barcodeRight = w - m - p.line / 2 - 3;
-      const barcodeWidth = Math.max(3 * iconSize + 2 * iconGap, iconWidth) + 16;
+      const barcodeWidth = Math.max((d.layout === 'overdrive' ? 1 : 3) * iconSize + (d.layout === 'overdrive' ? 0 : 2 * iconGap), iconWidth) + 16;
       const traitsHash = titleFingerprint([...c.traits].sort().join('|'));
       edgeBarcode(traitsHash, barcodeRight - barcodeWidth, -b, barcodeWidth, Math.max(0, Math.min(symbolY, traitsTop) - 8 + b), 'traits');
     }
-    if (d.layout === 'character') c.traits.forEach((trait, i) => {
+    if (d.layout === 'character' || d.layout === 'overdrive') c.traits.forEach((trait, i) => {
       const x = traitsRight - iconWidth + traitWidths.slice(0, i).reduce((sum, width) => sum + width, 0) + i * iconGap;
       const width = traitWidths[i];
       const cap = ink('O', titleSize, p.titleWeight);
@@ -174,39 +224,68 @@ export function renderCard(d: Design, assets: Assets, measure: Measure, prefix =
     });
     let decorationBottom = h - m;
     if (d.layout === 'objective') {
-      parts.push(`<circle cx="${w - start - 22}" cy="${titleY - 21}" r="21" fill="none" stroke="${pal.text}" stroke-width="${p.line}"/>`);
-      parts.push(label(c.points, w - start - 34, titleY - 11, 27, pal.text, 27, true));
-      const textStart = start + p.leftDecorationWidth;
-      const textWidth = (inner - p.leftDecorationWidth) * (1 - p.artShare / 100);
-      const panelTop = Math.max(top, bandBottom + p.imageMargin);
-      parts.push(rect(textStart, panelTop, textWidth, bottom - panelTop, pal.accent));
-      body(textStart + 18, panelTop + 12, textWidth - 36, bottom - panelTop - 30, pal.background);
-      const imageX = textStart + textWidth + p.imageMargin;
-      const imageY = frameTop + p.line / 2 + p.imageMargin;
-      art(imageX, imageY, w - m - p.line / 2 - p.imageMargin - imageX, h - m - p.line / 2 - p.imageMargin - imageY);
+      const shieldValue = String(Math.min(9, Math.max(1, Math.round(Number(c.points) || 1))));
+      const badgeRadius = 21;
+      const badgeX = w - m - p.line / 2 - 6 - badgeRadius;
+      const cap = ink('O', titleSize, p.titleWeight);
+      const badgeY = titleY + (cap.descent - cap.ascent) / 2;
+      parts.push(`<circle data-shield="${shieldValue}" cx="${badgeX}" cy="${badgeY}" r="${badgeRadius}" fill="none" stroke="${pal.text}" stroke-width="${p.line}"/>`);
+      const digit = ink(shieldValue, 27);
+      parts.push(`<text x="${badgeX}" y="${badgeY + (digit.ascent - digit.descent) / 2}" text-anchor="middle" fill="${pal.text}" font-family="StudioHeading" font-weight="700" font-size="27">${shieldValue}</text>`);
+      if (p.shieldBarcode) edgeBarcode(shieldValue, w - m - p.line / 2 - 3 - 70, -b, 70, Math.max(0, badgeY - badgeRadius - 8 + b), 'shield');
+      const panelInset = p.line / 2 + p.imageMargin;
+      const textStart = m + panelInset + p.leftDecorationWidth;
+      const panelTop = frameTop + panelInset;
+      const panelBottom = h - m - panelInset;
+      const availableWidth = Math.max(1, w - m - panelInset - textStart - p.imageMargin);
+      const panelHeight = Math.max(1, panelBottom - panelTop);
+      const imageWidth = Math.min(panelHeight * 9 / 16, availableWidth * 0.7);
+      const textWidth = availableWidth - imageWidth;
+      const panelColor = d.mode === 'print' ? '#ffffff' : p.textFrameColor === 'background' ? pal.background : p.textFrameColor || pal.accent;
+      // A centered 60-degree bevel from vertical, shared by both panels.
+      const extension = Math.min(48, imageWidth * 0.2, panelHeight * 0.2) * 0.6;
+      const angle = Math.PI / 3;
+      const protrusion = p.objectProtrusion ? extension : 0;
+      const bevelHeight = protrusion / Math.tan(angle);
+      const edgeX = textStart + textWidth - extension / 2;
+      const bevelTop = panelTop + panelHeight * 2 / 3 - bevelHeight / 2;
+      const bevelBottom = bevelTop + bevelHeight;
+      const panelShape = `M ${textStart} ${panelTop} H ${edgeX} V ${bevelTop} L ${edgeX + protrusion} ${bevelBottom} V ${panelBottom} H ${textStart} Z`;
+      // Parallel offset preserves the image margin perpendicular to the bevel.
+      const gap = p.imageMargin;
+      const imageEdge = edgeX + gap;
+      const offsetY = gap * (1 - Math.cos(angle)) / Math.sin(angle);
+      const imageRight = w - m - panelInset;
+      panelCutout = `M ${imageEdge} ${panelTop} H ${imageRight} V ${panelBottom} H ${imageEdge + protrusion} V ${bevelBottom - offsetY} L ${imageEdge} ${bevelTop - offsetY} Z`;
+      parts.push(`<mask id="${prefix}-text-cutout" maskUnits="userSpaceOnUse" x="${textStart}" y="${panelTop}" width="${textWidth + extension / 2}" height="${panelHeight}" style="mask-type:luminance"><path data-text-bevel="true" d="${panelShape}" fill="#ffffff"/><path d="${shape}" fill="#000000" stroke="#000000" stroke-width="${2 * p.imageMargin}" stroke-linejoin="miter"/></mask>`);
+      parts.push(rect(textStart, panelTop, textWidth + extension / 2, panelHeight, panelColor, `data-text-frame="true" mask="url(#${prefix}-text-cutout)"`));
+      const textTop = Math.max(panelTop, bandBottom + p.imageMargin) + p.textFrameMargin;
+      body(textStart + p.textFrameMargin, textTop, Math.max(1, textWidth - extension / 2 - 2 * p.textFrameMargin), Math.max(1, panelBottom - p.textFrameMargin - textTop), contrastText(panelColor));
+      art(imageEdge, panelTop, imageRight - imageEdge, panelHeight);
     } else {
-      const imageHeight = (bottom - top) * p.artShare / 100;
+      const imageHeight = (bottom - top) * (d.layout === 'overdrive' ? p.overdriveArtShare : p.artShare) / 100;
+      const leftStrip = d.layout === 'overdrive' ? 16 : p.leftDecorationWidth;
       const dividerY = top + imageHeight + 10;
       const imageInset = p.line / 2 + p.imageMargin;
       decorationBottom = dividerY;
-      art(m + imageInset + p.leftDecorationWidth, frameTop + imageInset, w - 2 * (m + imageInset) - p.leftDecorationWidth, dividerY - frameTop - 2 * imageInset);
+      if (d.mode === 'print') parts.push(rect(m + p.line / 2, dividerY + p.line / 2, w - 2 * m - p.line, (d.layout === 'character' ? h + b : h - m - p.line / 2) - dividerY - p.line / 2, '#ffffff', 'data-print-body-panel="true"'));
+      art(m + imageInset + leftStrip, frameTop + imageInset, w - 2 * (m + imageInset) - leftStrip, dividerY - frameTop - 2 * imageInset);
       parts.push(`<g data-frame-divider="true">`, line(-b, dividerY, w + b, dividerY));
       frameCrosses(dividerY);
       parts.push('</g>');
       const rightInset = p.line / 2 + p.imageMargin;
-      const rightWidth = Math.min(p.rightDecorationWidth, inner * 0.35);
+      const rightWidth = Math.min(d.layout === 'overdrive' ? p.overdriveDecorationWidth : p.rightDecorationWidth, inner * 0.35);
       const rightX = w - m - rightInset - rightWidth;
       const rightTop = dividerY + rightInset;
-      const rightBottom = h - m - (d.layout === 'character' ? 0 : rightInset);
-      const bodyX = m + imageInset + p.leftDecorationWidth;
-      body(bodyX, top + imageHeight + 22, Math.max(1, (p.barcode ? rightX - 16 : w - start) - bodyX), bottom - top - imageHeight - 22);
+      const bodyX = m + imageInset + leftStrip;
+      if (d.layout !== 'overdrive') body(bodyX, top + imageHeight + 22, Math.max(1, (p.barcode ? rightX - 16 : w - start) - bodyX), bottom - top - imageHeight - 22);
       const mini = p.decorationTextSize;
       const notice = c.rightDecoration.toUpperCase().split('\n').slice(0, 3);
       const noticeColor = pal.light;
       const noticeLeading = mini * 1.15;
       const noticeHeight = mini + 2 * noticeLeading;
-      const barcodeHeight = p.barcode ? (d.layout === 'character' ? m + b : 25) : 0;
-      const barcodeY = d.layout === 'character' ? h - m : rightBottom - barcodeHeight;
+      const barcodeHeight = p.barcode ? m + b : 0;
+      const barcodeY = h - m;
       const hashInk = ink('#0123456789ABCDEF-', 17);
       const hashY = barcodeY - 3 - hashInk.descent;
       const logoBottom = hashY - hashInk.ascent - 4;
@@ -215,6 +294,7 @@ export function renderCard(d: Design, assets: Assets, measure: Measure, prefix =
       const logoHeight = logoWidth * 614 / 592;
       const logoX = rightX + rightWidth - logoWidth;
       const logoY = logoBottom - logoHeight;
+      if (d.layout === 'overdrive' && p.barcode) parts.push(rect(logoX - p.crossGap, h - m - p.line / 2, w - m - p.line / 2 - logoX + p.crossGap, p.line, pal.background, 'data-barcode-rail-knockout="true"'));
       const fingerprint = titleFingerprint(c.title);
       parts.push(`<g data-right-decoration="true" data-title-hash="${fingerprint}">`);
       notice.forEach((text, i) => parts.push(`<text x="${rightX + rightWidth}" y="${rightTop + mini + i * noticeLeading}" text-anchor="end" fill="${noticeColor}" font-family="StudioBody" font-size="${mini}" font-weight="${p.decorationTextWeight}">${escapeXML(text)}</text>`));
@@ -238,13 +318,15 @@ export function renderCard(d: Design, assets: Assets, measure: Measure, prefix =
       }
       }
       parts.push('</g>');
+      // Overdrive text uses the full width and composites over the decoration.
+      if (d.layout === 'overdrive') body(bodyX, top + imageHeight + 22, w - m - imageInset - bodyX, bottom - top - imageHeight - 22);
     }
     const decorationTop = bandBottom + p.imageMargin;
-    const stripWidth = p.leftDecorationWidth;
+    const stripWidth = d.layout === 'overdrive' ? 16 : p.leftDecorationWidth;
     if (p.hideFrameAbove) parts.push(rect(m - p.line / 2 - 1, bandBottom, p.line + 2, p.imageMargin + 1, pal.background, 'data-hide-frame-above="true"'));
     parts.push('<g data-left-decoration="true">');
     const codeY = decorationTop;
-    const boxWidth = Math.min(15, stripWidth - 8), boxHeight = 25, boxGap = 7;
+    const boxWidth = d.layout === 'overdrive' ? 15 : Math.min(15, stripWidth - 8), boxHeight = 25, boxGap = 7;
     const boxInset = p.line / 2 + 7; // Six clear units plus the box stroke half-width.
     const boxBottom = decorationBottom - boxInset;
     const boxesTop = boxBottom - 2 * boxHeight - boxGap;
@@ -254,7 +336,7 @@ export function renderCard(d: Design, assets: Assets, measure: Measure, prefix =
     // With 90-degree rotation, the underscore's descent becomes the left edge.
     const codeX = m - p.line / 2 + ink('_', codeSize).descent;
     if (c.code) {
-      parts.push(rect(m - p.line / 2 - 3, codeY - 3, codeInk.ascent + codeInk.descent + p.line / 2 + 6, measure(c.code, codeSize, true, 700) + 6, pal.background));
+      parts.push(rect(m - p.line / 2 - 3, codeY - 3, codeInk.ascent + codeInk.descent + p.line / 2 + 6, measure(c.code, codeSize, true, 700) + (d.layout === 'overdrive' ? p.crossGap + 3 : 6), pal.background));
       parts.push(`<g transform="translate(${codeX} ${codeY}) rotate(90)">${label(c.code, 0, 0, codeSize, pal.text, codeSpace, true)}</g>`);
     }
     const mini = p.decorationTextSize, miniLeading = mini * 1.15;
@@ -262,22 +344,37 @@ export function renderCard(d: Design, assets: Assets, measure: Measure, prefix =
     const textLeft = codeX + codeInk.ascent + 4;
     const columnCount = Math.max(1, Math.floor((textRight - textLeft) / miniLeading));
     const decorationLines = wrapText(c.leftDecoration.toUpperCase(), codeSpace, mini, p.decorationTextWeight, measure);
-    const placeholder = decorationLines.slice(0, columnCount);
+    const placeholder = d.layout === 'overdrive' ? [] : decorationLines.slice(0, columnCount);
     const lastLine = placeholder[placeholder.length - 1] || '';
     const rightInk = measure.bodyInk?.(lastLine, mini, p.decorationTextWeight).ascent ?? mini * 0.75;
     const miniX = textRight - rightInk - (placeholder.length - 1) * miniLeading;
     placeholder.forEach((text, i) => parts.push(`<text data-decoration-column="${i}" transform="translate(${miniX + i * miniLeading} ${codeY}) rotate(90)" x="0" y="0" fill="${pal.light}" font-family="StudioBody" font-size="${mini}" font-weight="${p.decorationTextWeight}">${escapeXML(text)}</text>`));
+    if (d.layout === 'overdrive') {
+      const smallTop = codeY + measure(c.code, codeSize, true, 700) + p.crossGap;
+      const smallSpace = Math.max(1, boxesTop - smallTop - 8);
+      const smallLines = wrapText(c.leftDecoration.toUpperCase(), smallSpace, mini, p.decorationTextWeight, measure).slice(0, 3);
+      const lastInk = measure.bodyInk?.(smallLines[smallLines.length - 1] || '', mini, p.decorationTextWeight).ascent ?? mini * 0.75;
+      const smallX = codeX + codeInk.ascent - lastInk - (smallLines.length - 1) * miniLeading;
+      smallLines.forEach((text, i) => parts.push(`<text data-overdrive-id-note="${i}" transform="translate(${smallX + i * miniLeading} ${smallTop}) rotate(90)" fill="${pal.light}" font-family="StudioBody" font-size="${mini}" font-weight="${p.decorationTextWeight}">${escapeXML(text)}</text>`));
+    }
     if (boxesTop > codeY) for (let i = 0; i < 2; i++) {
       const boxX = m + boxInset, boxY = boxesTop + i * (boxHeight + boxGap);
       parts.push(rect(boxX, boxY, boxWidth, boxHeight, pal.background, `data-decoration-box="${i}" rx="4" stroke="${pal.light}" stroke-width="1.5"`));
       parts.push(`<text transform="translate(${boxX + boxWidth / 2} ${boxY + boxHeight / 2}) rotate(90)" text-anchor="middle" dominant-baseline="central" fill="${pal.light}" font-family="StudioHeading" font-weight="700" font-size="8">${i === 0 ? '03' : '42'}</text>`);
     }
     parts.push('</g>');
-    const footerX = p.bottomBarcode ? edgeBarX + edgeBarWidth + edgeBarGap : start;
+    const showBottomBarcode = p.bottomBarcode && d.layout === 'character';
+    const footerOnRail = d.layout === 'objective' || d.layout === 'overdrive';
+    const footerX = footerOnRail ? m + p.cross + p.crossGap + (d.layout === 'overdrive' ? 24 : 8) : showBottomBarcode ? edgeBarX + edgeBarWidth + edgeBarGap : start;
     const footerWidth = inner * 0.66 - (footerX - start);
     const footerSize = Math.min(12, 12 * footerWidth / Math.max(1, measure(c.footer, 12, true, 700)));
-    const footerY = d.layout === 'character' ? h - m + ink(c.footer, footerSize).ascent : h - m + 23;
-    if (p.bottomBarcode) edgeBarcode('08', edgeBarX, h - m, edgeBarWidth, m + b, 'bottom');
+    const footerInk = ink(c.footer, footerSize);
+    const footerY = footerOnRail ? h - m - p.line / 2 + footerInk.ascent : d.layout === 'character' ? h - m + footerInk.ascent : h - m + 23;
+    if (footerOnRail) {
+      const footerHeight = Math.max(p.line + 2, footerInk.ascent + footerInk.descent + 2);
+      parts.push(rect(footerX - 4, h - m - p.line / 2 - 1, measure(c.footer, footerSize, true, 700) + 8, footerHeight, pal.background, 'data-footer-knockout="true"'));
+    }
+    if (showBottomBarcode) edgeBarcode('08', edgeBarX, h - m, edgeBarWidth, m + b, 'bottom');
     parts.push(label(c.footer, footerX, footerY, 12, pal.light, footerWidth, true));
 
     // Center the simple incoming mark in the upright; optional artwork can override it.
@@ -305,6 +402,7 @@ export function renderCard(d: Design, assets: Assets, measure: Measure, prefix =
     const actionSpan = h - m - actionStart;
     inlineLabel(c.inlineLeft, m, actionStart + actionSpan * 0.42, true, actionSpan * 0.6, 'left');
     if (hasDivider) inlineLabel(c.inlineDivider, m + (w - 2 * m) * 0.42, decorationBottom, false, (w - 2 * m) * 0.55, 'divider');
+    else inlineLabel(c.inlineDivider, m + (w - 2 * m) * 0.65, h - m, false, (w - 2 * m) * 0.5, 'divider');
     const imageSpan = decorationBottom - frameTop;
     inlineLabel(c.inlineRight, w - m, frameTop + imageSpan * 0.2, true, Math.max(1, imageSpan * 0.3 - p.cross - p.crossGap), 'right');
   }

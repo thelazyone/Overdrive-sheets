@@ -124,3 +124,10 @@ gunship_exploration.jpg is bundled unchanged and loaded for the initial Characte
 artwork. Parameter reset restores the preset settings. This preset uses a new
 local-draft key; later reloads preserve edits, while the previous key remains
 untouched. Geometry tests use a fixed reference fixture plus preset assertions.
+
+Objective uses its own horizontal panel split (33% image by default), a bottom
+rail with the edition label knocked into it, and a circular 1–5 shield with a
+value-derived upper barcode. It has no bottom barcode or RPA identity group.
+Image margin controls both panels’ outer clearance; Body > Text frame margin
+controls inner text padding. Text frame color follows the accent until overridden;
+black or white text is chosen by contrast. Its artwork is separate from Character.
