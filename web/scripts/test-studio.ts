@@ -307,7 +307,7 @@ assert.deepEqual(suppliedPreset, designSchema.parse(preset), 'Startup design mat
 assert.deepEqual(defaultParameters, suppliedPreset.parameters, 'Reset parameters restores supplied settings');
 assert.equal(suppliedPreset.parameters.inset, 43);
 assert.equal(suppliedPreset.parameters.titleWeight, 900);
-assert.equal(suppliedPreset.parameters.decorationTextSize, 4.5);
+assert.equal(suppliedPreset.parameters.decorationTextSize, 5);
 assert.deepEqual(suppliedPreset.content.character.traits, ['Diplomacy', 'Military']);
 for (const layout of layouts) assert.ok(!/NaN|Infinity/.test(renderCard({ ...suppliedPreset, layout }, assets, measure).svg));
 
@@ -469,3 +469,8 @@ lineVessel.mode = 'print';
 assert.ok(!renderCard(lineVessel, assets, measure).svg.includes('linework-invert'));
 lineVessel.content.vessel.artwork = 'data:image/jpeg;base64,AAAA';
 assert.ok(renderCard(lineVessel, assets, measure).svg.includes('xMidYMid slice'));
+
+const heavyMini = presetDesign(); heavyMini.parameters.decorationTextWeight = 1000;
+assert.ok(designSchema.safeParse(heavyMini).success);
+assert.ok(renderCard(heavyMini, assets, measure).svg.includes('stroke-width="0.3" stroke-linejoin="round" paint-order="stroke fill"'));
+assert.equal(presetDesign().parameters.decorationTextWeight, 700);

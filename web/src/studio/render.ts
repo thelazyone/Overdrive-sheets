@@ -90,7 +90,13 @@ export function renderCard(d: Design, assets: Assets, measure: Measure, prefix =
   function edgeBarcode(value: string, x: number, y: number, width: number, height: number, name: string) {
     if (height <= 0 || width <= 0) return;
     const payload = name === 'traits' ? [...value].map(char => parseInt(char, 16).toString(2).padStart(4, '0')).join('') : [...new TextEncoder().encode(value)].map(byte => byte.toString(2).padStart(8, '0')).join('');
-    const bits = '101' + payload + '101';
+    // A single-trait barcode has less room, so use fewer hash bits rather
+    // than squeezing the same payload into hairline-width modules.
+    const traitModule = (3 * p.traitSize + 2 * p.traitSpacing + 16) / 70;
+    const visiblePayload = name === 'traits' && d.layout === 'overdrive'
+      ? payload.slice(0, Math.max(1, Math.min(payload.length, Math.round(width / traitModule) - 6)))
+      : payload;
+    const bits = '101' + visiblePayload + '101';
     const unit = width / bits.length;
     parts.push(`<g data-edge-barcode="${name}" data-value="${escapeXML(value)}">`);
     barcodeBars(bits, x, y, unit, height);
@@ -104,11 +110,14 @@ export function renderCard(d: Design, assets: Assets, measure: Measure, prefix =
       parts.push(`<path d="${crossPath}" fill="none" stroke="${pal.light}" stroke-width="${p.line}"/>`);
     }
   }
+  // Titillium's bundled faces stop at 700. Extra mini-text weight is a
+  // proportional outline, embedded in the SVG so exports match the preview.
+  const miniStroke = (size: number, color: string, weight = p.decorationTextWeight) => weight > 700 ? `stroke="${color}" stroke-width="${size * (weight - 700) / 300 * 0.06}" stroke-linejoin="round" paint-order="stroke fill"` : '';
   function label(text: string, x: number, y: number, size: number, fill: string, maxWidth: number, heading = false, weight: number = heading ? 700 : p.weight, spacing = 0) {
     const measured = measure(text, size, heading, weight) + Math.max(0, [...text].length - 1) * spacing;
     const fitted = Math.min(size, size * maxWidth / Math.max(1, measured));
     if (text && fitted < size * 0.6) warnings.push('A heading is very long; shorten it for a readable print.');
-    return `<text x="${x}" y="${y}" fill="${fill}" font-family="${heading ? 'StudioHeading' : 'StudioBody'}" font-weight="${weight}" font-size="${fitted}" letter-spacing="${spacing * fitted / size}">${escapeXML(text)}</text>`;
+    return `<text x="${x}" y="${y}" fill="${fill}" font-family="${heading ? 'StudioHeading' : 'StudioBody'}" font-weight="${heading ? weight : Math.min(weight, 700)}" ${heading ? '' : miniStroke(fitted, fill, weight)} font-size="${fitted}" letter-spacing="${spacing * fitted / size}">${escapeXML(text)}</text>`;
   }
   function inlineLabel(text: string, x: number, y: number, vertical: boolean, maxWidth: number, name: string) {
     if (!text.trim()) return;
@@ -119,7 +128,7 @@ export function renderCard(d: Design, assets: Assets, measure: Measure, prefix =
     const height = Math.max(p.line + 2, metrics.ascent + metrics.descent + 2);
     parts.push(`<g data-inline-decoration="${name}" transform="translate(${x} ${y})${vertical ? ' rotate(90)' : ''}">`);
     parts.push(rect(-width / 2 - 4, -height / 2, width + 8, height, pal.background));
-    parts.push(`<text x="0" y="${(metrics.ascent - metrics.descent) / 2}" text-anchor="middle" fill="${pal.light}" font-family="StudioBody" font-weight="${p.decorationTextWeight}" font-size="${size}">${escapeXML(copy)}</text></g>`);
+    parts.push(`<text x="0" y="${(metrics.ascent - metrics.descent) / 2}" text-anchor="middle" fill="${pal.light}" font-family="StudioBody" font-weight="${Math.min(700, p.decorationTextWeight)}" ${miniStroke(size, pal.light)} font-size="${size}">${escapeXML(copy)}</text></g>`);
   }
   function body(x: number, y: number, width: number, height: number, fill = pal.text) {
     if (d.mode === 'print') fill = '#000000';
@@ -303,7 +312,7 @@ export function renderCard(d: Design, assets: Assets, measure: Measure, prefix =
       if (d.layout === 'overdrive' && p.barcode) parts.push(rect(logoX - p.crossGap, h - m - p.line / 2 - 1.5, w - m - p.line / 2 - logoX + p.crossGap, p.line + 3, pal.background, 'data-barcode-rail-knockout="true"'));
       const fingerprint = titleFingerprint(c.title);
       parts.push(`<g data-right-decoration="true" data-title-hash="${fingerprint}">`);
-      notice.forEach((text, i) => parts.push(`<text x="${rightX + rightWidth}" y="${rightTop + mini + i * noticeLeading}" text-anchor="end" fill="${noticeColor}" font-family="StudioBody" font-size="${mini}" font-weight="${p.decorationTextWeight}">${escapeXML(text)}</text>`));
+      notice.forEach((text, i) => parts.push(`<text x="${rightX + rightWidth}" y="${rightTop + mini + i * noticeLeading}" text-anchor="end" fill="${noticeColor}" font-family="StudioBody" font-size="${mini}" font-weight="${Math.min(700, p.decorationTextWeight)}" ${miniStroke(mini, pal.light)}>${escapeXML(text)}</text>`));
       if (p.barcode) {
       // Reference image: circle centered at (296,307), three satellites at the measured positions.
       parts.push(`<svg data-rpa-logo="true" x="${logoX}" y="${logoY}" width="${logoWidth}" height="${logoHeight}" viewBox="0 0 592 614"><defs><mask id="${prefix}-rpa-band"><rect width="592" height="614" fill="white"/><rect y="222" width="592" height="177" fill="black"/></mask></defs><circle cx="296" cy="307" r="307" fill="${pal.dark}" mask="url(#${prefix}-rpa-band)"/><g fill="${pal.dark}"><circle cx="41" cy="61" r="37"/><circle cx="41" cy="556" r="37"/><circle cx="545" cy="560" r="37"/><text x="296" y="380" font-family="StudioHeading" font-weight="700" font-size="195" text-anchor="middle" textLength="586" lengthAdjust="spacingAndGlyphs">RPA</text></g></svg>`);
@@ -355,14 +364,14 @@ export function renderCard(d: Design, assets: Assets, measure: Measure, prefix =
     const lastLine = placeholder[placeholder.length - 1] || '';
     const rightInk = measure.bodyInk?.(lastLine, mini, p.decorationTextWeight).ascent ?? mini * 0.75;
     const miniX = textRight - rightInk - (placeholder.length - 1) * miniLeading;
-    placeholder.forEach((text, i) => parts.push(`<text data-decoration-column="${i}" transform="translate(${miniX + i * miniLeading} ${codeY}) rotate(90)" x="0" y="0" fill="${pal.light}" font-family="StudioBody" font-size="${mini}" font-weight="${p.decorationTextWeight}">${escapeXML(text)}</text>`));
+    placeholder.forEach((text, i) => parts.push(`<text data-decoration-column="${i}" transform="translate(${miniX + i * miniLeading} ${codeY}) rotate(90)" x="0" y="0" fill="${pal.light}" font-family="StudioBody" font-size="${mini}" font-weight="${Math.min(700, p.decorationTextWeight)}" ${miniStroke(mini, pal.light)}>${escapeXML(text)}</text>`));
     if (d.layout === 'overdrive') {
       const smallTop = codeY + measure(c.code, codeSize, true, 700) + p.crossGap;
       const smallSpace = Math.max(1, boxesTop - smallTop - 8);
       const smallLines = wrapText(c.leftDecoration.toUpperCase(), smallSpace, mini, p.decorationTextWeight, measure).slice(0, 3);
       const lastInk = measure.bodyInk?.(smallLines[smallLines.length - 1] || '', mini, p.decorationTextWeight).ascent ?? mini * 0.75;
       const smallX = codeX + codeInk.ascent - lastInk - (smallLines.length - 1) * miniLeading;
-      smallLines.forEach((text, i) => parts.push(`<text data-overdrive-id-note="${i}" transform="translate(${smallX + i * miniLeading} ${smallTop}) rotate(90)" fill="${pal.light}" font-family="StudioBody" font-size="${mini}" font-weight="${p.decorationTextWeight}">${escapeXML(text)}</text>`));
+      smallLines.forEach((text, i) => parts.push(`<text data-overdrive-id-note="${i}" transform="translate(${smallX + i * miniLeading} ${smallTop}) rotate(90)" fill="${pal.light}" font-family="StudioBody" font-size="${mini}" font-weight="${Math.min(700, p.decorationTextWeight)}" ${miniStroke(mini, pal.light)}>${escapeXML(text)}</text>`));
     }
     if (boxesTop > codeY) for (let i = 0; i < 2; i++) {
       const boxX = m + boxInset, boxY = boxesTop + i * (boxHeight + boxGap);
@@ -397,7 +406,7 @@ export function renderCard(d: Design, assets: Assets, measure: Measure, prefix =
       const logoBaseline = symbolY + (uprightHeight - blockHeight) / 2 + logoInk.ascent;
       const logoLeft = centerX - logoInk.width / 2;
       const microY = logoBaseline + logoInk.descent + gap + microSize;
-      parts.push(`<g data-incoming-logo="true" fill="${pal.background}" text-anchor="middle"><text x="${centerX}" y="${logoBaseline}" font-family="StudioHeading" font-weight="${p.titleWeight}" font-size="${logoSize}">&gt;</text><text fill="${pal.light}" text-anchor="start" x="${logoLeft}" y="${microY}" font-family="StudioBody" font-weight="${p.decorationTextWeight}" font-size="${microSize}">INCOMING</text><text fill="${pal.light}" text-anchor="start" x="${logoLeft}" y="${microY + microLeading}" font-family="StudioBody" font-weight="${p.decorationTextWeight}" font-size="${microSize}">ID NO#</text></g>`);
+      parts.push(`<g data-incoming-logo="true" fill="${pal.background}" text-anchor="middle"><text x="${centerX}" y="${logoBaseline}" font-family="StudioHeading" font-weight="${p.titleWeight}" font-size="${logoSize}">&gt;</text><text fill="${pal.light}" text-anchor="start" x="${logoLeft}" y="${microY}" font-family="StudioBody" font-weight="${Math.min(700, p.decorationTextWeight)}" ${miniStroke(microSize, pal.light)} font-size="${microSize}">INCOMING</text><text fill="${pal.light}" text-anchor="start" x="${logoLeft}" y="${microY + microLeading}" font-family="StudioBody" font-weight="${Math.min(700, p.decorationTextWeight)}" ${miniStroke(microSize, pal.light)} font-size="${microSize}">ID NO#</text></g>`);
     }
     if (d.symbolImage) {
       const logoPad = 4;
