@@ -450,13 +450,13 @@ assert.equal(presetDesign().parameters.overdriveDecorationWidth, 110);
 
 const vesselDesign = presetDesign(); vesselDesign.layout = 'vessel';
 const vesselSVG = renderCard(vesselDesign, assets, measure).svg;
-assert.ok(vesselSVG.includes('data-shield="3"'));
+assert.ok(vesselSVG.includes('data-shield="1"'));
 assert.ok(vesselSVG.includes('data-frame-divider="true"'));
 assert.ok(!vesselSVG.includes('data-trait='));
 assert.ok(!vesselSVG.includes('data-rpa-logo') && !vesselSVG.includes('data-right-decoration'));
 assert.equal(vesselDesign.parameters.vesselTitleInset, vesselDesign.parameters.titleInset);
 assert.equal(vesselDesign.parameters.vesselArtShare, 66);
-assert.equal(designSchema.parse(referenceDesign).content.vessel.title, 'VESSEL', 'Older designs gain Vessel defaults');
+assert.equal(designSchema.parse(referenceDesign).content.vessel.title, 'LIGHT TUGBOAT', 'Older designs gain Vessel defaults');
 
 const lineVessel = presetDesign(); lineVessel.layout = 'vessel';
 lineVessel.content.vessel.artwork = 'data:image/png;base64,AAAA';
@@ -474,3 +474,13 @@ const heavyMini = presetDesign(); heavyMini.parameters.decorationTextWeight = 10
 assert.ok(designSchema.safeParse(heavyMini).success);
 assert.ok(renderCard(heavyMini, assets, measure).svg.includes('stroke-width="0.3" stroke-linejoin="round" paint-order="stroke fill"'));
 assert.equal(presetDesign().parameters.decorationTextWeight, 700);
+
+const vesselStats = presetDesign(); vesselStats.layout = 'vessel';
+const vesselStatsSVG = renderCard(vesselStats, assets, measure).svg;
+assert.ok(vesselStatsSVG.includes('2–5'));
+assert.ok(vesselStatsSVG.replace(/<[^>]*>/g, '').includes('2 | 0–2'));
+assert.ok(vesselStatsSVG.includes('Anti-Light'));
+assert.ok(!vesselStatsSVG.includes('Write the vessel rules here.'));
+vesselStats.content.vessel.movementMax = 7;
+assert.ok(renderCard(vesselStats, assets, measure).svg.includes('2–7'));
+assert.equal(designSchema.parse(JSON.parse(JSON.stringify(vesselStats))).content.vessel.movementMax, 7);

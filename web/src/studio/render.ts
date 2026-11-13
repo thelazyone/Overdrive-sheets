@@ -3,7 +3,7 @@ import type { Assets } from './assets';
 export const escapeXML = (v: string) => v.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&apos;' }[c]!));
 export type Measure = ((text: string, size: number, heading: boolean, weight: number) => number) & {
   bodyInk?: (text: string, size: number, weight?: number) => { ascent: number; descent: number };
-  ink?: (text: string, size: number, weight?: number) => { ascent: number; descent: number; width: number };
+  ink?: (text: string, size: number, weight?: number) => { ascent: number; descent: number; width: number; left?: number };
 };
 export function wrapText(text: string, width: number, size: number, weight: number, measure: Measure): string[] {
   const lines: string[] = [];
@@ -74,6 +74,10 @@ export function renderCard(d: Design, assets: Assets, measure: Measure, prefix =
   const p = { ...d.parameters, titleInset: d.layout === 'vessel' ? d.parameters.vesselTitleInset : d.parameters.titleInset, barcode: d.layout === 'vessel' ? false : d.parameters.barcode, lineSpacing: d.parameters.bodyLineSpacings[d.layout] ?? (d.layout === 'overdrive' ? 2 : d.parameters.lineSpacing), weight: d.parameters.bodyWeights[d.layout] ?? d.parameters.weight }, source = d.content[d.layout], pal = d.palettes[d.mode], m = p.inset;
   // Normalize before measuring as well as drawing, so uppercase text fits correctly.
   const c = { ...source, traits: d.layout === 'overdrive' ? source.traits.slice(0, 1) : source.traits, title: source.title.toUpperCase(), subtitle: source.subtitle.toUpperCase(), code: source.code.toUpperCase(), heading: source.heading.toUpperCase() };
+  if (d.layout === 'vessel') {
+    c.heading = '';
+    c.body = source.keywords;
+  }
   const radius = dim.rounded ? 3 / dim.width * w : 0;
   const b = bleed ? 5 / dim.width * w : 0;
   const frameTop = m + p.titleInset;
@@ -132,20 +136,23 @@ export function renderCard(d: Design, assets: Assets, measure: Measure, prefix =
   }
   function body(x: number, y: number, width: number, height: number, fill = pal.text) {
     if (d.mode === 'print') fill = '#000000';
-    const lines = wrapBody(c.body, width, p.bodySize, p.weight, measure);
-    const lineAdvance = Math.max(1, p.bodySize * p.leading + p.lineSpacing);
+    const size = p.bodySize * (d.layout === 'vessel' ? 0.8 : 1);
+    const lines = wrapBody(c.body, width, size, p.weight, measure);
+    const lineAdvance = Math.max(1, size * p.leading + p.lineSpacing);
     const extraGap = (gap: number) => gap * (d.layout === 'objective' || d.layout === 'overdrive' ? 0.5 : 1);
     const headingHeight = c.heading ? p.effectHeadingSize + p.effectHeadingGap : 0;
-    const textHeight = lines.length ? p.bodySize + (lines.length - 1) * lineAdvance + lines.reduce((sum, line) => sum + extraGap(line.gap), 0) : 0;
+    const textHeight = lines.length ? size + (lines.length - 1) * lineAdvance + lines.reduce((sum, line) => sum + extraGap(line.gap), 0) : 0;
     const blockHeight = textHeight + headingHeight;
-    let top = y + (d.layout === 'objective' ? Math.max(0, (height - blockHeight) / 2) : 0);
+    let top = y + (d.layout === 'vessel' ? Math.max(0, height - blockHeight) : d.layout === 'objective' ? Math.max(0, (height - blockHeight) / 2) : 0);
     if (c.heading) { parts.push(label(c.heading, x, top + p.effectHeadingSize * 30 / 32, p.effectHeadingSize, d.mode === 'print' ? '#000000' : d.layout === 'objective' ? fill : fill === pal.text ? pal.accent : fill, width, true)); top += headingHeight; }
-    let baseline = top + p.bodySize, hidden = 0;
+    let baseline = top + size, hidden = 0;
     for (const line of lines) {
       baseline += extraGap(line.gap);
       if (baseline > y + height) { hidden++; continue; }
-      if (line.runs.every(run => run.weight === p.weight)) parts.push(label(line.runs.map(run => run.text).join(''), x, baseline, p.bodySize, fill, width));
-      else parts.push(`<text x="${x}" y="${baseline}" fill="${fill}" font-family="StudioBody" font-size="${p.bodySize}">${line.runs.map(run => `<tspan font-weight="${run.weight}">${escapeXML(run.text)}</tspan>`).join('')}</text>`);
+      const lineWidth = line.runs.reduce((sum, run) => sum + measure(run.text, size, false, run.weight), 0);
+      const lineX = d.layout === 'vessel' ? x + (width - lineWidth) / 2 : x;
+      if (line.runs.every(run => run.weight === p.weight)) parts.push(label(line.runs.map(run => run.text).join(''), lineX, baseline, size, fill, width));
+      else parts.push(`<text x="${lineX}" y="${baseline}" fill="${fill}" font-family="StudioBody" font-size="${size}">${line.runs.map(run => `<tspan font-weight="${run.weight}">${escapeXML(run.text)}</tspan>`).join('')}</text>`);
       baseline += lineAdvance;
     }
     if (hidden) warnings.push(`Body text exceeds its panel by ${hidden} line(s). Reduce font size, shorten text, or adjust panel split.`);
@@ -243,7 +250,7 @@ export function renderCard(d: Design, assets: Assets, measure: Measure, prefix =
       const badgeY = titleY + (cap.descent - cap.ascent) / 2;
       parts.push(`<circle data-shield="${shieldValue}" cx="${badgeX}" cy="${badgeY}" r="${badgeRadius}" fill="none" stroke="${pal.text}" stroke-width="${p.line}"/>`);
       const digit = ink(shieldValue, 27);
-      parts.push(`<text x="${badgeX}" y="${badgeY + (digit.ascent - digit.descent) / 2}" text-anchor="middle" fill="${pal.text}" font-family="StudioHeading" font-weight="700" font-size="27">${shieldValue}</text>`);
+      parts.push(`<text data-shield-digit="true" x="${badgeX + (digit.left ?? 0) - digit.width / 2}" y="${badgeY + (digit.ascent - digit.descent) / 2}" text-anchor="start" fill="${pal.text}" font-family="StudioHeading" font-weight="700" font-size="27">${shieldValue}</text>`);
       if (p.shieldBarcode) edgeBarcode(shieldValue, w - m - p.line / 2 - 3 - 70, -b, 70, Math.max(0, badgeY - badgeRadius - 8 + b), 'shield');
     }
     if (d.layout === 'objective') {
@@ -292,7 +299,23 @@ export function renderCard(d: Design, assets: Assets, measure: Measure, prefix =
       const rightX = w - m - rightInset - rightWidth;
       const rightTop = dividerY + rightInset;
       const bodyX = m + imageInset + leftStrip;
-      if (d.layout !== 'overdrive') body(bodyX, top + imageHeight + 22, Math.max(1, (p.barcode ? rightX - 16 : w - start) - bodyX), bottom - top - imageHeight - 22);
+      if (d.layout === 'vessel') {
+        const rowWidth = Math.max(1, w - start - bodyX);
+        const movement = `MOVE ${source.movementMin}–${source.movementMax}`;
+        const attack = `ATTACK ${source.attackValue} | ${source.attackMin}–${source.attackMax}`;
+        const gutter = 24;
+        const moveWidth = measure(movement, p.bodySize, false, 700);
+        const attackWidth = measure(attack, p.bodySize, false, 700);
+        const statSize = Math.min(p.bodySize, p.bodySize * Math.max(1, rowWidth - gutter) / (moveWidth + attackWidth));
+        const statY = dividerY + 12 + statSize;
+        const inkColor = d.mode === 'print' ? '#000000' : pal.accent;
+        parts.push('<g data-vessel-stats="true">');
+        parts.push(label(movement, bodyX, statY, statSize, inkColor, rowWidth, false, 700));
+        parts.push(label(attack, bodyX + rowWidth - measure(attack, statSize, false, 700), statY, statSize, inkColor, rowWidth, false, 700));
+        parts.push('</g>');
+        const keywordsTop = statY + 12;
+        body(bodyX, keywordsTop, rowWidth, Math.max(1, bottom - keywordsTop));
+      } else if (d.layout !== 'overdrive') body(bodyX, top + imageHeight + 22, Math.max(1, (p.barcode ? rightX - 16 : w - start) - bodyX), bottom - top - imageHeight - 22);
       if (d.layout !== 'vessel') {
       const mini = p.decorationTextSize;
       const notice = c.rightDecoration.toUpperCase().split('\n').slice(0, 3);
