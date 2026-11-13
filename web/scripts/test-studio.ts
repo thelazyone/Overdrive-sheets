@@ -318,7 +318,8 @@ for (const text of ['MIXED TITLE', 'MIXED CATEGORY', 'CHR_ABC', 'SINGLE USE']) a
 assert.equal(upperFields.content.character.title, 'Mixed title', 'Rendering preserves editable source text');
 
 const continuationDesign = newDesign();
-assert.equal(continuationDesign.parameters.topLeftContinuation, false);
+assert.equal(continuationDesign.parameters.topLeftContinuation, true);
+continuationDesign.parameters.topLeftContinuation = false;
 assert.ok(!renderCard(continuationDesign, assets, measure).svg.includes('data-top-left-continuation'));
 continuationDesign.parameters.topLeftContinuation = true;
 const continuation = renderCard(continuationDesign, assets, measure, 'continuation', true).svg.match(/<g data-top-left-continuation="true">(.*?)<\/g>/)![1];
@@ -445,4 +446,26 @@ assert.equal(+rpaBounds[1] - +knockout[1], overdriveUpdated.parameters.crossGap,
 const odDimensions = dimensions(overdriveUpdated);
 const odWidth = 1000 * odDimensions.width / Math.max(odDimensions.width, odDimensions.height);
 assert.ok(Math.abs(+knockout[1] + +knockout[3] - (odWidth - overdriveUpdated.parameters.inset - overdriveUpdated.parameters.line / 2)) < 1e-8, 'Barcode knockout stops before vertical junction stroke');
-assert.equal(presetDesign().parameters.overdriveDecorationWidth, 180);
+assert.equal(presetDesign().parameters.overdriveDecorationWidth, 110);
+
+const vesselDesign = presetDesign(); vesselDesign.layout = 'vessel';
+const vesselSVG = renderCard(vesselDesign, assets, measure).svg;
+assert.ok(vesselSVG.includes('data-shield="3"'));
+assert.ok(vesselSVG.includes('data-frame-divider="true"'));
+assert.ok(!vesselSVG.includes('data-trait='));
+assert.ok(!vesselSVG.includes('data-rpa-logo') && !vesselSVG.includes('data-right-decoration'));
+assert.equal(vesselDesign.parameters.vesselTitleInset, vesselDesign.parameters.titleInset);
+assert.equal(vesselDesign.parameters.vesselArtShare, 66);
+assert.equal(designSchema.parse(referenceDesign).content.vessel.title, 'VESSEL', 'Older designs gain Vessel defaults');
+
+const lineVessel = presetDesign(); lineVessel.layout = 'vessel';
+lineVessel.content.vessel.artwork = 'data:image/png;base64,AAAA';
+const darkLineSVG = renderCard(lineVessel, assets, measure).svg;
+assert.ok(darkLineSVG.includes('data-vessel-linework="true"'));
+assert.ok(darkLineSVG.includes('xMidYMid meet'));
+assert.ok(darkLineSVG.includes('feFuncA type="identity"'));
+assert.ok(darkLineSVG.includes('filter="url(#card-linework-invert)"'));
+lineVessel.mode = 'print';
+assert.ok(!renderCard(lineVessel, assets, measure).svg.includes('linework-invert'));
+lineVessel.content.vessel.artwork = 'data:image/jpeg;base64,AAAA';
+assert.ok(renderCard(lineVessel, assets, measure).svg.includes('xMidYMid slice'));

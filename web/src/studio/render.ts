@@ -71,7 +71,7 @@ export function contrastText(color: string) {
 export function renderCard(d: Design, assets: Assets, measure: Measure, prefix = 'card', bleed = false) {
   // Normalize the longest edge: typography keeps the same physical scale when rotated.
   const dim = dimensions(d), w = 1000 * dim.width / Math.max(dim.width, dim.height), h = w * dim.height / dim.width;
-  const p = { ...d.parameters, lineSpacing: d.parameters.bodyLineSpacings[d.layout] ?? (d.layout === 'overdrive' ? 0 : d.parameters.lineSpacing), weight: d.parameters.bodyWeights[d.layout] ?? d.parameters.weight }, source = d.content[d.layout], pal = d.palettes[d.mode], m = p.inset;
+  const p = { ...d.parameters, titleInset: d.layout === 'vessel' ? d.parameters.vesselTitleInset : d.parameters.titleInset, barcode: d.layout === 'vessel' ? false : d.parameters.barcode, lineSpacing: d.parameters.bodyLineSpacings[d.layout] ?? (d.layout === 'overdrive' ? 2 : d.parameters.lineSpacing), weight: d.parameters.bodyWeights[d.layout] ?? d.parameters.weight }, source = d.content[d.layout], pal = d.palettes[d.mode], m = p.inset;
   // Normalize before measuring as well as drawing, so uppercase text fits correctly.
   const c = { ...source, traits: d.layout === 'overdrive' ? source.traits.slice(0, 1) : source.traits, title: source.title.toUpperCase(), subtitle: source.subtitle.toUpperCase(), code: source.code.toUpperCase(), heading: source.heading.toUpperCase() };
   const radius = dim.rounded ? 3 / dim.width * w : 0;
@@ -148,24 +148,27 @@ export function renderCard(d: Design, assets: Assets, measure: Measure, prefix =
     parts.push(`<mask id="${prefix}-art-cutout" maskUnits="userSpaceOnUse" x="${x}" y="${y}" width="${width}" height="${height}" style="mask-type:luminance">${rect(x, y, width, height, '#ffffff')}<path d="${artworkCutout}" fill="#000000" stroke="#000000" stroke-width="${2 * p.imageMargin}" stroke-linejoin="miter"/></mask><g data-image-frame="true" mask="url(#${prefix}-art-cutout)">`);
     if (panelCutout) parts.push(`<clipPath id="${prefix}-panel-image-clip"><path d="${panelCutout}"/></clipPath><g clip-path="url(#${prefix}-panel-image-clip)">`);
     // A light placeholder under loaded artwork leaks through antialiased edges.
-    if (!c.artwork) parts.push(rect(x, y, width, height, d.mode === 'print' ? '#f3f3f3' : pal.light));
-    if (c.artwork) parts.push(`<svg x="${x}" y="${y}" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" overflow="hidden"><image href="${c.artwork}" width="${width}" height="${height}" preserveAspectRatio="${c.imageHorizontal === 'right' ? 'xMax' : c.imageHorizontal === 'left' ? 'xMin' : 'xMid'}${c.imagePosition < 34 ? 'YMin' : c.imagePosition > 66 ? 'YMax' : 'YMid'} slice"/></svg>`);
+    if (!c.artwork && d.layout !== 'vessel') parts.push(rect(x, y, width, height, d.mode === 'print' ? '#f3f3f3' : pal.light));
+    const vesselPNG = d.layout === 'vessel' && c.artwork.startsWith('data:image/png;');
+    const invertLinework = vesselPNG && contrastText(pal.background) === '#ffffff';
+    if (invertLinework) parts.push(`<filter id="${prefix}-linework-invert" color-interpolation-filters="sRGB"><feComponentTransfer><feFuncR type="linear" slope="-1" intercept="1"/><feFuncG type="linear" slope="-1" intercept="1"/><feFuncB type="linear" slope="-1" intercept="1"/><feFuncA type="identity"/></feComponentTransfer></filter>`);
+    if (c.artwork) parts.push(`<svg x="${x}" y="${y}" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" overflow="hidden"><image ${vesselPNG ? 'data-vessel-linework="true"' : ''} ${invertLinework ? `filter="url(#${prefix}-linework-invert)"` : ''} href="${c.artwork}" width="${width}" height="${height}" preserveAspectRatio="${c.imageHorizontal === 'right' ? 'xMax' : c.imageHorizontal === 'left' ? 'xMin' : 'xMid'}${c.imagePosition < 34 ? 'YMin' : c.imagePosition > 66 ? 'YMax' : 'YMid'} ${vesselPNG ? 'meet' : 'slice'}"/></svg>`);
     if (panelCutout) parts.push('</g>');
     parts.push('</g>');
   }
   parts.push(rect(-b, -b, w + b * 2, h + b * 2, pal.background));
   // Frame inset moves every rail equally; rails continue through the bleed.
   parts.push(line(m, -b, m, h + b), line(w - m, -b, w - m, h + b), line(d.layout === 'open' ? -b : m + uprightWidth, frameTop, w + b, frameTop));
-  if (d.layout !== 'character') parts.push(line(-b, h - m, w + b, h - m));
+  if (d.layout !== 'character' && d.layout !== 'vessel') parts.push(line(-b, h - m, w + b, h - m));
   frameCrosses(frameTop, d.layout !== 'open');
-  if (d.layout !== 'character') frameCrosses(h - m);
+  if (d.layout !== 'character' && d.layout !== 'vessel') frameCrosses(h - m);
   if (d.layout !== 'open') {
     const start = m + 16, inner = w - 2 * start, top = frameTop + 40, bottom = h - m - 20;
     const symbolX = m;
     const titleX = symbolX + uprightWidth + p.titleGap;
     const iconSize = p.traitSize, iconGap = p.traitSpacing;
     const traitWidths = c.traits.map(trait => iconSize * traitBounds[trait][2] / traitBounds[trait][3]);
-    const iconWidth = (d.layout === 'character' || d.layout === 'overdrive') ? traitWidths.reduce((sum, width) => sum + width, 0) + Math.max(0, c.traits.length - 1) * iconGap : d.layout === 'objective' ? 55 : 0;
+    const iconWidth = (d.layout === 'character' || d.layout === 'overdrive') ? traitWidths.reduce((sum, width) => sum + width, 0) + Math.max(0, c.traits.length - 1) * iconGap : (d.layout === 'objective' || d.layout === 'vessel') ? 55 : 0;
     const traitsRight = w - m - p.line / 2 - 6;
     const titleRight = d.layout === 'character' ? traitsRight : w - start;
     const titleSpace = Math.max(1, titleRight - titleX - iconWidth - 16);
@@ -223,7 +226,7 @@ export function renderCard(d: Design, assets: Assets, measure: Measure, prefix =
       parts.push(rect(x, y, width, iconSize, pal.text, `mask="url(#${prefix}-trait-${trait})"`));
     });
     let decorationBottom = h - m;
-    if (d.layout === 'objective') {
+    if (d.layout === 'objective' || d.layout === 'vessel') {
       const shieldValue = String(Math.min(9, Math.max(1, Math.round(Number(c.points) || 1))));
       const badgeRadius = 21;
       const badgeX = w - m - p.line / 2 - 6 - badgeRadius;
@@ -233,6 +236,8 @@ export function renderCard(d: Design, assets: Assets, measure: Measure, prefix =
       const digit = ink(shieldValue, 27);
       parts.push(`<text x="${badgeX}" y="${badgeY + (digit.ascent - digit.descent) / 2}" text-anchor="middle" fill="${pal.text}" font-family="StudioHeading" font-weight="700" font-size="27">${shieldValue}</text>`);
       if (p.shieldBarcode) edgeBarcode(shieldValue, w - m - p.line / 2 - 3 - 70, -b, 70, Math.max(0, badgeY - badgeRadius - 8 + b), 'shield');
+    }
+    if (d.layout === 'objective') {
       const panelInset = p.line / 2 + p.imageMargin;
       const textStart = m + panelInset + p.leftDecorationWidth;
       const panelTop = frameTop + panelInset;
@@ -263,12 +268,12 @@ export function renderCard(d: Design, assets: Assets, measure: Measure, prefix =
       body(textStart + p.textFrameMargin, textTop, Math.max(1, textWidth - extension / 2 - 2 * p.textFrameMargin), Math.max(1, panelBottom - p.textFrameMargin - textTop), contrastText(panelColor));
       art(imageEdge, panelTop, imageRight - imageEdge, panelHeight);
     } else {
-      const imageHeight = (bottom - top) * (d.layout === 'overdrive' ? p.overdriveArtShare : p.artShare) / 100;
+      const imageHeight = (bottom - top) * (d.layout === 'overdrive' ? p.overdriveArtShare : d.layout === 'vessel' ? p.vesselArtShare : p.artShare) / 100;
       const leftStrip = d.layout === 'overdrive' ? 16 : p.leftDecorationWidth;
       const dividerY = top + imageHeight + 10;
       const imageInset = p.line / 2 + p.imageMargin;
       decorationBottom = dividerY;
-      if (d.mode === 'print') parts.push(rect(m + p.line / 2, dividerY + p.line / 2, w - 2 * m - p.line, (d.layout === 'character' ? h + b : h - m - p.line / 2) - dividerY - p.line / 2, '#ffffff', 'data-print-body-panel="true"'));
+      if (d.mode === 'print') parts.push(rect(m + p.line / 2, dividerY + p.line / 2, w - 2 * m - p.line, ((d.layout === 'character' || d.layout === 'vessel') ? h + b : h - m - p.line / 2) - dividerY - p.line / 2, '#ffffff', 'data-print-body-panel="true"'));
       art(m + imageInset + leftStrip, frameTop + imageInset, w - 2 * (m + imageInset) - leftStrip, dividerY - frameTop - 2 * imageInset);
       parts.push(`<g data-frame-divider="true">`, line(-b, dividerY, w + b, dividerY));
       frameCrosses(dividerY);
@@ -279,6 +284,7 @@ export function renderCard(d: Design, assets: Assets, measure: Measure, prefix =
       const rightTop = dividerY + rightInset;
       const bodyX = m + imageInset + leftStrip;
       if (d.layout !== 'overdrive') body(bodyX, top + imageHeight + 22, Math.max(1, (p.barcode ? rightX - 16 : w - start) - bodyX), bottom - top - imageHeight - 22);
+      if (d.layout !== 'vessel') {
       const mini = p.decorationTextSize;
       const notice = c.rightDecoration.toUpperCase().split('\n').slice(0, 3);
       const noticeColor = pal.light;
@@ -294,7 +300,7 @@ export function renderCard(d: Design, assets: Assets, measure: Measure, prefix =
       const logoHeight = logoWidth * 614 / 592;
       const logoX = rightX + rightWidth - logoWidth;
       const logoY = logoBottom - logoHeight;
-      if (d.layout === 'overdrive' && p.barcode) parts.push(rect(logoX - p.crossGap, h - m - p.line / 2, w - m - p.line / 2 - logoX + p.crossGap, p.line, pal.background, 'data-barcode-rail-knockout="true"'));
+      if (d.layout === 'overdrive' && p.barcode) parts.push(rect(logoX - p.crossGap, h - m - p.line / 2 - 1.5, w - m - p.line / 2 - logoX + p.crossGap, p.line + 3, pal.background, 'data-barcode-rail-knockout="true"'));
       const fingerprint = titleFingerprint(c.title);
       parts.push(`<g data-right-decoration="true" data-title-hash="${fingerprint}">`);
       notice.forEach((text, i) => parts.push(`<text x="${rightX + rightWidth}" y="${rightTop + mini + i * noticeLeading}" text-anchor="end" fill="${noticeColor}" font-family="StudioBody" font-size="${mini}" font-weight="${p.decorationTextWeight}">${escapeXML(text)}</text>`));
@@ -318,6 +324,7 @@ export function renderCard(d: Design, assets: Assets, measure: Measure, prefix =
       }
       }
       parts.push('</g>');
+      }
       // Overdrive text uses the full width and composites over the decoration.
       if (d.layout === 'overdrive') body(bodyX, top + imageHeight + 22, w - m - imageInset - bodyX, bottom - top - imageHeight - 22);
     }
@@ -336,7 +343,7 @@ export function renderCard(d: Design, assets: Assets, measure: Measure, prefix =
     // With 90-degree rotation, the underscore's descent becomes the left edge.
     const codeX = m - p.line / 2 + ink('_', codeSize).descent;
     if (c.code) {
-      parts.push(rect(m - p.line / 2 - 3, codeY - 3, codeInk.ascent + codeInk.descent + p.line / 2 + 6, measure(c.code, codeSize, true, 700) + (d.layout === 'overdrive' ? p.crossGap + 3 : 6), pal.background));
+      parts.push(rect(m - p.line / 2 - 3, codeY - 3, codeInk.ascent + codeInk.descent + p.line / 2 + 6, measure(c.code, codeSize, true, 700) + p.crossGap + 3, pal.background));
       parts.push(`<g transform="translate(${codeX} ${codeY}) rotate(90)">${label(c.code, 0, 0, codeSize, pal.text, codeSpace, true)}</g>`);
     }
     const mini = p.decorationTextSize, miniLeading = mini * 1.15;
@@ -363,13 +370,13 @@ export function renderCard(d: Design, assets: Assets, measure: Measure, prefix =
       parts.push(`<text transform="translate(${boxX + boxWidth / 2} ${boxY + boxHeight / 2}) rotate(90)" text-anchor="middle" dominant-baseline="central" fill="${pal.light}" font-family="StudioHeading" font-weight="700" font-size="8">${i === 0 ? '03' : '42'}</text>`);
     }
     parts.push('</g>');
-    const showBottomBarcode = p.bottomBarcode && d.layout === 'character';
+    const showBottomBarcode = p.bottomBarcode && (d.layout === 'character' || d.layout === 'vessel');
     const footerOnRail = d.layout === 'objective' || d.layout === 'overdrive';
-    const footerX = footerOnRail ? m + p.cross + p.crossGap + (d.layout === 'overdrive' ? 24 : 8) : showBottomBarcode ? edgeBarX + edgeBarWidth + edgeBarGap : start;
+    const footerX = footerOnRail ? m + p.cross + p.crossGap + 24 : showBottomBarcode ? edgeBarX + edgeBarWidth + edgeBarGap : start;
     const footerWidth = inner * 0.66 - (footerX - start);
     const footerSize = Math.min(12, 12 * footerWidth / Math.max(1, measure(c.footer, 12, true, 700)));
     const footerInk = ink(c.footer, footerSize);
-    const footerY = footerOnRail ? h - m - p.line / 2 + footerInk.ascent : d.layout === 'character' ? h - m + footerInk.ascent : h - m + 23;
+    const footerY = footerOnRail ? h - m - p.line / 2 + footerInk.ascent : (d.layout === 'character' || d.layout === 'vessel') ? h - m + footerInk.ascent : h - m + 23;
     if (footerOnRail) {
       const footerHeight = Math.max(p.line + 2, footerInk.ascent + footerInk.descent + 2);
       parts.push(rect(footerX - 4, h - m - p.line / 2 - 1, measure(c.footer, footerSize, true, 700) + 8, footerHeight, pal.background, 'data-footer-knockout="true"'));
