@@ -92,7 +92,7 @@ export function renderCard(d: Design, assets: Assets, measure: Measure, prefix =
     const payload = name === 'traits' ? [...value].map(char => parseInt(char, 16).toString(2).padStart(4, '0')).join('') : [...new TextEncoder().encode(value)].map(byte => byte.toString(2).padStart(8, '0')).join('');
     // A single-trait barcode has less room, so use fewer hash bits rather
     // than squeezing the same payload into hairline-width modules.
-    const traitModule = (3 * p.traitSize + 2 * p.traitSpacing + 16) / 70;
+    const traitModule = (3 * p.traitSize + 2 * 14 + 16) / 70;
     const visiblePayload = name === 'traits' && d.layout === 'overdrive'
       ? payload.slice(0, Math.max(1, Math.min(payload.length, Math.round(width / traitModule) - 6)))
       : payload;
@@ -339,7 +339,7 @@ export function renderCard(d: Design, assets: Assets, measure: Measure, prefix =
     }
     const decorationTop = bandBottom + p.imageMargin;
     const stripWidth = d.layout === 'overdrive' ? 16 : p.leftDecorationWidth;
-    if (p.hideFrameAbove) parts.push(rect(m - p.line / 2 - 1, bandBottom, p.line + 2, p.imageMargin + 1, pal.background, 'data-hide-frame-above="true"'));
+    if (d.layout === 'overdrive' || p.hideFrameAbove) parts.push(rect(m - p.line / 2 - 1, bandBottom, p.line + 2, p.imageMargin + 1, pal.background, 'data-hide-frame-above="true"'));
     parts.push('<g data-left-decoration="true">');
     const codeY = decorationTop;
     const boxWidth = d.layout === 'overdrive' ? 15 : Math.min(15, stripWidth - 8), boxHeight = 25, boxGap = 7;

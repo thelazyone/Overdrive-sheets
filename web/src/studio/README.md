@@ -131,3 +131,21 @@ value-derived upper barcode. It has no bottom barcode or RPA identity group.
 Image margin controls both panels’ outer clearance; Body > Text frame margin
 controls inner text padding. Text frame color follows the accent until overridden;
 black or white text is chosen by contrast. Its artwork is separate from Character.
+
+
+### Layout-specific controls
+
+| Control group | Character | Object | Overdrive | Vessel | Open |
+| --- | --- | --- | --- | --- | --- |
+| Traits and trait barcode | Yes | No | One trait | No | No |
+| Trait spacing | Yes | No | No | No | No |
+| Shield value and barcode | No | Yes | No | Yes | No |
+| Artwork share | Yes | No | Yes | Yes | No |
+| Diagonal panel and text panel colour/margin | No | Yes | No | No | No |
+| Left decoration width / hide frame above | Yes | Yes | No | Yes | No |
+| RPA group, width and right notice | Yes | No | Yes | No | No |
+| Bottom barcode | Yes | No | No | Yes | No |
+| Title, body, image and decoration sections | Yes | Yes | Yes | Yes | No |
+| Top-left continuation | Yes | Yes | Yes | Yes | No |
+
+Open exposes only its background and frame-detail palette colours. Controls applicable to a layout remain visible when their content is empty or their related feature is temporarily disabled. Printer-friendly rendering still overrides body panel colours to white and black.
