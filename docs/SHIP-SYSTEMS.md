@@ -14,6 +14,7 @@ Only modular slots are listed. Shared fore/aft and left/right slot families appe
 | Supply Tender | 2 | Contemplation | Trade or Exploration or Science + Escorting Rights |
 | Gunship | 1 | Hierarchy | Military or Diplomacy + Escorting Rights |
 | Schooner | 1 | TBD | Science or Diplomacy |
+| Pirate Scoop | 1 |  | Always available |
 
 ## Contemplation Class Escort Vessel — Size 2
 
@@ -40,6 +41,20 @@ Hull requirements: **Trade or Exploration or Diplomacy + Commercial Permit + Ext
 | Hab | 1 | 5 | Barracks; Additional Quarters; Passenger Berths; Security Quarters; Crew Lounge | Barracks: Military; Additional Quarters: Habitat Upgrades; Passenger Berths: Diplomacy; Security Quarters: Habitat Upgrades; Crew Lounge: Always available |
 
 One-option families: none.
+
+## Pirate Scoop — Size 1
+
+Hull requirements: **Always available**.
+
+Card EMP damage 3 supersedes legacy JSON damage 6. Two bridge options split the original actions; Gunnery Bridge is a working name. No separate central EMP generator: final fitting uses EMP or normal broadsides. Control 1 and Overdrive 1/1/1/0 remain legacy reference metadata; the current console does not render these fields.
+
+| Slot family | Slots | Options | Systems | Additional system requirements |
+| --- | ---: | ---: | --- | --- |
+| Broadside | 2 | 2 | Broadside; EMP Broadside | Broadside: Always available; EMP Broadside: Always available |
+| Utility | 1 | 1 | Jammer | Jammer: Always available |
+| Bridge | 1 | 2 | Command Bridge; Gunnery Bridge | Command Bridge: Always available; Gunnery Bridge: Always available |
+
+One-option families: Utility.
 
 ## Providence Class Salvager — Size 2
 

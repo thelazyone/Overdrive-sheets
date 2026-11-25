@@ -84,6 +84,17 @@
         "Science",
         "Diplomacy"
       ]
+    },
+    "preset:pirate_scoop": {
+      "size": 1,
+      "role": "Pirate Scoop",
+      "className": "",
+      "defined": true,
+      "upgrades": [],
+      "revision": "2026-11-25",
+      "status": "playtest",
+      "source": "Designer instructions and pirate_scoop.jpg, 2026-11-25.",
+      "note": "Card EMP damage 3 supersedes legacy JSON damage 6. Two bridge options split the original actions; Gunnery Bridge is a working name. No separate central EMP generator: final fitting uses EMP or normal broadsides. Control 1 and Overdrive 1/1/1/0 remain legacy reference metadata; the current console does not render these fields."
     }
   },
   "vessels": [

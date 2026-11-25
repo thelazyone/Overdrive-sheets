@@ -1,0 +1,301 @@
+{
+  "name": "Unnamed Ship",
+  "label": "Pirate Scoop",
+  "presetId": "pirate_scoop",
+  "description": "Pirate Scoop",
+  "shields": {
+    "name": "Deflector Shields",
+    "rules": "",
+    "front": [
+      1,
+      2,
+      2
+    ],
+    "rear": [
+      2,
+      2
+    ]
+  },
+  "reactor": {
+    "name": "Reactor",
+    "rules": "Energy Production: 3",
+    "circles": 4
+  },
+  "quarters": {
+    "name": "Quarters",
+    "rules": "Crew: 3",
+    "med_bay": 1
+  },
+  "sections": {
+    "left": [
+      {
+        "kind": "slot",
+        "label": "Broadside",
+        "options": [
+          {
+            "name": "Broadside",
+            "rules": "",
+            "areas": [
+              {
+                "name": "Explosive Salvo",
+                "description": "",
+                "shoot": {
+                  "damage": 4,
+                  "range": "0-3",
+                  "arc-start": 1,
+                  "arc-end": 4
+                },
+                "cost": {
+                  "energy": 1,
+                  "crew": 2
+                }
+              }
+            ],
+            "electronics": false,
+            "hull": true,
+            "life_support": true,
+            "kind": "generic",
+            "weapon": true
+          },
+          {
+            "name": "EMP Broadside",
+            "rules": "",
+            "areas": [
+              {
+                "name": "EMP Salvo",
+                "description": "EMP",
+                "shoot": {
+                  "damage": 3,
+                  "range": "0-3",
+                  "arc-start": 1,
+                  "arc-end": 4
+                },
+                "cost": {
+                  "energy": 3,
+                  "crew": 0
+                }
+              }
+            ],
+            "electronics": false,
+            "hull": true,
+            "life_support": true,
+            "kind": "generic",
+            "weapon": true
+          }
+        ]
+      },
+      {
+        "kind": "slot",
+        "label": "Utility",
+        "options": [
+          {
+            "name": "Jammer",
+            "rules": "Support System",
+            "areas": [
+              {
+                "name": "",
+                "description": "Remove all energy from Reactor",
+                "cost": {
+                  "energy": 1,
+                  "crew": 1
+                }
+              }
+            ],
+            "electronics": true,
+            "hull": false,
+            "life_support": false,
+            "kind": "generic"
+          }
+        ]
+      }
+    ],
+    "core": [
+      {
+        "kind": "slot",
+        "label": "Bridge",
+        "options": [
+          {
+            "name": "Command Bridge",
+            "rules": "",
+            "areas": [
+              {
+                "name": "Broadcast",
+                "description": "Control 2 for this Round",
+                "cost": {
+                  "energy": 0,
+                  "crew": 1
+                }
+              }
+            ],
+            "electronics": true,
+            "hull": false,
+            "life_support": true,
+            "kind": "generic"
+          },
+          {
+            "name": "Gunnery Bridge",
+            "rules": "",
+            "areas": [
+              {
+                "name": "Bridge Guns",
+                "description": "",
+                "shoot": {
+                  "damage": 2,
+                  "range": "0-2",
+                  "arc-start": 2,
+                  "arc-end": 6
+                },
+                "cost": {
+                  "energy": 0,
+                  "crew": 1
+                }
+              }
+            ],
+            "electronics": true,
+            "hull": false,
+            "life_support": true,
+            "kind": "generic"
+          }
+        ]
+      },
+      {
+        "kind": "system",
+        "system": {
+          "name": "Flak Battery",
+          "rules": "Anti-Light Weapon",
+          "areas": [
+            {
+              "name": "AA Burst",
+              "description": "",
+              "shoot": {
+                "damage": 5,
+                "range": "0-2",
+                "arc-start": 0,
+                "arc-end": 8
+              },
+              "cost": {
+                "energy": 1,
+                "crew": 1
+              }
+            }
+          ],
+          "electronics": false,
+          "hull": true,
+          "life_support": true,
+          "kind": "generic",
+          "weapon": true
+        }
+      },
+      {
+        "kind": "system",
+        "system": {
+          "name": "Engine",
+          "rules": "",
+          "areas": [
+            {
+              "name": "",
+              "description": "Change Speed",
+              "cost": {
+                "energy": 1,
+                "crew": 0
+              }
+            }
+          ],
+          "speed_slots": [
+            {
+              "speed": "0-1",
+              "rotation": "90\u00b0"
+            },
+            {
+              "speed": "1-3",
+              "rotation": "45\u00b0"
+            }
+          ],
+          "electronics": true,
+          "hull": false,
+          "life_support": false,
+          "kind": "engine"
+        }
+      }
+    ],
+    "right": [
+      {
+        "kind": "slot",
+        "label": "Broadside",
+        "options": [
+          {
+            "name": "Broadside",
+            "rules": "",
+            "areas": [
+              {
+                "name": "Explosive Salvo",
+                "description": "",
+                "shoot": {
+                  "damage": 4,
+                  "range": "0-3",
+                  "arc-start": 4,
+                  "arc-end": 7
+                },
+                "cost": {
+                  "energy": 1,
+                  "crew": 2
+                }
+              }
+            ],
+            "electronics": false,
+            "hull": true,
+            "life_support": true,
+            "kind": "generic",
+            "weapon": true
+          },
+          {
+            "name": "EMP Broadside",
+            "rules": "",
+            "areas": [
+              {
+                "name": "EMP Salvo",
+                "description": "EMP",
+                "shoot": {
+                  "damage": 3,
+                  "range": "0-3",
+                  "arc-start": 4,
+                  "arc-end": 7
+                },
+                "cost": {
+                  "energy": 3,
+                  "crew": 0
+                }
+              }
+            ],
+            "electronics": false,
+            "hull": true,
+            "life_support": true,
+            "kind": "generic",
+            "weapon": true
+          }
+        ]
+      },
+      {
+        "kind": "system",
+        "system": {
+          "name": "Barracks",
+          "rules": "Holds 4 Soldiers",
+          "areas": [
+            {
+              "name": "",
+              "description": "Board up to 2 Soldiers",
+              "cost": {
+                "energy": 0,
+                "crew": 1
+              }
+            }
+          ],
+          "electronics": false,
+          "hull": false,
+          "life_support": true,
+          "kind": "generic"
+        }
+      }
+    ]
+  }
+}

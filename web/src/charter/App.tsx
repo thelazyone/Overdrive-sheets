@@ -1,6 +1,6 @@
 import { createEffect, createMemo, createSignal, For, Show } from 'solid-js';
 import { access as directAccess, advancementFor, advancementLevels, categoryFor, sharedWeapon, itemRequirement, authoredSystems, authoredWeapons, vesselCategories, weaponCategories, slotGroups, authoredVessels, hullMetadata, requirementFor, benefitsFor, systemAccess, systemKey, uniqueSystems, byId, cheapestPath, connected, fresh, parseWorkbench, purchaseReason, spent, TRAITS, unknownRequirement, upgrades, type Item, type Requirement, type Workbench } from './model';
-import { catalog, catalogFingerprint, beforeAuxReactorFingerprint, legacyCatalogFingerprint, beforeTenderFingerprint, beforeHabOptionsFingerprint, beforeFreighterExpansionFingerprint, beforeFreighterFingerprint, beforeHabFingerprint, beforeAntennaFingerprint, beforeSalvagerFingerprint, fixedSystemIds } from './catalog';
+import { catalog, catalogFingerprint, beforePirateFingerprint, beforeAuxReactorFingerprint, legacyCatalogFingerprint, beforeTenderFingerprint, beforeHabOptionsFingerprint, beforeFreighterExpansionFingerprint, beforeFreighterFingerprint, beforeHabFingerprint, beforeAntennaFingerprint, beforeSalvagerFingerprint, fixedSystemIds } from './catalog';
 
 const STORAGE = 'overdrive-charter-workbench-v1';
 const TAB_STORAGE = 'overdrive-charter-tab-v1';
@@ -78,9 +78,9 @@ export function CharterApp() {
   function decode(text: string) {
     const parsed = JSON.parse(text);
     // This display-name-only change leaves all slot identities and mappings intact.
-    if(typeof parsed.catalogFingerprint==='string') parsed.catalogFingerprint=parsed.catalogFingerprint.replaceAll('"name":"Double Cannon"','"name":"Twin Cannon"').replaceAll('Mining Laser','Mining Beam');
+    if(typeof parsed.catalogFingerprint==='string') parsed.catalogFingerprint=parsed.catalogFingerprint.replaceAll('Pirate Scoop \u00b7 Pirates group \u00b7 Size 1','Pirate Scoop').replaceAll('"name":"Double Cannon"','"name":"Twin Cannon"').replaceAll('Mining Laser','Mining Beam');
     const legacy = parsed.catalogFingerprint === legacyCatalogFingerprint || parsed.catalogFingerprint === beforeSalvagerFingerprint || parsed.catalogFingerprint === beforeAntennaFingerprint || parsed.catalogFingerprint === beforeHabFingerprint || parsed.catalogFingerprint === beforeFreighterFingerprint;
-    if (parsed.catalogFingerprint !== catalogFingerprint && parsed.catalogFingerprint !== beforeAuxReactorFingerprint && parsed.catalogFingerprint !== beforeTenderFingerprint && parsed.catalogFingerprint !== beforeFreighterExpansionFingerprint && parsed.catalogFingerprint !== beforeHabOptionsFingerprint && !legacy) throw new Error('This file uses a different ship catalog. Keep the file and reconcile its mappings before importing.');
+    if (parsed.catalogFingerprint !== catalogFingerprint && parsed.catalogFingerprint !== beforePirateFingerprint && parsed.catalogFingerprint !== beforeAuxReactorFingerprint && parsed.catalogFingerprint !== beforeTenderFingerprint && parsed.catalogFingerprint !== beforeFreighterExpansionFingerprint && parsed.catalogFingerprint !== beforeHabOptionsFingerprint && !legacy) throw new Error('This file uses a different ship catalog. Keep the file and reconcile its mappings before importing.');
     const next = parseWorkbench(parsed.state);
     if(parsed.catalogFingerprint!==catalogFingerprint) {
       // Former Asteroid Buster positions now contain different weapon designs.

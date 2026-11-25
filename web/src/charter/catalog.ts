@@ -8,19 +8,21 @@ import type { Item } from './model';
 const modules = import.meta.glob('../presets/*.json', { eager: true, import: 'default' });
 // Retain the old shape only to recognize and migrate existing saved workbenches.
 const previousCatalog: Item[] = [];
+const pirateCatalog: Item[] = [];
 export const fixedSystemIds = new Set<string>();
 for (const [path, raw] of Object.entries(modules).sort()) {
   const key = path.split('/').pop()!.replace('.json', '');
   const ship = parseShipDocument(raw);
   const id = `preset:${key}`;
-  previousCatalog.push({id, name:ship.description || ship.name, kind:'ship', description:'Current card-builder preset. Access requirements have not yet been authored.'});
+  const target = key === "pirate_scoop" ? pirateCatalog : previousCatalog;
+  target.push({id, name:ship.description || ship.name, kind:'ship', description:'Current card-builder preset. Access requirements have not yet been authored.'});
   for (const side of ['left','core','right'] as const) {
     ship.sections[side].forEach((ref, slotIndex) => {
       const options = ref.kind === 'slot' ? ref.options : [ref.system];
       options.forEach((system, optionIndex) => {
         const systemId = `${id}/${side}/${slotIndex}/${optionIndex}`;
         if (ref.kind !== 'slot') fixedSystemIds.add(systemId);
-        previousCatalog.push({id:systemId, shipId:id, name:system.name, kind:'system', slot:`${side} · ${ref.kind === 'slot' ? ref.label || `Slot ${slotIndex+1}` : 'Fixed system'}`, description:[system.rules, ...system.areas.map(a => [a.name,a.description].filter(Boolean).join(': '))].filter(Boolean).join(' · ')});
+        target.push({id:systemId, shipId:id, name:system.name, kind:'system', slot:`${side} · ${ref.kind === 'slot' ? ref.label || `Slot ${slotIndex+1}` : 'Fixed system'}`, description:[system.rules, ...system.areas.map(a => [a.name,a.description].filter(Boolean).join(': '))].filter(Boolean).join(' · ')});
       });
     });
   }
@@ -32,7 +34,9 @@ for (const item of previousCatalog) if (auxIds.has(item.id)) item.description = 
 export const legacyCatalogFingerprint = JSON.stringify(previousCatalog);
 // Fixed systems are inherent hull equipment, never gated Charter options.
 export const beforeAuxReactorFingerprint = JSON.stringify(previousCatalog.filter(item => !fixedSystemIds.has(item.id)));
-export const catalog = previousCatalog.filter(item => !fixedSystemIds.has(item.id)).map(item => auxIds.has(item.id) ? {...item,description:'+1 production'} : item);
+const precedingCatalog = previousCatalog.filter(item => !fixedSystemIds.has(item.id)).map(item => auxIds.has(item.id) ? {...item,description:'+1 production'} : item);
+export const beforePirateFingerprint = JSON.stringify(precedingCatalog);
+export const catalog = [...precedingCatalog, ...pirateCatalog.filter(item => !fixedSystemIds.has(item.id))];
 export const catalogFingerprint = JSON.stringify(catalog);
 const tenderWeaponSlot = (item:Item) => /^preset:contemplation_escort_vessel\/(left|right)\/0\//.test(item.id);
 const beforeTenderFull = previousCatalog.flatMap(item=>tenderWeaponSlot(item)?item.id.endsWith('/0')?oldTenderWeapons.filter(old=>old.id===item.id) as Item[]:[]:[item]);
